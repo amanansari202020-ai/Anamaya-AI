@@ -55,6 +55,20 @@ HealthSphere AI/
 
 ---
 
+## 🌐 Demo & Access
+
+### Project Demo
+- Local website: http://localhost:8003
+- GitHub Repository: https://github.com/amanansari202020-ai/HealthSphere-AI
+- Project purpose: HealthSphere AI helps rural communities find the right care, track referrals, understand symptoms, and access scheme support in multilingual and voice-friendly ways.
+
+### How to Open the App
+1. Start the backend from the backend folder.
+2. Open the website locally in a browser at http://localhost:8003.
+3. Use the language selector and voice assistant for easier access in English, Hindi, or Marathi.
+
+---
+
 ## 🚀 Quick Start
 
 ### Minimum Requirements
