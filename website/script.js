@@ -8,32 +8,32 @@ const translations = {
   en: {
     heroEyebrow: 'AI-powered rural healthcare navigation',
     heroHeading: 'Connecting every patient to the right care, at the right place, at the right time.',
-    heroText: 'HealthSphere AI helps communities find suitable facilities, understand symptoms, track referrals, and access scheme support through a digital health passport.',
+    heroText: 'Anamaya AI helps communities find suitable facilities, understand symptoms, track referrals, and access scheme support through a digital health passport.',
     ctaPrimary: 'Try the platform',
     ctaSecondary: 'View patient journey',
     statusChecking: 'Checking backend connection...',
-    voicePrompt: 'HealthSphere AI is ready to guide patients with easier care navigation and support.',
-    voiceIntro: 'HealthSphere AI voice assistant is active. Please choose a language and listen to the guidance.'
+    voicePrompt: 'Anamaya AI is ready to guide patients with easier care navigation and support.',
+    voiceIntro: 'Anamaya AI voice assistant is active. Please choose a language and listen to the guidance.'
   },
   hi: {
     heroEyebrow: 'कृषि स्वास्थ्य सेवा नेविगेशन',
     heroHeading: 'हर रोगी को सही समय पर सही देखभाल से जोड़ना।',
-    heroText: 'HealthSphere AI ग्रामीण समुदायों को उचित सुविधा चुनने, लक्षण समझने, रेफरल ट्रैक करने और डिज़िटल हेल्थ पासपोर्ट के माध्यम से योजना सहायता प्राप्त करने में मदद करता है।',
+    heroText: 'Anamaya AI ग्रामीण समुदायों को उचित सुविधा चुनने, लक्षण समझने, रेफरल ट्रैक करने और डिज़िटल हेल्थ पासपोर्ट के माध्यम से योजना सहायता प्राप्त करने में मदद करता है।',
     ctaPrimary: 'प्लेटफ़ॉर्म आज़माएँ',
     ctaSecondary: 'मरीज की यात्रा देखें',
     statusChecking: 'बैकएंड कनेक्शन जाँच रहा है...',
-    voicePrompt: 'HealthSphere AI ग्रामीण लोगों को आसान देखभाल मार्गदर्शन प्रदान करता है।',
-    voiceIntro: 'HealthSphere AI वॉयस असिस्टेंट सक्रिय है। कृपया भाषा चुनें और मार्गदर्शन सुनें।'
+    voicePrompt: 'Anamaya AI ग्रामीण लोगों को आसान देखभाल मार्गदर्शन प्रदान करता है।',
+    voiceIntro: 'Anamaya AI वॉयस असिस्टेंट सक्रिय है। कृपया भाषा चुनें और मार्गदर्शन सुनें।'
   },
   mr: {
     heroEyebrow: 'ग्रामीण आरोग्य नेव्हिगेशन',
     heroHeading: 'प्रत्येक रुग्णाला योग्य काळात योग्य उपचाराकडे नेणे.',
-    heroText: 'HealthSphere AI ग्रामीण समुदायांना योग्य सुविधा निवडण्यास, लक्षण समजण्यास, रेफरल ट्रॅक करण्यास आणि डिजिटल हेल्थ पासपोर्टद्वारे योजना सल्ला मिळण्यास मदत करते.',
+    heroText: 'Anamaya AI ग्रामीण समुदायांना योग्य सुविधा निवडण्यास, लक्षण समजण्यास, रेफरल ट्रॅक करण्यास आणि डिजिटल हेल्थ पासपोर्टद्वारे योजना सल्ला मिळण्यास मदत करते.',
     ctaPrimary: 'प्लॅटफॉर्म वापरा',
     ctaSecondary: 'रुग्ण प्रवास पहा',
     statusChecking: 'बॅकएंड जोडणी तपासत आहे...',
-    voicePrompt: 'HealthSphere AI ग्रामीण लोकांसाठी सोपी आरोग्य दिशा देतो.',
-    voiceIntro: 'HealthSphere AI ध्वनी सहाय्यक सक्रिय आहे. कृपया भाषा निवडा आणि माहिती ऐका.'
+    voicePrompt: 'Anamaya AI ग्रामीण लोकांसाठी सोपी आरोग्य दिशा देतो.',
+    voiceIntro: 'Anamaya AI ध्वनी सहाय्यक सक्रिय आहे. कृपया भाषा निवडा आणि माहिती ऐका.'
   }
 };
 
@@ -116,7 +116,7 @@ async function checkBackend() {
     statusCard.classList.add('connected');
     statusCard.innerHTML = `
       <div class="status-dot"></div>
-      <span>Backend connected: ${data.service || 'HealthSphere AI'} (${data.status})</span>
+      <span>Backend connected: ${data.service || 'Anamaya AI'} (${data.status})</span>
     `;
   } catch (error) {
     statusCard.innerHTML = `

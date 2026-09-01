@@ -1,4 +1,4 @@
-# HealthSphere AI
+# Anamaya AI
 
 ## Connecting Every Patient to the Right Care, at the Right Place, at the Right Time.
 
@@ -8,7 +8,7 @@
 
 ## 🎯 Project Overview
 
-HealthSphere AI is a comprehensive healthcare solution designed specifically for rural and underserved communities. It solves critical healthcare challenges by providing:
+Anamaya AI is a comprehensive healthcare solution designed specifically for rural and underserved communities. It solves critical healthcare challenges by providing:
 
 - **Intelligent Healthcare Guidance**: AI-powered symptom assessment without diagnosis claims
 - **Smart Facility Navigation**: Recommendations for appropriate healthcare facility levels
@@ -60,7 +60,7 @@ HealthSphere AI/
 ### Project Demo
 - Local website: http://localhost:8003
 - GitHub Repository: https://github.com/amanansari202020-ai/HealthSphere-AI
-- Project purpose: HealthSphere AI helps rural communities find the right care, track referrals, understand symptoms, and access scheme support in multilingual and voice-friendly ways.
+- Project purpose: Anamaya AI helps rural communities find the right care, track referrals, understand symptoms, and access scheme support in multilingual and voice-friendly ways.
 
 ### How to Open the App
 1. Start the backend from the backend folder.
@@ -487,7 +487,7 @@ See **[PROJECT_SETUP_GUIDE.md](PROJECT_SETUP_GUIDE.md#-troubleshooting)** for mo
 
 ## 🏆 Hackathon Value Proposition
 
-HealthSphere AI demonstrates measurable impact:
+Anamaya AI demonstrates measurable impact:
 
 ✅ **Reduced Unnecessary Travel**: Smart facility recommendation reduces wrong facility visits by ~60%
 ✅ **Faster Referrals**: QR code-based referrals reduce transfer time by ~50%

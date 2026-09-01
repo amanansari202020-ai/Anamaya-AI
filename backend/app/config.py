@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
     # API Configuration
-    API_TITLE: str = "HealthSphere AI API"
+    API_TITLE: str = "Anamaya AI API"
     API_VERSION: str = "1.0.0"
     DEBUG: bool = bool(os.getenv("DEBUG", True))
 

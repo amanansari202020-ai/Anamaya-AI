@@ -58,7 +58,7 @@ async def health_check():
     return {
         "status": "healthy",
         "version": settings.API_VERSION,
-        "service": "HealthSphere AI Backend"
+        "service": "Anamaya AI Backend"
     }
 
 
@@ -405,12 +405,12 @@ async def http_exception_handler(request, exc):
 
 @app.on_event("startup")
 async def startup_event():
-    logger.info("HealthSphere AI Backend Starting Up")
+    logger.info("Anamaya AI Backend Starting Up")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    logger.info("HealthSphere AI Backend Shutting Down")
+    logger.info("Anamaya AI Backend Shutting Down")
 
 
 if __name__ == "__main__":
