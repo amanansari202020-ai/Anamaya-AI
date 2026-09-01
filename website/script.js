@@ -134,6 +134,30 @@ if (themeToggle) {
   });
 }
 
+function updateUserProfile() {
+  const userName = document.getElementById('userName');
+  const patientInput = document.getElementById('patientNameInput');
+
+  if (!userName || !patientInput) return;
+
+  const name = patientInput.value.trim() || 'Patient';
+  userName.textContent = name;
+  localStorage.setItem('anamaya-user-name', name);
+}
+
+const saveProfileBtn = document.getElementById('saveProfileBtn');
+if (saveProfileBtn) {
+  saveProfileBtn.addEventListener('click', updateUserProfile);
+}
+
+const savedUserName = localStorage.getItem('anamaya-user-name');
+if (savedUserName) {
+  const patientInput = document.getElementById('patientNameInput');
+  const userName = document.getElementById('userName');
+  if (patientInput) patientInput.value = savedUserName;
+  if (userName) userName.textContent = savedUserName;
+}
+
 function setLanguage(lang) {
   const dictionary = translations[lang] || translations.en;
   document.documentElement.lang = lang;
