@@ -4,6 +4,23 @@ const apiBase =
     ? 'http://localhost:8000'
     : 'https://your-backend-domain.example.com');
 
+function applyTheme(theme) {
+  const resolvedTheme = theme === 'dark' ? 'dark' : 'light';
+  document.body.setAttribute('data-theme', resolvedTheme);
+  const button = document.getElementById('themeToggle');
+  if (button) {
+    button.textContent = resolvedTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+    button.setAttribute('aria-label', `Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`);
+  }
+  localStorage.setItem('healthsphere-theme', resolvedTheme);
+}
+
+function initTheme() {
+  const savedTheme = localStorage.getItem('healthsphere-theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+}
+
 function showDemoApp() {
   document.getElementById('demoApp').classList.remove('hidden');
   document.getElementById('journey').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -75,6 +92,16 @@ async function checkBackend() {
     `;
   }
 }
+
+const themeToggle = document.getElementById('themeToggle');
+if (themeToggle) {
+  themeToggle.addEventListener('click', () => {
+    const nextTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(nextTheme);
+  });
+}
+
+initTheme();
 
 document.getElementById('tryPlatformBtn').addEventListener('click', showDemoApp);
 document.getElementById('launchDemoBtn').addEventListener('click', showDemoApp);
