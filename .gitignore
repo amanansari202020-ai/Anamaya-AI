@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+.venv/
+venv/
+.env
+.env.*
+
+# Node / frontend
+node_modules/
+.expo/
+.expo-shared/
+web-build/
+dist/
+build/
+*.tsbuildinfo
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local data
+*.sqlite3
+*.db

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HealthSphere AI | Rural Healthcare Navigation</title>
+    <meta name="description" content="HealthSphere AI is an AI-powered rural healthcare navigation and continuity platform helping patients reach the right care faster." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="website/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="brand-mark">H</div>
+        <div>
+          <div class="brand-name">HealthSphere AI</div>
+          <div class="brand-subtitle">Smart rural care access</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="#features">Features</a>
+        <a href="#journey">Journey</a>
+        <a href="#impact">Impact</a>
+      </nav>
+      <button class="nav-button" id="launchDemoBtn">Launch demo</button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">AI-powered rural healthcare navigation</span>
+          <h1>Connecting every patient to the right care, at the right place, at the right time.</h1>
+          <p>
+            HealthSphere AI helps communities find suitable facilities, understand symptoms,
+            track referrals, and access scheme support through a digital health passport.
+          </p>
+          <div class="cta-row">
+            <button class="primary" id="tryPlatformBtn">Try the platform</button>
+            <button class="secondary" id="journeyBtn">View patient journey</button>
+          </div>
+          <div class="status-card" id="backendStatus">
+            <div class="status-dot"></div>
+            <span>Checking backend connection...</span>
+          </div>
+        </div>
+
+        <div class="hero-panel">
+          <div class="mini-card large">
+            <div class="mini-header">
+              <span>AI Health Check</span>
+              <span class="chip success">Low risk</span>
+            </div>
+            <div class="symptom-list">
+              <span>Fever</span>
+              <span>Weakness</span>
+              <span>Cough</span>
+            </div>
+            <div class="advice-box">
+              <strong>Suggested next step:</strong>
+              <p>Visit a nearby primary health centre for vitals and assessment.</p>
+            </div>
+          </div>
+
+          <div class="mini-grid">
+            <div class="mini-card">
+              <label>Referral</label>
+              <strong>HS-2048</strong>
+            </div>
+            <div class="mini-card">
+              <label>Distance</label>
+              <strong>4.8 km</strong>
+            </div>
+            <div class="mini-card">
+              <label>Scheme</label>
+              <strong>PM-JAY</strong>
+            </div>
+            <div class="mini-card">
+              <label>Wait time</label>
+              <strong>18 min</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="section">
+        <div class="section-head">
+          <span class="eyebrow">Core capabilities</span>
+          <h2>Everything rural healthcare teams need to act faster.</h2>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="icon">🩺</div>
+            <h3>AI symptom guidance</h3>
+            <p>Structured patient triage that helps communities identify urgency and choose the right level of care.</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon">📍</div>
+            <h3>Facility matching</h3>
+            <p>Location-aware recommendations for PHCs, CHCs, district hospitals, and emergency pathways.</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon">🔗</div>
+            <h3>Smart referrals</h3>
+            <p>Digital referral flow with QR access, consent-aware sharing, and continuity of patient history.</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon">🧾</div>
+            <h3>Health passport</h3>
+            <p>Records and treatments stay connected across facilities for safer, more continuous care.</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon">💸</div>
+            <h3>Budget support</h3>
+            <p>Transparent cost estimation and scheme guidance to reduce financial barriers to care.</p>
+          </article>
+          <article class="feature-card">
+            <div class="icon">📶</div>
+            <h3>Offline-ready</h3>
+            <p>Designed for weak connectivity environments with local continuity and sync-ready workflows.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="journey" class="section alt">
+        <div class="section-head">
+          <span class="eyebrow">Patient flow</span>
+          <h2>A simple care journey from symptom to follow-up.</h2>
+        </div>
+
+        <div class="journey-grid">
+          <div class="step">
+            <div class="step-number">01</div>
+            <h3>Register</h3>
+            <p>Create an account and complete the basic profile for rural healthcare access.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">02</div>
+            <h3>Assess</h3>
+            <p>Use the AI health check to capture symptoms and receive next-step guidance.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">03</div>
+            <h3>Navigate</h3>
+            <p>Find the closest and most suitable facility or care pathway without confusion.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">04</div>
+            <h3>Follow-up</h3>
+            <p>Track referrals, passport records, and government support for continuity of care.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="impact" class="section metrics">
+        <div class="metric-card">
+          <strong>3x</strong>
+          <span>faster referral decisions</span>
+        </div>
+        <div class="metric-card">
+          <strong>50+</strong>
+          <span>scheme matches</span>
+        </div>
+        <div class="metric-card">
+          <strong>24/7</strong>
+          <span>digital continuity</span>
+        </div>
+        <div class="metric-card">
+          <strong>0</strong>
+          <span>friction in patient handoff</span>
+        </div>
+      </section>
+
+      <section id="demoApp" class="demo-shell hidden">
+        <div class="demo-header">
+          <div>
+            <span class="eyebrow">Demo portal</span>
+            <h2>HealthSphere AI workspace</h2>
+          </div>
+          <button class="ghost-button" id="logoutBtn">Log out</button>
+        </div>
+
+        <div class="demo-grid">
+          <aside class="sidebar">
+            <div class="profile-box">
+              <div class="avatar">P</div>
+              <div>
+                <h3 id="userName">Priya Sharma</h3>
+                <p>Patient · Rural care</p>
+              </div>
+            </div>
+
+            <nav class="sidebar-nav">
+              <button class="nav-item active" data-panel="dashboard">Dashboard</button>
+              <button class="nav-item" data-panel="assessment">AI Assessment</button>
+              <button class="nav-item" data-panel="facilities">Facilities</button>
+              <button class="nav-item" data-panel="passport">Health Passport</button>
+              <button class="nav-item" data-panel="schemes">Schemes</button>
+            </nav>
+          </aside>
+
+          <div class="content-panel">
+            <div id="dashboard" class="panel active">
+              <div class="kpis">
+                <div class="kpi-card">
+                  <span>Risk level</span>
+                  <strong>Low</strong>
+                </div>
+                <div class="kpi-card">
+                  <span>Referral ID</span>
+                  <strong>HS-2048</strong>
+                </div>
+                <div class="kpi-card">
+                  <span>Distance</span>
+                  <strong>4.8 km</strong>
+                </div>
+                <div class="kpi-card">
+                  <span>Scheme</span>
+                  <strong>PM-JAY</strong>
+                </div>
+              </div>
+
+              <div class="card-grid two-col">
+                <div class="info-card">
+                  <h3>Recommended action</h3>
+                  <p>Visit the nearest PHC for blood pressure, fever screening and follow-up consultation.</p>
+                </div>
+                <div class="info-card">
+                  <h3>Continuity status</h3>
+                  <p>Digital passport synced with district hospital and local referral queue.</p>
+                </div>
+              </div>
+            </div>
+
+            <div id="assessment" class="panel">
+              <div class="panel-head">
+                <h3>AI health assessment</h3>
+              </div>
+
+              <div class="form-grid">
+                <label>
+                  Age group
+                  <select id="ageGroup">
+                    <option>18-29</option>
+                    <option>30-44</option>
+                    <option>45-59</option>
+                    <option>60+</option>
+                  </select>
+                </label>
+
+                <label>
+                  Symptom severity
+                  <select id="severity">
+                    <option>Mild</option>
+                    <option selected>Moderate</option>
+                    <option>Severe</option>
+                  </select>
+                </label>
+
+                <label>
+                  Fever
+                  <select id="fever">
+                    <option>No</option>
+                    <option selected>Low</option>
+                    <option>High</option>
+                  </select>
+                </label>
+
+                <label>
+                  Breath difficulty
+                  <select id="breath">
+                    <option>No</option>
+                    <option selected>Sometimes</option>
+                    <option>Often</option>
+                  </select>
+                </label>
+
+                <label>
+                  Persistent weakness
+                  <select id="weakness">
+                    <option>No</option>
+                    <option selected>Yes</option>
+                  </select>
+                </label>
+
+                <label>
+                  Location
+                  <select id="location">
+                    <option>Rural village</option>
+                    <option selected>Block PHC</option>
+                    <option>District hospital</option>
+                  </select>
+                </label>
+              </div>
+
+              <button class="primary full-width" id="assessBtn">Run AI assessment</button>
+
+              <div class="result-box" id="assessmentResult">
+                <h4>Assessment result</h4>
+                <p>Symptoms suggest a moderate-risk case. Recommend a PHC or CHC review within 24 hours.</p>
+              </div>
+            </div>
+
+            <div id="facilities" class="panel">
+              <div class="panel-head">
+                <h3>Nearby facilities</h3>
+              </div>
+
+              <div class="facility-list" id="facilityList">
+                <div class="facility-card">
+                  <div>
+                    <h4>PHC Khandwa</h4>
+                    <p>Primary care · 4.8 km</p>
+                  </div>
+                  <span class="badge">Open now</span>
+                </div>
+                <div class="facility-card">
+                  <div>
+                    <h4>CHC Borgaon</h4>
+                    <p>Secondary care · 8.2 km</p>
+                  </div>
+                  <span class="badge alt">Queue: 12 min</span>
+                </div>
+                <div class="facility-card">
+                  <div>
+                    <h4>District Hospital</h4>
+                    <p>Referral centre · 22 km</p>
+                  </div>
+                  <span class="badge alt">Emergency ready</span>
+                </div>
+              </div>
+            </div>
+
+            <div id="passport" class="panel">
+              <div class="panel-head">
+                <h3>Digital health passport</h3>
+              </div>
+
+              <div class="passport-card">
+                <div class="passport-row"><span>Patient</span><strong>Priya Sharma</strong></div>
+                <div class="passport-row"><span>Blood group</span><strong>O+</strong></div>
+                <div class="passport-row"><span>Last visit</span><strong>12 Aug 2026</strong></div>
+                <div class="passport-row"><span>Conditions</span><strong>Asthma, mild anaemia</strong></div>
+                <div class="passport-row"><span>Consent</span><strong>Shared with PHC</strong></div>
+              </div>
+            </div>
+
+            <div id="schemes" class="panel">
+              <div class="panel-head">
+                <h3>Government scheme eligibility</h3>
+              </div>
+
+              <div class="scheme-list" id="schemeList">
+                <div class="scheme-card">
+                  <h4>PM-JAY</h4>
+                  <p>Hospital treatment support for eligible families and women.</p>
+                  <span>Eligible</span>
+                </div>
+                <div class="scheme-card">
+                  <h4>Ayushman Bharat</h4>
+                  <p>Cashless secondary and tertiary care assistance.</p>
+                  <span>Eligible</span>
+                </div>
+                <div class="scheme-card">
+                  <h4>National TB Elimination</h4>
+                  <p>Screening and treatment support for rural patients.</p>
+                  <span>Check status</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div>
+        <strong>HealthSphere AI</strong>
+        <p>Designed for rural and underserved communities.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#features">Features</a>
+        <a href="#journey">Journey</a>
+        <a href="#impact">Impact</a>
+      </div>
+    </footer>
+
+    <script src="website/config.js"></script>
+    <script src="website/script.js"></script>
+  </body>
+</html>
