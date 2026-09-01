@@ -4,6 +4,39 @@ const apiBase =
     ? 'http://localhost:8000'
     : 'https://your-backend-domain.example.com');
 
+const translations = {
+  en: {
+    heroEyebrow: 'AI-powered rural healthcare navigation',
+    heroHeading: 'Connecting every patient to the right care, at the right place, at the right time.',
+    heroText: 'HealthSphere AI helps communities find suitable facilities, understand symptoms, track referrals, and access scheme support through a digital health passport.',
+    ctaPrimary: 'Try the platform',
+    ctaSecondary: 'View patient journey',
+    statusChecking: 'Checking backend connection...',
+    voicePrompt: 'HealthSphere AI is ready to guide patients with easier care navigation and support.',
+    voiceIntro: 'HealthSphere AI voice assistant is active. Please choose a language and listen to the guidance.'
+  },
+  hi: {
+    heroEyebrow: 'कृषि स्वास्थ्य सेवा नेविगेशन',
+    heroHeading: 'हर रोगी को सही समय पर सही देखभाल से जोड़ना।',
+    heroText: 'HealthSphere AI ग्रामीण समुदायों को उचित सुविधा चुनने, लक्षण समझने, रेफरल ट्रैक करने और डिज़िटल हेल्थ पासपोर्ट के माध्यम से योजना सहायता प्राप्त करने में मदद करता है।',
+    ctaPrimary: 'प्लेटफ़ॉर्म आज़माएँ',
+    ctaSecondary: 'मरीज की यात्रा देखें',
+    statusChecking: 'बैकएंड कनेक्शन जाँच रहा है...',
+    voicePrompt: 'HealthSphere AI ग्रामीण लोगों को आसान देखभाल मार्गदर्शन प्रदान करता है।',
+    voiceIntro: 'HealthSphere AI वॉयस असिस्टेंट सक्रिय है। कृपया भाषा चुनें और मार्गदर्शन सुनें।'
+  },
+  mr: {
+    heroEyebrow: 'ग्रामीण आरोग्य नेव्हिगेशन',
+    heroHeading: 'प्रत्येक रुग्णाला योग्य काळात योग्य उपचाराकडे नेणे.',
+    heroText: 'HealthSphere AI ग्रामीण समुदायांना योग्य सुविधा निवडण्यास, लक्षण समजण्यास, रेफरल ट्रॅक करण्यास आणि डिजिटल हेल्थ पासपोर्टद्वारे योजना सल्ला मिळण्यास मदत करते.',
+    ctaPrimary: 'प्लॅटफॉर्म वापरा',
+    ctaSecondary: 'रुग्ण प्रवास पहा',
+    statusChecking: 'बॅकएंड जोडणी तपासत आहे...',
+    voicePrompt: 'HealthSphere AI ग्रामीण लोकांसाठी सोपी आरोग्य दिशा देतो.',
+    voiceIntro: 'HealthSphere AI ध्वनी सहाय्यक सक्रिय आहे. कृपया भाषा निवडा आणि माहिती ऐका.'
+  }
+};
+
 function applyTheme(theme) {
   const resolvedTheme = theme === 'dark' ? 'dark' : 'light';
   document.body.setAttribute('data-theme', resolvedTheme);
@@ -101,6 +134,52 @@ if (themeToggle) {
   });
 }
 
+function setLanguage(lang) {
+  const dictionary = translations[lang] || translations.en;
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach((element) => {
+    const key = element.dataset.i18n;
+    if (dictionary[key]) {
+      element.textContent = dictionary[key];
+    }
+  });
+  const languageSelect = document.getElementById('languageSelect');
+  if (languageSelect) {
+    languageSelect.value = lang;
+  }
+}
+
+function speakAssistant(text) {
+  if (!('speechSynthesis' in window)) {
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = document.getElementById('languageSelect')?.value === 'hi' ? 'hi-IN' : document.getElementById('languageSelect')?.value === 'mr' ? 'mr-IN' : 'en-US';
+  utterance.rate = 0.92;
+  utterance.pitch = 1.1;
+  window.speechSynthesis.speak(utterance);
+}
+
+const voiceButton = document.getElementById('voiceAssistantBtn');
+if (voiceButton) {
+  voiceButton.addEventListener('click', () => {
+    const selectedLang = document.getElementById('languageSelect')?.value || 'en';
+    const prompt = translations[selectedLang]?.voicePrompt || translations.en.voicePrompt;
+    speakAssistant(prompt);
+  });
+}
+
+const languageSelect = document.getElementById('languageSelect');
+if (languageSelect) {
+  languageSelect.addEventListener('change', (event) => {
+    const value = event.target.value;
+    setLanguage(value);
+    speakAssistant(translations[value]?.voiceIntro || translations.en.voiceIntro);
+  });
+}
+
 const revealItems = document.querySelectorAll('.reveal');
 if ('IntersectionObserver' in window) {
   const revealObserver = new IntersectionObserver((entries) => {
@@ -117,6 +196,7 @@ if ('IntersectionObserver' in window) {
   revealItems.forEach((item) => item.classList.add('visible'));
 }
 
+setLanguage('en');
 initTheme();
 
 document.getElementById('tryPlatformBtn').addEventListener('click', showDemoApp);
