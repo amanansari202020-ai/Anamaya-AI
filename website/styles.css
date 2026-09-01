@@ -270,6 +270,24 @@ select {
 .result-box { padding: 18px; margin-top: 10px; }
 .result-box h4 { margin: 0 0 8px; }
 .result-box p { margin: 0; color: var(--muted); line-height: 1.7; }
+.cost-box {
+  margin-top: 18px; padding: 18px; border: 1px solid var(--border); border-radius: 18px; background: rgba(12, 108, 242, 0.04); box-shadow: var(--shadow);
+}
+.cost-box h4 { margin: 0 0 12px; }
+.cost-row { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+.cost-row.total { border-bottom: none; color: var(--text); font-weight: 800; }
+.chatbot-box {
+  margin-top: 18px; padding: 18px; border: 1px solid var(--border); border-radius: 18px; background: var(--panel); box-shadow: var(--shadow);
+}
+.chatbot-box h4 { margin: 0 0 12px; }
+.chat-log { display: flex; flex-direction: column; gap: 10px; max-height: 180px; overflow: auto; margin-bottom: 12px; }
+.chat-bubble {
+  max-width: 85%; padding: 10px 12px; border-radius: 12px; line-height: 1.5; font-size: 0.95rem;
+}
+.chat-bubble.bot { background: rgba(12, 108, 242, 0.08); color: var(--text); align-self: flex-start; }
+.chat-bubble.user { background: rgba(46, 196, 166, 0.12); color: var(--text); align-self: flex-end; }
+.chat-input-row { display: flex; gap: 10px; }
+.chat-input-row input { flex: 1; border: 1px solid var(--border); border-radius: 12px; background: var(--panel-solid); color: var(--text); padding: 10px 12px; font: inherit; }
 .facility-list, .scheme-list { display: grid; gap: 16px; }
 .facility-card, .scheme-card { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .facility-card h4, .scheme-card h4 { margin: 0 0 6px; }

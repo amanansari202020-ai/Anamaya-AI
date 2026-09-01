@@ -69,34 +69,182 @@ function setActivePanel(panelId) {
   });
 }
 
+function getTreatmentCost(severity, location, age) {
+  const base = severity === 'Severe' ? 1800 : severity === 'Moderate' ? 950 : 450;
+  const ageBoost = age === '60+' ? 250 : 0;
+  const locationBoost = location === 'District hospital' ? 600 : location === 'Block PHC' ? 200 : 0;
+  const consultation = 200 + (severity === 'Severe' ? 250 : severity === 'Moderate' ? 150 : 100);
+  const tests = 300 + (severity === 'Severe' ? 700 : severity === 'Moderate' ? 350 : 150) + locationBoost;
+  const medicines = 200 + (severity === 'Severe' ? 600 : severity === 'Moderate' ? 300 : 150) + ageBoost;
+  const total = consultation + tests + medicines;
+
+  return { consultation, tests, medicines, total, base };
+}
+
+function getRiskAssessment(severity, fever, breath, weakness, age) {
+  let score = 0;
+  let riskLevel = 'Low';
+  let urgency = 'Routine review';
+  let recommendation = 'Continue routine primary care review and hydration monitoring.';
+
+  if (severity === 'Severe') score += 3;
+  else if (severity === 'Moderate') score += 2;
+  else score += 1;
+
+  if (fever === 'High') score += 2;
+  else if (fever === 'Low') score += 1;
+
+  if (breath === 'Often') score += 3;
+  else if (breath === 'Sometimes') score += 1;
+
+  if (weakness === 'Yes') score += 2;
+
+  if (age === '60+') score += 1;
+
+  if (score >= 7) {
+    riskLevel = 'High';
+    urgency = 'Urgent care';
+    recommendation = 'Refer to CHC or district hospital within 24 hours for urgent evaluation and oxygen monitoring.';
+  } else if (score >= 4) {
+    riskLevel = 'Moderate';
+    urgency = 'Same-day review';
+    recommendation = 'Book a same-day PHC review for symptom monitoring and basic diagnostics.';
+  }
+
+  if (age === '60+' && riskLevel !== 'High') {
+    riskLevel = 'Moderate';
+    urgency = 'Senior pathway';
+    recommendation = 'Senior patient pathway recommended: same-day clinical assessment and blood pressure review.';
+  }
+
+  return { score, riskLevel, urgency, recommendation };
+}
+
+function getFacilityCards(level) {
+  const facilities = {
+    High: [
+      { name: 'District Hospital', distance: '22 km', status: 'Emergency ready' },
+      { name: 'CHC Borgaon', distance: '8.2 km', status: 'Rapid triage' },
+      { name: 'PHC Khandwa', distance: '4.8 km', status: 'Stabilization support' }
+    ],
+    Moderate: [
+      { name: 'CHC Borgaon', distance: '8.2 km', status: 'Queue: 12 min' },
+      { name: 'PHC Khandwa', distance: '4.8 km', status: 'Open now' },
+      { name: 'District Hospital', distance: '22 km', status: 'Referral ready' }
+    ],
+    Low: [
+      { name: 'PHC Khandwa', distance: '4.8 km', status: 'Open now' },
+      { name: 'CHC Borgaon', distance: '8.2 km', status: 'Routine check' },
+      { name: 'Community outreach clinic', distance: '3.1 km', status: 'Follow-up care' }
+    ]
+  };
+
+  return facilities[level] || facilities.Low;
+}
+
+function getSchemeCards(level) {
+  const schemes = {
+    High: [
+      { name: 'PM-JAY', text: 'High-priority hospital support for eligible families.', badge: 'Priority' },
+      { name: 'Ayushman Bharat', text: 'Cashless treatment support for emergency and referral care.', badge: 'Eligible' },
+      { name: 'District emergency aid', text: 'Additional transport and hospital support may be available.', badge: 'Check status' }
+    ],
+    Moderate: [
+      { name: 'PM-JAY', text: 'Hospital treatment support for eligible families and women.', badge: 'Eligible' },
+      { name: 'Ayushman Bharat', text: 'Cashless secondary care assistance for eligible patients.', badge: 'Eligible' },
+      { name: 'National TB Elimination', text: 'Screening and treatment support for rural patients.', badge: 'Check status' }
+    ],
+    Low: [
+      { name: 'PM-JAY', text: 'Primary and follow-up treatment support for eligible households.', badge: 'Eligible' },
+      { name: 'Ayushman Bharat', text: 'Preventive and outpatient support for eligible families.', badge: 'Eligible' },
+      { name: 'Maternal care grant', text: 'Support for regular checkups and follow-up visits.', badge: 'Review' }
+    ]
+  };
+
+  return schemes[level] || schemes.Low;
+}
+
+function renderDashboardAssessment(riskLevel, recommendation, referralId) {
+  const riskKpi = document.getElementById('riskKpi');
+  const referralKpi = document.getElementById('referralKpi');
+  const distanceKpi = document.getElementById('distanceKpi');
+  const schemeKpi = document.getElementById('schemeKpi');
+  const dashboardRecommendation = document.getElementById('dashboardRecommendation');
+  const dashboardStatus = document.getElementById('dashboardStatus');
+
+  if (riskKpi) riskKpi.textContent = riskLevel;
+  if (referralKpi) referralKpi.textContent = referralId;
+  if (distanceKpi) distanceKpi.textContent = riskLevel === 'High' ? '8.2 km' : riskLevel === 'Moderate' ? '4.8 km' : '3.1 km';
+  if (schemeKpi) schemeKpi.textContent = riskLevel === 'High' ? 'Ayushman Bharat' : 'PM-JAY';
+  if (dashboardRecommendation) dashboardRecommendation.textContent = recommendation;
+  if (dashboardStatus) dashboardStatus.textContent = `Digital passport synced with ${riskLevel === 'High' ? 'district emergency queue' : 'nearest PHC referral lane'}.`;
+}
+
+function renderFacilityRecommendations(level) {
+  const list = document.getElementById('facilityList');
+  if (!list) return;
+
+  list.innerHTML = getFacilityCards(level).map((facility) => `
+    <div class="facility-card">
+      <div>
+        <h4>${facility.name}</h4>
+        <p>${facility.status} · ${facility.distance}</p>
+      </div>
+      <span class="badge">${facility.distance === '22 km' ? 'Referral' : 'Open'}</span>
+    </div>
+  `).join('');
+}
+
+function renderSchemeRecommendations(level) {
+  const list = document.getElementById('schemeList');
+  if (!list) return;
+
+  list.innerHTML = getSchemeCards(level).map((scheme) => `
+    <div class="scheme-card">
+      <h4>${scheme.name}</h4>
+      <p>${scheme.text}</p>
+      <span>${scheme.badge}</span>
+    </div>
+  `).join('');
+}
+
 function runAssessment() {
   const severity = document.getElementById('severity').value;
   const fever = document.getElementById('fever').value;
   const breath = document.getElementById('breath').value;
   const weakness = document.getElementById('weakness').value;
   const age = document.getElementById('ageGroup').value;
+  const location = document.getElementById('location').value;
+  const patientName = document.getElementById('patientNameInput')?.value?.trim() || 'Patient';
 
-  let riskLevel = 'Low';
-  let recommendation = 'Continue routine primary care review and hydration monitoring.';
-
-  if (severity === 'Severe' || fever === 'High' || breath === 'Often' || weakness === 'Yes') {
-    riskLevel = 'High';
-    recommendation = 'Refer to CHC or district hospital within 24 hours for urgent evaluation and oxygen monitoring.';
-  } else if (severity === 'Moderate' || fever === 'Low' || breath === 'Sometimes') {
-    riskLevel = 'Moderate';
-    recommendation = 'Book a same-day PHC review for symptom monitoring and basic diagnostics.';
-  }
-
-  if (age === '60+' && riskLevel !== 'High') {
-    riskLevel = 'Moderate';
-    recommendation = 'Senior patient pathway recommended: same-day clinical assessment and blood pressure review.';
-  }
+  const risk = getRiskAssessment(severity, fever, breath, weakness, age);
+  const cost = getTreatmentCost(severity, location, age);
+  const referralId = generateReferralId();
 
   document.getElementById('assessmentResult').innerHTML = `
     <h4>Assessment result</h4>
-    <p><strong>Risk level:</strong> ${riskLevel}<br>
-    <strong>Recommendation:</strong> ${recommendation}</p>
+    <p><strong>Risk level:</strong> ${risk.riskLevel}<br>
+    <strong>Recommendation:</strong> ${risk.recommendation}<br>
+    <strong>Urgency:</strong> ${risk.urgency}</p>
   `;
+
+  document.getElementById('consultationCost').textContent = `₹${cost.consultation}`;
+  document.getElementById('testCost').textContent = `₹${cost.tests}`;
+  document.getElementById('medicineCost').textContent = `₹${cost.medicines}`;
+  document.getElementById('totalCost').textContent = `₹${cost.total}`;
+
+  renderDashboardAssessment(risk.riskLevel, risk.recommendation, referralId);
+  renderFacilityRecommendations(risk.riskLevel);
+  renderSchemeRecommendations(risk.riskLevel);
+
+  const chatLog = document.getElementById('chatLog');
+  if (chatLog) {
+    const botReply = document.createElement('div');
+    botReply.className = 'chat-bubble bot';
+    botReply.textContent = `AI guidance: ${risk.recommendation} Estimated care cost is about ₹${cost.total}. ${patientName}, please speak to a nearby clinic or primary care center if symptoms worsen.`;
+    chatLog.appendChild(botReply);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
 }
 
 function generateReferralId() {
@@ -324,6 +472,37 @@ if (voiceButton) {
   });
 }
 
+const chatSendBtn = document.getElementById('chatSendBtn');
+if (chatSendBtn) {
+  chatSendBtn.addEventListener('click', () => {
+    const input = document.getElementById('chatInput');
+    const chatLog = document.getElementById('chatLog');
+    if (!input || !chatLog) return;
+
+    const value = input.value.trim();
+    if (!value) return;
+
+    const userBubble = document.createElement('div');
+    userBubble.className = 'chat-bubble user';
+    userBubble.textContent = value;
+    chatLog.appendChild(userBubble);
+
+    const answer = value.toLowerCase().includes('fever') || value.toLowerCase().includes('cough')
+      ? 'Please monitor symptoms, drink fluids, and visit a primary health center if fever remains high or breathing worsens.'
+      : value.toLowerCase().includes('pain')
+        ? 'Try rest and hydration, and seek a nearby clinic if the pain is severe or persistent.'
+        : 'Please speak with a nearby clinic or health worker for a proper checkup and guidance.';
+
+    const botBubble = document.createElement('div');
+    botBubble.className = 'chat-bubble bot';
+    botBubble.textContent = answer;
+    chatLog.appendChild(botBubble);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    input.value = '';
+    speakAssistant(answer);
+  });
+}
+
 const languageSelect = document.getElementById('languageSelect');
 if (languageSelect) {
   languageSelect.addEventListener('change', (event) => {
@@ -372,6 +551,9 @@ const referralId = generateReferralId();
 const summary = document.createElement('div');
 summary.className = 'result-box';
 summary.innerHTML = `<h4>Generated referral</h4><p><strong>ID:</strong> ${referralId}<br><strong>Destination:</strong> CHC Borgaon · Follow-up in 48 hours</p>`;
-document.getElementById('assessmentResult').appendChild(summary);
+const assessmentResult = document.getElementById('assessmentResult');
+if (assessmentResult) {
+  assessmentResult.appendChild(summary);
+}
 
 checkBackend();
