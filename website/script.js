@@ -134,6 +134,30 @@ if (themeToggle) {
   });
 }
 
+function getStoredUsers() {
+  try {
+    return JSON.parse(localStorage.getItem('anamaya-users')) || [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function setStoredUsers(users) {
+  localStorage.setItem('anamaya-users', JSON.stringify(users));
+}
+
+function getCurrentUser() {
+  try {
+    return JSON.parse(localStorage.getItem('anamaya-current-user'));
+  } catch (error) {
+    return null;
+  }
+}
+
+function setCurrentUser(user) {
+  localStorage.setItem('anamaya-current-user', JSON.stringify(user));
+}
+
 function updateUserProfile() {
   const userName = document.getElementById('userName');
   const patientInput = document.getElementById('patientNameInput');
@@ -143,6 +167,109 @@ function updateUserProfile() {
   const name = patientInput.value.trim() || 'Patient';
   userName.textContent = name;
   localStorage.setItem('anamaya-user-name', name);
+
+  const currentUser = getCurrentUser();
+  if (currentUser) {
+    const users = getStoredUsers();
+    const index = users.findIndex((entry) => entry.email === currentUser.email);
+    if (index >= 0) {
+      users[index].name = name;
+      setStoredUsers(users);
+      setCurrentUser(users[index]);
+    }
+  }
+}
+
+function showAuthState() {
+  const currentUser = getCurrentUser();
+  const authSection = document.getElementById('authSection');
+  const demoApp = document.getElementById('demoApp');
+
+  if (currentUser) {
+    if (authSection) authSection.classList.add('hidden');
+    if (demoApp) demoApp.classList.remove('hidden');
+    const patientInput = document.getElementById('patientNameInput');
+    const userName = document.getElementById('userName');
+    if (patientInput) patientInput.value = currentUser.name || '';
+    if (userName) userName.textContent = currentUser.name || 'Patient';
+    localStorage.setItem('anamaya-user-name', currentUser.name || 'Patient');
+    speakAssistant(`Welcome ${currentUser.name}. Anamaya AI will guide you through the app. Choose a language and tap Launch demo to begin.`);
+  } else {
+    if (authSection) authSection.classList.remove('hidden');
+    if (demoApp) demoApp.classList.add('hidden');
+  }
+}
+
+function showAuthMessage(message, isError = false) {
+  const authMessage = document.getElementById('authMessage');
+  if (!authMessage) return;
+  authMessage.textContent = message;
+  authMessage.style.color = isError ? '#d9485f' : '#0a7b67';
+}
+
+function handleRegister(event) {
+  event.preventDefault();
+  const name = document.getElementById('registerName').value.trim();
+  const email = document.getElementById('registerEmail').value.trim();
+  const phone = document.getElementById('registerPhone').value.trim();
+  const address = document.getElementById('registerAddress').value.trim();
+
+  if (!name || !email || !phone || !address) {
+    showAuthMessage('Please fill in all registration details.', true);
+    return;
+  }
+
+  const users = getStoredUsers();
+  const existingUser = users.find((entry) => entry.email.toLowerCase() === email.toLowerCase() || entry.phone === phone);
+
+  if (existingUser) {
+    setCurrentUser(existingUser);
+    showAuthMessage('Welcome back. Your account is already saved.');
+    showAuthState();
+    return;
+  }
+
+  const newUser = { name, email, phone, address };
+  users.push(newUser);
+  setStoredUsers(users);
+  setCurrentUser(newUser);
+  showAuthMessage('Registration successful. Welcome to Anamaya AI.');
+  showAuthState();
+  speakAssistant(`Welcome ${name}. Please choose a language, then open the app. Anamaya AI will guide you step by step.`);
+}
+
+function handleLogin(event) {
+  event.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const phone = document.getElementById('loginPhone').value.trim();
+
+  if (!email || !phone) {
+    showAuthMessage('Please enter your email and phone to login.', true);
+    return;
+  }
+
+  const users = getStoredUsers();
+  const matchedUser = users.find((entry) => entry.email.toLowerCase() === email.toLowerCase() && entry.phone === phone);
+
+  if (!matchedUser) {
+    showAuthMessage('No matching account found. Please register first.', true);
+    return;
+  }
+
+  setCurrentUser(matchedUser);
+  showAuthMessage(`Logged in as ${matchedUser.name}.`);
+  showAuthState();
+  speakAssistant(`Welcome back ${matchedUser.name}. You can use the app now. Select a language and tap Launch demo for guided support.`);
+}
+
+const registerForm = document.getElementById('registerForm');
+if (registerForm) {
+  registerForm.addEventListener('submit', handleRegister);
+}
+
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+  loginForm.addEventListener('submit', handleLogin);
 }
 
 const saveProfileBtn = document.getElementById('saveProfileBtn');
@@ -157,6 +284,8 @@ if (savedUserName) {
   if (patientInput) patientInput.value = savedUserName;
   if (userName) userName.textContent = savedUserName;
 }
+
+showAuthState();
 
 function setLanguage(lang) {
   const dictionary = translations[lang] || translations.en;

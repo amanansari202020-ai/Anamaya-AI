@@ -96,6 +96,55 @@
         </div>
       </section>
 
+      <section id="authSection" class="section auth-section">
+        <div class="auth-grid">
+          <div class="auth-card register-card">
+            <div class="auth-header">
+              <span class="eyebrow">Create account</span>
+              <h3>Register patient</h3>
+            </div>
+            <form id="registerForm" class="auth-form">
+              <label>
+                Full name
+                <input type="text" id="registerName" placeholder="Enter your name" required />
+              </label>
+              <label>
+                Email
+                <input type="email" id="registerEmail" placeholder="you@example.com" required />
+              </label>
+              <label>
+                Phone number
+                <input type="tel" id="registerPhone" placeholder="+91 98765 43210" required />
+              </label>
+              <label>
+                Address / location
+                <textarea id="registerAddress" rows="3" placeholder="Village, block, district" required></textarea>
+              </label>
+              <button type="submit" class="primary full-width">Register</button>
+            </form>
+          </div>
+
+          <div class="auth-card login-card">
+            <div class="auth-header">
+              <span class="eyebrow">Welcome back</span>
+              <h3>Login</h3>
+            </div>
+            <form id="loginForm" class="auth-form">
+              <label>
+                Email
+                <input type="email" id="loginEmail" placeholder="Enter registered email" required />
+              </label>
+              <label>
+                Phone number
+                <input type="tel" id="loginPhone" placeholder="Enter registered phone" required />
+              </label>
+              <button type="submit" class="secondary full-width">Login</button>
+            </form>
+            <div id="authMessage" class="auth-message" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
       <section class="section trust-strip">
         <div class="brand-badges">
           <span>Community first</span>
