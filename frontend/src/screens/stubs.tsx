@@ -4,9 +4,15 @@ import React from "react";
 import { View, StyleSheet, SafeAreaView, ScrollView } from "react-native";
 import { Text, Card, Button, useTheme } from "react-native-paper";
 
-const createStubScreen = (title: string, description: string) => {
+import LanguageSelector from "../components/LanguageSelector";
+import { useThemeStore } from "../stores/themeStore";
+import { translations } from "../utils/translations";
+
+const createStubScreen = (titleKey: keyof (typeof translations)["en"]["stub"], descriptionKey: keyof (typeof translations)["en"]["stub"]) => {
   return ({ navigation }: any) => {
     const theme = useTheme();
+    const { preferredLanguage } = useThemeStore();
+    const t = translations[preferredLanguage];
     const styles = StyleSheet.create({
       container: {
         flex: 1,
@@ -17,6 +23,10 @@ const createStubScreen = (title: string, description: string) => {
         justifyContent: "center",
         alignItems: "center",
         padding: 20,
+      },
+      selectorWrap: {
+        marginBottom: 20,
+        alignItems: "center",
       },
       card: {
         width: "100%",
@@ -41,12 +51,15 @@ const createStubScreen = (title: string, description: string) => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
+          <View style={styles.selectorWrap}>
+            <LanguageSelector />
+          </View>
           <Card style={styles.card}>
             <Card.Content>
-              <Text style={styles.title}>{title}</Text>
-              <Text style={styles.description}>{description}</Text>
+              <Text style={styles.title}>{t.stub[titleKey]}</Text>
+              <Text style={styles.description}>{t.stub[descriptionKey]}</Text>
               <Button mode="contained" style={styles.button} onPress={() => navigation.goBack()}>
-                Go Back
+                {t.common.goBack}
               </Button>
             </Card.Content>
           </Card>
@@ -57,56 +70,56 @@ const createStubScreen = (title: string, description: string) => {
 };
 
 export const AssessmentResultScreen = createStubScreen(
-  "Assessment Result",
-  "Your symptom assessment and recommendations will appear here"
+  "assessmentResultTitle",
+  "assessmentResultDescription"
 );
 
 export const HealthPassportScreen = createStubScreen(
-  "Digital Health Passport",
-  "Your complete health records in one secure place"
+  "passportTitle",
+  "passportDescription"
 );
 
 export const FacilitySearchScreen = createStubScreen(
-  "Find Healthcare",
-  "Search for nearby healthcare facilities"
+  "findHealthcareTitle",
+  "findHealthcareDescription"
 );
 
 export const NearbyFacilitiesScreen = createStubScreen(
-  "Nearby Facilities",
-  "Healthcare facilities near you"
+  "nearbyFacilitiesTitle",
+  "nearbyFacilitiesDescription"
 );
 
 export const FacilityDetailsScreen = createStubScreen(
-  "Facility Details",
-  "Complete information about the healthcare facility"
+  "facilityDetailsTitle",
+  "facilityDetailsDescription"
 );
 
 export const ReferralScreen = createStubScreen(
-  "Smart Referral",
-  "Manage your healthcare referrals"
+  "referralTitle",
+  "referralDescription"
 );
 
 export const GovernmentSchemesScreen = createStubScreen(
-  "Government Schemes",
-  "Find healthcare schemes you may be eligible for"
+  "schemesTitle",
+  "schemesDescription"
 );
 
 export const BudgetEstimatorScreen = createStubScreen(
-  "Budget Estimator",
-  "Estimate healthcare costs for your journey"
+  "budgetTitle",
+  "budgetDescription"
 );
 
 export const HealthJourneyScreen = createStubScreen(
-  "Healthcare Journey",
-  "Your recommended healthcare pathway"
+  "journeyTitle",
+  "journeyDescription"
 );
 
 export const ProfileScreen = createStubScreen(
-  "My Profile",
-  "Manage your personal and health information"
+  "profileTitle",
+  "profileDescription"
 );
 
 export const OfflineScreen = createStubScreen(
-  "Offline Mode",
-  "Manage offline data and synchronization"
+  "offlineTitle",
+  "offlineDescription"
 );

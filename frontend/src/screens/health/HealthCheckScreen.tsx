@@ -12,23 +12,28 @@ import {
 } from "react-native-paper";
 import * as Speech from "expo-speech";
 import { assessSymptoms } from "../../services/api";
+import { useThemeStore } from "../../stores/themeStore";
+import { translations } from "../../utils/translations";
+import LanguageSelector from "../../components/LanguageSelector";
 
 export default function HealthCheckScreen({ navigation }: any) {
   const theme = useTheme();
+  const { preferredLanguage } = useThemeStore();
+  const t = translations[preferredLanguage];
   const [symptoms, setSymptoms] = useState("");
   const [symptomList, setSymptomList] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [useVoice, setUseVoice] = useState(false);
 
   const commonSymptoms = [
-    "Fever",
-    "Headache",
-    "Cough",
-    "Cold",
-    "Body Pain",
-    "Weakness",
-    "Nausea",
-    "Dizziness",
+    t.symptoms.fever,
+    t.symptoms.headache,
+    t.symptoms.cough,
+    t.symptoms.cold,
+    t.symptoms.bodyPain,
+    t.symptoms.weakness,
+    t.symptoms.nausea,
+    t.symptoms.dizziness,
   ];
 
   const handleAddSymptom = () => {
@@ -44,7 +49,7 @@ export default function HealthCheckScreen({ navigation }: any) {
 
   const handleAssess = async () => {
     if (symptomList.length === 0) {
-      Alert.alert("No Symptoms", "Please add at least one symptom");
+      Alert.alert(t.alerts.noSymptoms, t.alerts.noSymptomsMessage);
       return;
     }
 
@@ -58,7 +63,7 @@ export default function HealthCheckScreen({ navigation }: any) {
 
       navigation.navigate("AssessmentResult", { assessment: response.assessment });
     } catch (error) {
-      Alert.alert("Error", "Failed to assess symptoms. Please try again.");
+      Alert.alert(t.alerts.error, t.health.assessmentErrorMessage);
     } finally {
       setLoading(false);
     }
@@ -68,6 +73,10 @@ export default function HealthCheckScreen({ navigation }: any) {
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
+    },
+    selectorWrap: {
+      marginBottom: 20,
+      alignItems: "center",
     },
     scrollContent: {
       padding: 20,
@@ -123,18 +132,21 @@ export default function HealthCheckScreen({ navigation }: any) {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.selectorWrap}>
+          <LanguageSelector />
+        </View>
         <Card style={styles.card}>
           <Card.Content>
-            <Text style={styles.sectionTitle}>Describe Your Symptoms</Text>
+            <Text style={styles.sectionTitle}>{t.health.title}</Text>
             <TextInput
-              label="Enter a symptom"
+              label={t.health.placeholder}
               value={symptoms}
               onChangeText={setSymptoms}
               mode="outlined"
               multiline
               numberOfLines={3}
               style={styles.input}
-              placeholder="e.g., fever, headache, body pain"
+              placeholder={t.health.example}
             />
             <Button
               mode="contained"
@@ -142,12 +154,12 @@ export default function HealthCheckScreen({ navigation }: any) {
               style={styles.addButton}
               disabled={!symptoms.trim() || loading}
             >
-              Add Symptom
+              {t.common.addSymptom}
             </Button>
 
             {symptomList.length > 0 && (
               <>
-                <Text style={styles.sectionTitle}>Selected Symptoms</Text>
+                <Text style={styles.sectionTitle}>{t.common.selectedSymptoms}</Text>
                 <View style={styles.chipsContainer}>
                   {symptomList.map((symptom, index) => (
                     <Chip
@@ -166,7 +178,7 @@ export default function HealthCheckScreen({ navigation }: any) {
 
         <Card style={styles.card}>
           <Card.Content>
-            <Text style={styles.sectionTitle}>Quick Add Common Symptoms</Text>
+            <Text style={styles.sectionTitle}>{t.health.commonSymptoms}</Text>
             <View style={styles.commonChipsContainer}>
               {commonSymptoms.map((symptom) => (
                 <Button
@@ -198,16 +210,12 @@ export default function HealthCheckScreen({ navigation }: any) {
               {loading ? (
                 <ActivityIndicator animating color="white" />
               ) : (
-                "Get AI Assessment"
+                t.common.getAIAssessment
               )}
             </Button>
 
             <View style={styles.info}>
-              <Text style={styles.infoText}>
-                💡 HealthSphere AI provides informational guidance and does not
-                replace professional medical advice. Always consult with a
-                healthcare professional for diagnosis and treatment.
-              </Text>
+              <Text style={styles.infoText}>{t.health.info}</Text>
             </View>
           </Card.Content>
         </Card>

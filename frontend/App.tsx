@@ -30,9 +30,11 @@ import {
 import { useAuthStore } from "./src/stores/authStore";
 import { useThemeStore } from "./src/stores/themeStore";
 import { lightTheme, darkTheme } from "./src/utils/theme";
+import { translations } from "./src/utils/translations";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+type TranslationSet = (typeof translations)[keyof typeof translations];
 
 // Loading Screen
 const LoadingScreen = () => (
@@ -55,59 +57,59 @@ const AuthStack = () => (
 );
 
 // Health Stack
-const HealthStack = () => (
+const HealthStack = ({ t }: { t: TranslationSet }) => (
   <Stack.Navigator
     screenOptions={{
       headerTintColor: "#1976D2",
       headerTitleStyle: { fontWeight: "bold" },
     }}
   >
-    <Stack.Screen name="HealthCheckHome" component={HealthCheckScreen} options={{ title: "AI Health Check" }} />
-    <Stack.Screen name="AssessmentResult" component={AssessmentResultScreen} options={{ title: "Assessment Result" }} />
-    <Stack.Screen name="HealthJourney" component={HealthJourneyScreen} options={{ title: "Healthcare Journey" }} />
+    <Stack.Screen name="HealthCheckHome" component={HealthCheckScreen} options={{ title: t.navigation.aiHealthCheck }} />
+    <Stack.Screen name="AssessmentResult" component={AssessmentResultScreen} options={{ title: t.navigation.assessmentResult }} />
+    <Stack.Screen name="HealthJourney" component={HealthJourneyScreen} options={{ title: t.navigation.healthcareJourney }} />
   </Stack.Navigator>
 );
 
 // Facilities Stack
-const FacilitiesStack = () => (
+const FacilitiesStack = ({ t }: { t: TranslationSet }) => (
   <Stack.Navigator
     screenOptions={{
       headerTintColor: "#1976D2",
       headerTitleStyle: { fontWeight: "bold" },
     }}
   >
-    <Stack.Screen name="FacilitySearchHome" component={FacilitySearchScreen} options={{ title: "Find Healthcare" }} />
-    <Stack.Screen name="NearbyFacilities" component={NearbyFacilitiesScreen} options={{ title: "Nearby Facilities" }} />
-    <Stack.Screen name="FacilityDetails" component={FacilityDetailsScreen} options={{ title: "Facility Details" }} />
+    <Stack.Screen name="FacilitySearchHome" component={FacilitySearchScreen} options={{ title: t.navigation.findHealthcare }} />
+    <Stack.Screen name="NearbyFacilities" component={NearbyFacilitiesScreen} options={{ title: t.navigation.nearbyFacilities }} />
+    <Stack.Screen name="FacilityDetails" component={FacilityDetailsScreen} options={{ title: t.navigation.facilityDetails }} />
   </Stack.Navigator>
 );
 
 // Referral Stack
-const ReferralStack = () => (
+const ReferralStack = ({ t }: { t: TranslationSet }) => (
   <Stack.Navigator
     screenOptions={{
       headerTintColor: "#1976D2",
       headerTitleStyle: { fontWeight: "bold" },
     }}
   >
-    <Stack.Screen name="ReferralHome" component={ReferralScreen} options={{ title: "Smart Referral" }} />
+    <Stack.Screen name="ReferralHome" component={ReferralScreen} options={{ title: t.navigation.smartReferral }} />
   </Stack.Navigator>
 );
 
 // Health Passport Stack
-const HealthPassportStack = () => (
+const HealthPassportStack = ({ t }: { t: TranslationSet }) => (
   <Stack.Navigator
     screenOptions={{
       headerTintColor: "#1976D2",
       headerTitleStyle: { fontWeight: "bold" },
     }}
   >
-    <Stack.Screen name="HealthPassportHome" component={HealthPassportScreen} options={{ title: "Digital Health Passport" }} />
+    <Stack.Screen name="HealthPassportHome" component={HealthPassportScreen} options={{ title: t.navigation.digitalHealthPassport }} />
   </Stack.Navigator>
 );
 
 // Main Tab Navigator
-const MainTabs = () => (
+const MainTabs = ({ t }: { t: TranslationSet }) => (
   <Tab.Navigator
     screenOptions={({ route }) => ({
       headerShown: false,
@@ -125,28 +127,28 @@ const MainTabs = () => (
       tabBarInactiveTintColor: "#999",
     })}
   >
-    <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: "Home" }} />
-    <Tab.Screen name="Health" component={HealthStack} options={{ title: "AI Health Check" }} />
-    <Tab.Screen name="Facilities" component={FacilitiesStack} options={{ title: "Find Care" }} />
-    <Tab.Screen name="Passport" component={HealthPassportStack} options={{ title: "My Records" }} />
-    <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: "Profile" }} />
+    <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: t.navigation.home }} />
+    <Tab.Screen name="Health" component={() => <HealthStack t={t} />} options={{ title: t.navigation.aiHealthCheck }} />
+    <Tab.Screen name="Facilities" component={() => <FacilitiesStack t={t} />} options={{ title: t.navigation.findCare }} />
+    <Tab.Screen name="Passport" component={() => <HealthPassportStack t={t} />} options={{ title: t.navigation.myRecords }} />
+    <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: t.navigation.profile }} />
   </Tab.Navigator>
 );
 
 // Root Stack (modals, etc.)
-const RootStack = () => (
+const RootStack = ({ t }: { t: TranslationSet }) => (
   <Stack.Navigator
     screenOptions={{
       headerShown: false,
       animationEnabled: true,
     }}
   >
-    <Stack.Screen name="Main" component={MainTabs} />
+    <Stack.Screen name="Main" component={() => <MainTabs t={t} />} />
     <Stack.Group screenOptions={{ presentation: "modal" }}>
-      <Stack.Screen name="Referral" component={ReferralStack} />
-      <Stack.Screen name="Schemes" component={GovernmentSchemesScreen} options={{ title: "Government Schemes" }} />
-      <Stack.Screen name="Budget" component={BudgetEstimatorScreen} options={{ title: "Budget Estimator" }} />
-      <Stack.Screen name="Offline" component={OfflineScreen} options={{ title: "Offline Mode" }} />
+      <Stack.Screen name="Referral" component={() => <ReferralStack t={t} />} />
+      <Stack.Screen name="Schemes" component={GovernmentSchemesScreen} options={{ title: t.navigation.governmentSchemes }} />
+      <Stack.Screen name="Budget" component={BudgetEstimatorScreen} options={{ title: t.navigation.budgetEstimator }} />
+      <Stack.Screen name="Offline" component={OfflineScreen} options={{ title: t.navigation.offlineMode }} />
     </Stack.Group>
   </Stack.Navigator>
 );
@@ -155,7 +157,9 @@ const RootStack = () => (
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
   const { user, restoreUser } = useAuthStore();
-  const { isDarkMode } = useThemeStore();
+  const { isDarkMode, preferredLanguage, restoreLanguage } = useThemeStore();
+
+  const t = translations[preferredLanguage];
 
   useEffect(() => {
     const prepare = async () => {
@@ -165,7 +169,7 @@ export default function App() {
           "MaterialCommunityIcons": require("./assets/fonts/MaterialCommunityIcons.ttf"),
         });
 
-        // Restore user session
+        await restoreLanguage();
         await restoreUser();
       } catch (e) {
         console.warn(e);
@@ -175,7 +179,7 @@ export default function App() {
     };
 
     prepare();
-  }, []);
+  }, [restoreLanguage, restoreUser]);
 
   if (!appIsReady) {
     return <LoadingScreen />;
@@ -186,7 +190,7 @@ export default function App() {
   return (
     <PaperProvider theme={theme}>
       <NavigationContainer>
-        {user ? <RootStack /> : <AuthStack />}
+        {user ? <RootStack t={t} /> : <AuthStack />}
       </NavigationContainer>
     </PaperProvider>
   );

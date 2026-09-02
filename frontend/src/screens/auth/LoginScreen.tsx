@@ -17,9 +17,14 @@ import {
   useTheme,
 } from "react-native-paper";
 import { useAuthStore } from "../../stores/authStore";
+import { useThemeStore } from "../../stores/themeStore";
+import { translations } from "../../utils/translations";
+import LanguageSelector from "../../components/LanguageSelector";
 
 export default function LoginScreen({ navigation }: any) {
   const theme = useTheme();
+  const { preferredLanguage } = useThemeStore();
+  const t = translations[preferredLanguage];
   const [email, setEmail] = useState("user@example.com");
   const [password, setPassword] = useState("password123");
   const { login, isLoading, error } = useAuthStore();
@@ -28,7 +33,7 @@ export default function LoginScreen({ navigation }: any) {
     try {
       await login(email, password);
     } catch (err) {
-      Alert.alert("Login Failed", error || "Please try again");
+      Alert.alert(t.auth.loginFailed, error || t.auth.loginError);
     }
   };
 
@@ -41,6 +46,10 @@ export default function LoginScreen({ navigation }: any) {
       flexGrow: 1,
       justifyContent: "center",
       padding: 20,
+    },
+    selectorWrap: {
+      marginBottom: 20,
+      alignItems: "center",
     },
     logo: {
       width: 100,
@@ -101,15 +110,16 @@ export default function LoginScreen({ navigation }: any) {
         showsVerticalScrollIndicator={false}
       >
         <View>
-          <Text style={styles.title}>HealthSphere AI</Text>
-          <Text style={styles.subtitle}>
-            Connecting Every Patient to the Right Care
-          </Text>
+          <View style={styles.selectorWrap}>
+            <LanguageSelector />
+          </View>
+          <Text style={styles.title}>{t.auth.titleLogin}</Text>
+          <Text style={styles.subtitle}>{t.auth.subtitleLogin}</Text>
 
           {error && <Text style={styles.errorText}>{error}</Text>}
 
           <TextInput
-            label="Email"
+            label={t.common.email}
             value={email}
             onChangeText={setEmail}
             mode="outlined"
@@ -120,7 +130,7 @@ export default function LoginScreen({ navigation }: any) {
           />
 
           <TextInput
-            label="Password"
+            label={t.common.password}
             value={password}
             onChangeText={setPassword}
             mode="outlined"
@@ -139,19 +149,19 @@ export default function LoginScreen({ navigation }: any) {
             {isLoading ? (
               <ActivityIndicator animating color="white" />
             ) : (
-              "Login"
+              t.auth.loginButton
             )}
           </Button>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account?</Text>
+            <Text style={styles.footerText}>{t.auth.noAccount}</Text>
             <Button
               mode="text"
               onPress={() => navigation.navigate("Register")}
               disabled={isLoading}
               compact
             >
-              <Text style={styles.linkText}>Register</Text>
+              <Text style={styles.linkText}>{t.auth.registerButton}</Text>
             </Button>
           </View>
         </View>

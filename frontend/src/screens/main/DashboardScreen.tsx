@@ -20,10 +20,13 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import * as Location from "expo-location";
 import { useThemeStore } from "../../stores/themeStore";
 import { healthCheck } from "../../services/api";
+import { translations } from "../../utils/translations";
+import LanguageSelector from "../../components/LanguageSelector";
 
 export default function DashboardScreen({ navigation }: any) {
   const theme = useTheme();
-  const { currentMood, setMood, offlineMode } = useThemeStore();
+  const { currentMood, setMood, offlineMode, preferredLanguage } = useThemeStore();
+  const t = translations[preferredLanguage];
   const [connectivity, setConnectivity] = useState<"online" | "limited" | "offline">("online");
   const [loading, setLoading] = useState(true);
 
@@ -56,6 +59,13 @@ export default function DashboardScreen({ navigation }: any) {
       ? "#FFC107"
       : "#F44336";
 
+  const connectivityLabel =
+    connectivity === "online"
+      ? t.common.online
+      : connectivity === "limited"
+      ? t.common.limitedConnection
+      : t.common.offline;
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -67,11 +77,19 @@ export default function DashboardScreen({ navigation }: any) {
       paddingHorizontal: 20,
       paddingBottom: 20,
     },
+    headerTopRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 10,
+      gap: 10,
+      flexWrap: "wrap",
+    },
     headerTitle: {
       fontSize: 28,
       fontWeight: "bold",
       color: "white",
-      marginBottom: 10,
+      flex: 1,
     },
     headerSubtitle: {
       fontSize: 14,
@@ -163,19 +181,14 @@ export default function DashboardScreen({ navigation }: any) {
       <StatusBar barStyle="light-content" backgroundColor={theme.colors.primary} />
 
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Welcome Back!</Text>
-        <Text style={styles.headerSubtitle}>
-          Your trusted healthcare companion
-        </Text>
+        <View style={styles.headerTopRow}>
+          <Text style={styles.headerTitle}>{t.dashboard.welcomeBack}</Text>
+          <LanguageSelector />
+        </View>
+        <Text style={styles.headerSubtitle}>{t.dashboard.trustedCompanion}</Text>
         <View style={styles.connectivityIndicator}>
           <View style={styles.connectivityDot} />
-          <Text style={styles.connectivityText}>
-            {connectivity === "online"
-              ? "🟢 Online"
-              : connectivity === "limited"
-              ? "🟡 Limited Connection"
-              : "⚫ Offline Mode"}
-          </Text>
+          <Text style={styles.connectivityText}>{connectivityLabel}</Text>
         </View>
       </View>
 
@@ -186,7 +199,7 @@ export default function DashboardScreen({ navigation }: any) {
       >
         {/* Mood Selector */}
         <View style={styles.moodSection}>
-          <Text style={styles.sectionTitle}>How are you feeling today?</Text>
+          <Text style={styles.sectionTitle}>{t.dashboard.howAreYouFeeling}</Text>
           <View style={styles.moodChips}>
             {moodOptions.map(({ mood, icon, color }) => (
               <Chip
@@ -207,16 +220,14 @@ export default function DashboardScreen({ navigation }: any) {
                   color: currentMood === mood ? color : theme.colors.onSurface,
                 }}
               >
-                {mood.charAt(0).toUpperCase() + mood.slice(1)}
+                {t.moods[mood]}
               </Chip>
             ))}
           </View>
         </View>
 
         {/* Main Features */}
-        <Text style={[styles.sectionTitle, { marginTop: 20 }]}>
-          Healthcare Services
-        </Text>
+        <Text style={[styles.sectionTitle, { marginTop: 20 }]}>{t.dashboard.healthcareServices}</Text>
 
         <Card style={styles.featureCard}>
           <Card.Content>
@@ -233,19 +244,17 @@ export default function DashboardScreen({ navigation }: any) {
                 color={theme.colors.primary}
               />
               <Text style={[styles.featureTitle, { marginLeft: 12 }]}>
-                AI Health Check
+                {t.dashboard.aiHealthCheckTitle}
               </Text>
             </View>
-            <Text style={styles.featureSubtitle}>
-              Describe your symptoms and get personalized health guidance
-            </Text>
+            <Text style={styles.featureSubtitle}>{t.dashboard.aiHealthCheckDescription}</Text>
             <Button
               mode="contained"
               onPress={() => navigation.navigate("Health", { screen: "HealthCheckHome" })}
               style={styles.featureButton}
               compact
             >
-              Start Assessment
+              {t.common.startAssessment}
             </Button>
           </Card.Content>
         </Card>
@@ -265,19 +274,17 @@ export default function DashboardScreen({ navigation }: any) {
                 color={theme.colors.primary}
               />
               <Text style={[styles.featureTitle, { marginLeft: 12 }]}>
-                Find Healthcare
+                {t.dashboard.findHealthcareTitle}
               </Text>
             </View>
-            <Text style={styles.featureSubtitle}>
-              Discover nearby healthcare facilities and specialists
-            </Text>
+            <Text style={styles.featureSubtitle}>{t.dashboard.findHealthcareDescription}</Text>
             <Button
               mode="contained"
               onPress={() => navigation.navigate("Facilities", { screen: "FacilitySearchHome" })}
               style={styles.featureButton}
               compact
             >
-              Search Facilities
+              {t.common.searchFacilities}
             </Button>
           </Card.Content>
         </Card>
@@ -296,28 +303,24 @@ export default function DashboardScreen({ navigation }: any) {
                 size={24}
                 color={theme.colors.primary}
               />
-              <Text style={[styles.featureTitle, { marginLeft: 12 }]}>
-                Health Passport
+              <Text style={[styles.featureTitle, { marginLeft: 12 }]}> 
+                {t.dashboard.passportTitle}
               </Text>
             </View>
-            <Text style={styles.featureSubtitle}>
-              Your portable digital health records
-            </Text>
+            <Text style={styles.featureSubtitle}>{t.dashboard.passportDescription}</Text>
             <Button
               mode="contained"
               onPress={() => navigation.navigate("Passport", { screen: "HealthPassportHome" })}
               style={styles.featureButton}
               compact
             >
-              View Records
+              {t.common.viewRecords}
             </Button>
           </Card.Content>
         </Card>
 
         {/* Quick Actions */}
-        <Text style={[styles.sectionTitle, { marginTop: 25 }]}>
-          Quick Actions
-        </Text>
+        <Text style={[styles.sectionTitle, { marginTop: 25 }]}>{t.dashboard.quickActions}</Text>
 
         <View style={styles.quickActionGrid}>
           <Button
@@ -327,7 +330,7 @@ export default function DashboardScreen({ navigation }: any) {
             icon="briefcase"
             compact
           >
-            Schemes
+            {t.dashboard.schemes}
           </Button>
           <Button
             mode="outlined"
@@ -336,7 +339,7 @@ export default function DashboardScreen({ navigation }: any) {
             icon="calculator"
             compact
           >
-            Budget
+            {t.dashboard.budget}
           </Button>
           <Button
             mode="outlined"
@@ -345,7 +348,7 @@ export default function DashboardScreen({ navigation }: any) {
             icon="wifi-off"
             compact
           >
-            Offline
+            {t.dashboard.offlineLabel}
           </Button>
         </View>
       </ScrollView>

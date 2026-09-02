@@ -2,6 +2,15 @@
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as apiService from "../services/api";
+import { translations } from "../utils/translations";
+import { useThemeStore } from "./themeStore";
+
+const getAuthErrorMessage = (type: "login" | "register") => {
+  const language = useThemeStore.getState().preferredLanguage;
+  const t = translations[language];
+
+  return type === "login" ? t.auth.loginFailed : t.auth.registrationFailed;
+};
 
 interface User {
   id: number;
@@ -47,7 +56,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error: any) {
       set({
         isLoading: false,
-        error: error.response?.data?.detail || "Registration failed",
+        error: error.response?.data?.detail || getAuthErrorMessage("register"),
       });
       throw error;
     }
@@ -79,7 +88,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error: any) {
       set({
         isLoading: false,
-        error: error.response?.data?.detail || "Login failed",
+        error: error.response?.data?.detail || getAuthErrorMessage("login"),
       });
       throw error;
     }

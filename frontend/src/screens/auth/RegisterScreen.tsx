@@ -16,9 +16,14 @@ import {
   useTheme,
 } from "react-native-paper";
 import { useAuthStore } from "../../stores/authStore";
+import { useThemeStore } from "../../stores/themeStore";
+import { translations } from "../../utils/translations";
+import LanguageSelector from "../../components/LanguageSelector";
 
 export default function RegisterScreen({ navigation }: any) {
   const theme = useTheme();
+  const { preferredLanguage } = useThemeStore();
+  const t = translations[preferredLanguage];
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -29,24 +34,24 @@ export default function RegisterScreen({ navigation }: any) {
 
   const handleRegister = async () => {
     if (!fullName || !email || !phone || !password) {
-      Alert.alert("Incomplete Form", "Please fill in all fields");
+      Alert.alert(t.alerts.incompleteForm, t.alerts.fillAllFields);
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert("Password Mismatch", "Passwords do not match");
+      Alert.alert(t.alerts.passwordMismatch, t.alerts.passwordsDoNotMatch);
       return;
     }
 
     if (password.length < 8) {
-      Alert.alert("Weak Password", "Password must be at least 8 characters");
+      Alert.alert(t.alerts.weakPassword, t.alerts.weakPasswordMessage);
       return;
     }
 
     try {
       await register(email, password, fullName, phone);
     } catch (err) {
-      Alert.alert("Registration Failed", error || "Please try again");
+      Alert.alert(t.auth.registrationFailed, error || t.auth.loginError);
     }
   };
 
@@ -59,6 +64,10 @@ export default function RegisterScreen({ navigation }: any) {
       flexGrow: 1,
       justifyContent: "center",
       padding: 20,
+    },
+    selectorWrap: {
+      marginBottom: 20,
+      alignItems: "center",
     },
     title: {
       fontSize: 28,
@@ -102,12 +111,15 @@ export default function RegisterScreen({ navigation }: any) {
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Create Account</Text>
+        <View style={styles.selectorWrap}>
+          <LanguageSelector />
+        </View>
+        <Text style={styles.title}>{t.auth.createAccount}</Text>
 
         {error && <Text style={styles.errorText}>{error}</Text>}
 
         <TextInput
-          label="Full Name"
+          label={t.common.fullName}
           value={fullName}
           onChangeText={setFullName}
           mode="outlined"
@@ -117,7 +129,7 @@ export default function RegisterScreen({ navigation }: any) {
         />
 
         <TextInput
-          label="Email"
+          label={t.common.email}
           value={email}
           onChangeText={setEmail}
           mode="outlined"
@@ -128,7 +140,7 @@ export default function RegisterScreen({ navigation }: any) {
         />
 
         <TextInput
-          label="Phone"
+          label={t.common.phone}
           value={phone}
           onChangeText={setPhone}
           mode="outlined"
@@ -139,7 +151,7 @@ export default function RegisterScreen({ navigation }: any) {
         />
 
         <TextInput
-          label="Password"
+          label={t.common.password}
           value={password}
           onChangeText={setPassword}
           mode="outlined"
@@ -150,7 +162,7 @@ export default function RegisterScreen({ navigation }: any) {
         />
 
         <TextInput
-          label="Confirm Password"
+          label={t.common.confirmPassword}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           mode="outlined"
@@ -166,18 +178,18 @@ export default function RegisterScreen({ navigation }: any) {
           disabled={isLoading}
           style={styles.button}
         >
-          {isLoading ? <ActivityIndicator animating color="white" /> : "Register"}
+          {isLoading ? <ActivityIndicator animating color="white" /> : t.auth.registerButton}
         </Button>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Already have an account?</Text>
+          <Text style={styles.footerText}>{t.auth.haveAccount}</Text>
           <Button
             mode="text"
             onPress={() => navigation.navigate("Login")}
             disabled={isLoading}
             compact
           >
-            <Text style={styles.linkText}>Login</Text>
+            <Text style={styles.linkText}>{t.auth.loginButton}</Text>
           </Button>
         </View>
       </ScrollView>
