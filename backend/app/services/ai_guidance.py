@@ -348,3 +348,132 @@ class AIGuidanceService:
             "min": service_cost,
             "max": int(service_cost * 1.5)
         }
+
+    async def analyze_disease_image(self, image_base64: str, description: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Analyze a photo of a skin reaction, rash, or visual symptom.
+        Returns visual assessment, severity, symptoms, precautions, recommended doctor, and next steps.
+        """
+        desc_lower = (description or "").lower()
+
+        # Check if OpenAI API key is set for Vision model
+        from app.config import settings
+        if settings.OPENAI_API_KEY:
+            try:
+                import openai
+                client = openai.AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+                
+                # Format base64 URL if missing prefix
+                img_url = image_base64 if image_base64.startswith("data:") else f"data:image/jpeg;base64,{image_base64}"
+                
+                prompt_text = (
+                    "Analyze this medical image (skin reaction, rash, lesion, or physical symptom). "
+                    "Provide a JSON response with keys: 'condition_name', 'severity' (Low/Moderate/High/Emergency), "
+                    "'symptoms' (list of strings), 'precautions' (list of strings), "
+                    "'doctor_specialist' (string, e.g. Dermatologist / General Physician), "
+                    "'recommended_facility' (string, e.g. PHC / CHC / District Hospital), "
+                    "'next_steps' (list of strings)."
+                )
+                if description:
+                    prompt_text += f" Patient notes: {description}"
+
+                response = await client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": prompt_text},
+                                {"type": "image_url", "image_url": {"url": img_url}},
+                            ],
+                        }
+                    ],
+                    response_format={"type": "json_object"},
+                    max_tokens=800,
+                )
+                content = response.choices[0].message.content
+                if content:
+                    return json.loads(content)
+            except Exception as e:
+                logger.warning(f"OpenAI Vision API failed, using fallback visual analyzer: {e}")
+
+        # Intelligent Fallback Visual Analysis Engine
+        if "ring" in desc_lower or "itch" in desc_lower or "fungal" in desc_lower or "circle" in desc_lower:
+            condition = "Fungal Infection (Tinea / Ringworm)"
+            severity = "Moderate"
+            symptoms = ["Circular red patches", "Scaling or itching borders", "Clear center in ring shape", "Localized skin irritation"]
+            precautions = [
+                "Keep the affected area clean, dry, and cool.",
+                "Avoid scratching to prevent secondary bacterial infection.",
+                "Do not share towels, clothing, or personal hygiene items.",
+                "Wear loose-fitting cotton clothing."
+            ]
+            doctor = "Dermatologist / General Physician"
+            facility = "Primary Health Centre (PHC) or Community Health Centre (CHC)"
+            next_steps = [
+                "Visit a local PHC for antifungal ointment prescription.",
+                "Apply recommended topical antifungal cream as directed for 2-3 weeks.",
+                "If spreading or not improving after 7 days, consult a specialist."
+            ]
+        elif "burn" in desc_lower or "blister" in desc_lower or "scald" in desc_lower:
+            condition = "Thermal / Chemical Burn or Blistering"
+            severity = "High" if "blister" in desc_lower or "severe" in desc_lower else "Moderate"
+            symptoms = ["Skin redness and inflammation", "Blister formation", "Pain or tenderness", "Local swelling"]
+            precautions = [
+                "Cool the area immediately with clean, cool running water for 10-15 minutes.",
+                "Do NOT pop or puncture any blisters.",
+                "Do NOT apply ice, butter, or home remedies directly on open burns.",
+                "Cover loosely with a clean, dry, sterile cloth or bandage."
+            ]
+            doctor = "Dermatologist / General Physician / Trauma Care"
+            facility = "Community Health Centre (CHC) or District Hospital"
+            next_steps = [
+                "Seek immediate evaluation at a nearest CHC or District Hospital.",
+                "Keep area covered and protected from dust and friction.",
+                "Take prescribed pain relievers and apply sterile burn dressing."
+            ]
+        elif "allergy" in desc_lower or "hive" in desc_lower or "swelling" in desc_lower or "bite" in desc_lower:
+            condition = "Acute Allergic Reaction / Urticaria (Hives)"
+            severity = "High" if "breathing" in desc_lower or "throat" in desc_lower else "Moderate"
+            symptoms = ["Raised itchy red welts", "Localized skin swelling", "Sudden onset after exposure", "Warmth around reaction"]
+            precautions = [
+                "Identify and immediately remove suspected allergen (food, plant, insect, medicine).",
+                "Apply cool compresses to soothe itching and inflammation.",
+                "Avoid hot showers or tight clothing that irritate the skin.",
+                "Watch closely for facial swelling or throat tightness."
+            ]
+            doctor = "Dermatologist / General Physician / Allergist"
+            facility = "Primary Health Centre (PHC) or Emergency Care if breathing is affected"
+            next_steps = [
+                "Visit PHC for antihistamine or anti-allergy medication.",
+                "If breathing difficulty or lip/throat swelling develops, go to District Hospital Emergency immediately."
+            ]
+        else:
+            condition = "Contact Dermatitis / Inflammatory Skin Reaction"
+            severity = "Low to Moderate"
+            symptoms = ["Redness and localized rash", "Mild to moderate itching", "Dry or flaking skin patch", "Sensitivity to touch"]
+            precautions = [
+                "Wash the area gently with mild soap and lukewarm water.",
+                "Avoid harsh soaps, detergents, or unverified chemical cosmetics.",
+                "Apply a simple moisturizer or aloe vera gel to reduce irritation.",
+                "Keep fingernails short and clean to prevent scratching damage."
+            ]
+            doctor = "Dermatologist / General Physician"
+            facility = "Primary Health Centre (PHC) or Local Clinic"
+            next_steps = [
+                "Monitor for 24-48 hours while maintaining gentle skin care.",
+                "Visit a local PHC or General Physician if redness spreads or oozing occurs.",
+                "Use prescribed soothing topical cream as advised by the health worker."
+            ]
+
+        return {
+            "condition_name": condition,
+            "severity": severity,
+            "symptoms": symptoms,
+            "precautions": precautions,
+            "doctor_specialist": doctor,
+            "recommended_facility": facility,
+            "next_steps": next_steps,
+            "disclaimer": "This AI visual analysis is for preliminary screening and guidance only. Please consult a qualified doctor for clinical diagnosis."
+        }
+

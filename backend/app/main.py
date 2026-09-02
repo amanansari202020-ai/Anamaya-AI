@@ -1,5 +1,13 @@
 # Main FastAPI Application
 
+import os
+import sys
+
+# Ensure backend root is in sys.path
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -8,7 +16,7 @@ import logging
 from app.config import settings
 from app.database import engine, get_db, Base
 from app.models import User, UserRole
-from app.schemas import UserRegister, UserLogin, TokenResponse
+from app.schemas import UserRegister, UserLogin, TokenResponse, ImageAnalysisRequest
 from app.services.auth import AuthService
 from app.services.ai_guidance import AIGuidanceService
 from app.services.facility_finder import FacilityFinderService
@@ -140,6 +148,25 @@ async def assess_symptoms(
     except Exception as e:
         logger.error(f"Assessment error: {str(e)}")
         raise HTTPException(status_code=500, detail="Assessment failed")
+
+
+@app.post("/api/health/analyze-image", tags=["AI Health Guidance"])
+async def analyze_disease_image(payload: ImageAnalysisRequest):
+    """Analyze photo of a disease, rash, or skin reaction"""
+    image_base64 = payload.image
+    description = payload.description or ""
+    if not image_base64:
+        raise HTTPException(status_code=400, detail="Image data is required")
+    try:
+        result = await ai_service.analyze_disease_image(image_base64, description)
+        return {
+            "success": True,
+            "analysis": result
+        }
+    except Exception as e:
+        logger.error(f"Image analysis error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Image analysis failed")
+
 
 
 @app.get("/api/health/assessment/{assessment_id}", tags=["AI Health Guidance"])

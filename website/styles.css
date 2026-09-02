@@ -279,15 +279,44 @@ select {
 .chatbot-box {
   margin-top: 18px; padding: 18px; border: 1px solid var(--border); border-radius: 18px; background: var(--panel); box-shadow: var(--shadow);
 }
-.chatbot-box h4 { margin: 0 0 12px; }
-.chat-log { display: flex; flex-direction: column; gap: 10px; max-height: 180px; overflow: auto; margin-bottom: 12px; }
+.chatbot-box h4 { margin: 0; }
+.chatbot-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.vision-badge { background: rgba(46, 196, 166, 0.15); color: #0d8d5d; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.chat-log { display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto; margin-bottom: 12px; }
 .chat-bubble {
-  max-width: 85%; padding: 10px 12px; border-radius: 12px; line-height: 1.5; font-size: 0.95rem;
+  max-width: 85%; padding: 10px 14px; border-radius: 14px; line-height: 1.5; font-size: 0.92rem;
 }
 .chat-bubble.bot { background: rgba(12, 108, 242, 0.08); color: var(--text); align-self: flex-start; }
 .chat-bubble.user { background: rgba(46, 196, 166, 0.12); color: var(--text); align-self: flex-end; }
+.chat-image-thumb { max-width: 180px; max-height: 140px; border-radius: 10px; margin-top: 6px; display: block; object-fit: cover; border: 2px solid rgba(255, 255, 255, 0.3); }
+
+.image-preview-container { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding: 8px 12px; background: rgba(12, 108, 242, 0.04); border-radius: 12px; border: 1px dashed var(--border); }
+.image-preview-wrapper { position: relative; width: 48px; height: 48px; }
+.image-preview-wrapper img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; }
+.remove-image-btn { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; background: #e74c3c; color: #fff; border: none; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
+.preview-note { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+
+.hidden-file-input { display: none; }
+.icon-button { background: rgba(12, 108, 242, 0.08); border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 8px 12px; font-size: 1.2rem; cursor: pointer; transition: background 0.2s ease; }
+.icon-button:hover { background: rgba(12, 108, 242, 0.18); }
+
+.visual-analysis-card { display: flex; flex-direction: column; gap: 10px; font-size: 0.88rem; }
+.analysis-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(12, 108, 242, 0.15); padding-bottom: 6px; }
+.analysis-title { font-weight: 700; font-size: 1rem; color: var(--primary-strong); }
+.severity-tag { padding: 3px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; }
+.severity-tag.low { background: rgba(27, 185, 122, 0.2); color: #0d8d5d; }
+.severity-tag.moderate { background: rgba(243, 156, 18, 0.2); color: #d35400; }
+.severity-tag.high, .severity-tag.emergency { background: rgba(231, 76, 60, 0.2); color: #c0392b; }
+
+.analysis-section { background: rgba(255, 255, 255, 0.5); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.05); }
+body[data-theme="dark"] .analysis-section { background: rgba(0, 0, 0, 0.2); }
+.analysis-section h5 { margin: 0 0 4px; font-size: 0.82rem; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; }
+.analysis-section ul { margin: 0; padding-left: 18px; line-height: 1.4; }
+.analysis-section p { margin: 0; line-height: 1.4; }
+.disclaimer-note { font-size: 0.75rem; color: var(--muted); font-style: italic; margin-top: 4px; }
+
 .chat-input-row { display: flex; gap: 10px; }
-.chat-input-row input { flex: 1; border: 1px solid var(--border); border-radius: 12px; background: var(--panel-solid); color: var(--text); padding: 10px 12px; font: inherit; }
+.chat-input-row input[type="text"] { flex: 1; border: 1px solid var(--border); border-radius: 12px; background: var(--panel-solid); color: var(--text); padding: 10px 12px; font: inherit; }
 .facility-list, .scheme-list { display: grid; gap: 16px; }
 .facility-card, .scheme-card { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .facility-card h4, .scheme-card h4 { margin: 0 0 6px; }

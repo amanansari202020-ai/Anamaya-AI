@@ -9,10 +9,12 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 # Database engine
+connect_args = {"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
+
 engine = create_engine(
     settings.DATABASE_URL,
     echo=settings.ECHO_SQL,
-    poolclass=QueuePool,
+    connect_args=connect_args,
     pool_pre_ping=True,
     pool_recycle=3600,
 )

@@ -413,12 +413,26 @@
               </div>
 
               <div class="chatbot-box">
-                <h4>AI care assistant</h4>
+                <div class="chatbot-header">
+                  <h4>AI care assistant</h4>
+                  <span class="vision-badge">📷 Photo Analysis Enabled</span>
+                </div>
                 <div id="chatLog" class="chat-log">
-                  <div class="chat-bubble bot">Hello! Tell me your main symptom and I will guide you to the best next step.</div>
+                  <div class="chat-bubble bot">
+                    Hello! Tell me your symptoms or upload a photo of a skin rash, reaction, or lesion for instant AI visual analysis and guidance.
+                  </div>
+                </div>
+                <div id="chatImagePreviewContainer" class="image-preview-container hidden">
+                  <div class="image-preview-wrapper">
+                    <img id="chatImagePreview" src="" alt="Selected symptom photo" />
+                    <button id="removeImageBtn" type="button" class="remove-image-btn" title="Remove photo">&times;</button>
+                  </div>
+                  <span class="preview-note">Photo attached for analysis</span>
                 </div>
                 <div class="chat-input-row">
-                  <input id="chatInput" type="text" placeholder="Example: fever and breathing problem" />
+                  <input type="file" id="chatImageInput" accept="image/*" class="hidden-file-input" />
+                  <button id="uploadPhotoBtn" type="button" class="icon-button" title="Attach photo of skin rash or reaction">📷</button>
+                  <input id="chatInput" type="text" placeholder="Describe symptoms or upload a photo..." />
                   <button id="chatSendBtn" class="primary" type="button">Send</button>
                 </div>
               </div>

@@ -248,3 +248,9 @@ class BudgetEstimate(BaseModel):
     treatment_cost: Dict[str, float]
     total_estimated: Dict[str, float]
     government_options: List[str]
+
+
+class ImageAnalysisRequest(BaseModel):
+    image: str
+    description: Optional[str] = ""
+

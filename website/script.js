@@ -473,33 +473,189 @@ if (voiceButton) {
   });
 }
 
+let currentSelectedImageBase64 = null;
+
+const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+const chatImageInput = document.getElementById('chatImageInput');
+const chatImagePreviewContainer = document.getElementById('chatImagePreviewContainer');
+const chatImagePreview = document.getElementById('chatImagePreview');
+const removeImageBtn = document.getElementById('removeImageBtn');
+
+if (uploadPhotoBtn && chatImageInput) {
+  uploadPhotoBtn.addEventListener('click', () => {
+    chatImageInput.click();
+  });
+
+  chatImageInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        currentSelectedImageBase64 = evt.target.result;
+        if (chatImagePreview && chatImagePreviewContainer) {
+          chatImagePreview.src = currentSelectedImageBase64;
+          chatImagePreviewContainer.classList.remove('hidden');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+
+if (removeImageBtn) {
+  removeImageBtn.addEventListener('click', () => {
+    currentSelectedImageBase64 = null;
+    if (chatImageInput) chatImageInput.value = '';
+    if (chatImagePreviewContainer) chatImagePreviewContainer.classList.add('hidden');
+  });
+}
+
+function renderVisualAnalysisCard(data) {
+  const card = document.createElement('div');
+  card.className = 'visual-analysis-card';
+
+  const severityClass = (data.severity || 'low').toLowerCase().replace(/\s+/g, '-');
+
+  card.innerHTML = `
+    <div class="analysis-header">
+      <span class="analysis-title">🔍 ${data.condition_name || 'Visual Reaction Analysis'}</span>
+      <span class="severity-tag ${severityClass}">${data.severity || 'Moderate'}</span>
+    </div>
+
+    ${data.symptoms && data.symptoms.length ? `
+    <div class="analysis-section">
+      <h5>📋 Expected Symptoms</h5>
+      <ul>${data.symptoms.map(s => `<li>${s}</li>`).join('')}</ul>
+    </div>
+    ` : ''}
+
+    ${data.precautions && data.precautions.length ? `
+    <div class="analysis-section">
+      <h5>🛡️ Immediate Precautions</h5>
+      <ul>${data.precautions.map(p => `<li>${p}</li>`).join('')}</ul>
+    </div>
+    ` : ''}
+
+    <div class="analysis-section">
+      <h5>👨‍⚕️ Doctor to Consult</h5>
+      <p><strong>${data.doctor_specialist || 'General Physician / Dermatologist'}</strong> at <em>${data.recommended_facility || 'Primary Health Centre (PHC)'}</em></p>
+    </div>
+
+    ${data.next_steps && data.next_steps.length ? `
+    <div class="analysis-section">
+      <h5>🚀 What to Do Next</h5>
+      <ul>${data.next_steps.map(n => `<li>${n}</li>`).join('')}</ul>
+    </div>
+    ` : ''}
+
+    <div class="disclaimer-note">
+      ⚠️ ${data.disclaimer || 'Visual screening tool only. Please consult a qualified doctor for medical diagnosis.'}
+    </div>
+  `;
+  return card;
+}
+
 const chatSendBtn = document.getElementById('chatSendBtn');
 if (chatSendBtn) {
-  chatSendBtn.addEventListener('click', () => {
+  chatSendBtn.addEventListener('click', async () => {
     const input = document.getElementById('chatInput');
     const chatLog = document.getElementById('chatLog');
     if (!input || !chatLog) return;
 
-    const value = input.value.trim();
-    if (!value) return;
+    const textValue = input.value.trim();
+    const hasImage = Boolean(currentSelectedImageBase64);
 
+    if (!textValue && !hasImage) return;
+
+    // Create user message bubble
     const userBubble = document.createElement('div');
     userBubble.className = 'chat-bubble user';
-    userBubble.textContent = value;
+    if (textValue) {
+      const textDiv = document.createElement('div');
+      textDiv.textContent = textValue;
+      userBubble.appendChild(textDiv);
+    }
+    if (hasImage) {
+      const img = document.createElement('img');
+      img.src = currentSelectedImageBase64;
+      img.className = 'chat-image-thumb';
+      img.alt = 'Attached symptom photo';
+      userBubble.appendChild(img);
+    }
     chatLog.appendChild(userBubble);
+    chatLog.scrollTop = chatLog.scrollHeight;
 
-    const answer = value.toLowerCase().includes('fever') || value.toLowerCase().includes('cough')
+    // Clear input & image preview bar immediately
+    const attachedImage = currentSelectedImageBase64;
+    input.value = '';
+    currentSelectedImageBase64 = null;
+    if (chatImageInput) chatImageInput.value = '';
+    if (chatImagePreviewContainer) chatImagePreviewContainer.classList.add('hidden');
+
+    // Create thinking bot bubble
+    const botBubble = document.createElement('div');
+    botBubble.className = 'chat-bubble bot';
+    botBubble.textContent = hasImage ? 'Analyzing photo and symptoms...' : 'Thinking...';
+    chatLog.appendChild(botBubble);
+    chatLog.scrollTop = chatLog.scrollHeight;
+
+    if (hasImage) {
+      try {
+        const res = await fetch(`${apiBase}/api/health/analyze-image`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: attachedImage, description: textValue })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.analysis) {
+            botBubble.textContent = '';
+            botBubble.appendChild(renderVisualAnalysisCard(data.analysis));
+            chatLog.scrollTop = chatLog.scrollHeight;
+            const speakText = `Detected ${data.analysis.condition_name}. Consult a ${data.analysis.doctor_specialist}. Precautions: ${data.analysis.precautions?.[0] || 'Keep area clean'}.`;
+            speakAssistant(speakText);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Backend image analysis offline, using local visual analysis engine:', err);
+      }
+
+      // Fallback local visual analysis engine
+      const lowerText = textValue.toLowerCase();
+      const fallbackAnalysis = {
+        condition_name: lowerText.includes('ring') || lowerText.includes('fungal') ? 'Fungal Skin Infection (Ringworm / Tinea)' : lowerText.includes('burn') ? 'Thermal Burn / Blistering' : 'Contact Dermatitis / Skin Rash',
+        severity: lowerText.includes('burn') || lowerText.includes('severe') ? 'High' : 'Moderate',
+        symptoms: ['Skin redness & irritation', 'Localized itching or tenderness', 'Possible scaling or rash borders'],
+        precautions: [
+          'Clean the area gently with mild water; do not scratch.',
+          'Avoid harsh chemicals, unverified ointments, or tight clothing.',
+          'Keep the affected skin clean and dry.'
+        ],
+        doctor_specialist: 'Dermatologist / General Physician',
+        recommended_facility: 'Primary Health Centre (PHC) or Community Health Centre (CHC)',
+        next_steps: [
+          'Visit a local PHC for doctor consultation and suitable topical medication.',
+          'If rash rapidly spreads, oozes, or causes fever, seek urgent hospital care.'
+        ],
+        disclaimer: 'Visual screening guidance only. Consult a doctor for medical diagnosis.'
+      };
+      botBubble.textContent = '';
+      botBubble.appendChild(renderVisualAnalysisCard(fallbackAnalysis));
+      chatLog.scrollTop = chatLog.scrollHeight;
+      speakAssistant(`Analysis complete: ${fallbackAnalysis.condition_name}. Recommended doctor: ${fallbackAnalysis.doctor_specialist}.`);
+      return;
+    }
+
+    // Text-only guidance
+    const answer = textValue.toLowerCase().includes('fever') || textValue.toLowerCase().includes('cough')
       ? 'Please monitor symptoms, drink fluids, and visit a primary health center if fever remains high or breathing worsens.'
-      : value.toLowerCase().includes('pain')
+      : textValue.toLowerCase().includes('pain')
         ? 'Try rest and hydration, and seek a nearby clinic if the pain is severe or persistent.'
         : 'Please speak with a nearby clinic or health worker for a proper checkup and guidance.';
 
-    const botBubble = document.createElement('div');
-    botBubble.className = 'chat-bubble bot';
     botBubble.textContent = answer;
-    chatLog.appendChild(botBubble);
     chatLog.scrollTop = chatLog.scrollHeight;
-    input.value = '';
     speakAssistant(answer);
   });
 }

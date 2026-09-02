@@ -1,14 +1,26 @@
 @echo off
-cd /d "C:\Users\shahreena\OneDrive\Desktop\HealthSphere AI\backend"
-call .\venv\Scripts\activate.bat
-start "Backend" cmd /k "python app/main.py"
+set SCRIPT_DIR=%~dp0
+cd /d "%SCRIPT_DIR%backend"
 
-cd /d "C:\Users\shahreena\OneDrive\Desktop\HealthSphere AI\website"
-start "Frontend" cmd /k "python -m http.server 8001"
+if not exist "venv\Scripts\activate.bat" (
+    echo Creating virtual environment for backend...
+    python -m venv venv
+    call .\venv\Scripts\activate.bat
+    echo Installing backend dependencies...
+    pip install -r requirements.txt
+) else (
+    call .\venv\Scripts\activate.bat
+)
+
+start "Anamaya AI Backend" cmd /k "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+cd /d "%SCRIPT_DIR%website"
+start "Anamaya AI Web Frontend" cmd /k "python -m http.server 8001"
 
 echo.
-echo Backend and frontend have been started.
-echo Open: http://localhost:8001
-echo Health check: http://localhost:8000/health
+echo Anamaya AI Backend and Frontend have been started.
+echo Web UI: http://localhost:8001
+echo API Health Check: http://localhost:8000/health
+echo API Docs (Swagger): http://localhost:8000/docs
 echo.
 exit /b 0
