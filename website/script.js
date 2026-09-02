@@ -267,9 +267,10 @@ async function checkBackend() {
       <span>Backend connected: ${data.service || 'Anamaya AI'} (${data.status})</span>
     `;
   } catch (error) {
+    statusCard.classList.remove('connected');
     statusCard.innerHTML = `
       <div class="status-dot"></div>
-      <span>Backend offline — set HEALTHSPHERE_API_URL or start the API on localhost:8000</span>
+      <span>Demo mode active — backend not running yet, but the app is ready for local preview.</span>
     `;
   }
 }

@@ -34,8 +34,12 @@ class Settings(BaseSettings):
     CORS_ORIGINS: Union[str, list[str]] = (
         "http://localhost:3000,"
         "http://localhost:8081,"
+        "http://localhost:8001,"
+        "http://127.0.0.1:8001,"
         "http://localhost:8002,"
         "http://127.0.0.1:8002,"
+        "http://localhost:8000,"
+        "http://127.0.0.1:8000,"
         "http://192.168.0.113:8002"
     )
     MAX_UPLOAD_SIZE: int = 5 * 1024 * 1024  # 5MB
