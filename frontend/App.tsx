@@ -26,6 +26,8 @@ import {
   OfflineScreen,
 } from "./src/screens/stubs";
 
+import { EmergencyScreen } from "./src/screens/health/EmergencyScreen";
+
 // Store & Utils
 import { useAuthStore } from "./src/stores/authStore";
 import { useThemeStore } from "./src/stores/themeStore";
@@ -119,9 +121,10 @@ const MainTabs = ({ t }: { t: TranslationSet }) => (
         else if (route.name === "Health") iconName = "heart";
         else if (route.name === "Facilities") iconName = "hospital-box";
         else if (route.name === "Passport") iconName = "id-card";
+        else if (route.name === "Emergency") iconName = "alert-circle";
         else if (route.name === "Profile") iconName = "account";
 
-        return <MaterialCommunityIcons name={iconName} size={size} color={color} />;
+        return <MaterialCommunityIcons name={iconName} size={size} color={route.name === "Emergency" ? "#dc2626" : color} />;
       },
       tabBarActiveTintColor: "#1976D2",
       tabBarInactiveTintColor: "#999",
@@ -131,6 +134,7 @@ const MainTabs = ({ t }: { t: TranslationSet }) => (
     <Tab.Screen name="Health" component={() => <HealthStack t={t} />} options={{ title: t.navigation.aiHealthCheck }} />
     <Tab.Screen name="Facilities" component={() => <FacilitiesStack t={t} />} options={{ title: t.navigation.findCare }} />
     <Tab.Screen name="Passport" component={() => <HealthPassportStack t={t} />} options={{ title: t.navigation.myRecords }} />
+    <Tab.Screen name="Emergency" component={EmergencyScreen} options={{ title: "Emergency SOS" }} />
     <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: t.navigation.profile }} />
   </Tab.Navigator>
 );

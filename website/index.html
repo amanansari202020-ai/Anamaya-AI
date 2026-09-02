@@ -34,6 +34,7 @@
         </label>
         <button class="voice-toggle" id="voiceAssistantBtn" aria-label="Voice assistant" data-i18n="i18n_assistant_7">🔊 Assistant</button>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" data-i18n="i18n_dark_8">🌙 Dark</button>
+        <button class="nav-sos-btn" id="navSosBtn" data-i18n="i18n_emergency_sos">🆘 Emergency SOS</button>
         <button class="nav-button" id="launchDemoBtn" data-i18n="i18n_launchdemo_9">Launch demo</button>
       </div>
     </header>
@@ -48,6 +49,7 @@
             track referrals, and access scheme support through a digital health passport.
           </p>
           <div class="cta-row">
+            <button class="btn-sos" id="heroSosBtn" data-i18n="i18n_emergency_sos">🆘 Emergency SOS</button>
             <button class="primary" id="tryPlatformBtn" data-i18n="ctaPrimary">Try the platform</button>
             <button class="secondary" id="journeyBtn" data-i18n="ctaSecondary">View patient journey</button>
           </div>
@@ -100,26 +102,96 @@
           <div class="auth-card register-card">
             <div class="auth-header">
               <span class="eyebrow" data-i18n="i18n_createaccount_25">Create account</span>
-              <h3 data-i18n="i18n_registerpatient_26">Register patient</h3>
+              <h3 id="regStepTitle" data-i18n="i18n_registerpatient_26">Register patient</h3>
+              <!-- WizardProgressDots Component -->
+              <div class="wizard-progress" id="regWizardDots">
+                <div class="wizard-dot active" id="regDot1" title="Account Info"></div>
+                <div class="wizard-dot" id="regDot2" title="Health Info"></div>
+              </div>
             </div>
             <form id="registerForm" class="auth-form">
-              <label data-i18n="i18n_fullname_27">
-                Full name
-                <input type="text" id="registerName" placeholder="Enter your name" required="" data-i18n-placeholder="i18n_ph_enteryourname_28">
-              </label>
-              <label data-i18n="i18n_email_29">
-                Email
-                <input type="email" id="registerEmail" placeholder="you@example.com" required="" data-i18n-placeholder="i18n_ph_youexamplecom_30">
-              </label>
-              <label data-i18n="i18n_phonenumber_31">
-                Phone number
-                <input type="tel" id="registerPhone" placeholder="+91 98765 43210" required="" data-i18n-placeholder="i18n_ph_919876543210_32">
-              </label>
-              <label data-i18n="i18n_addresslocation_33">
-                Address / location
-                <textarea id="registerAddress" rows="3" placeholder="Village, block, district" required="" data-i18n-placeholder="i18n_ph_villageblockdis_34"></textarea>
-              </label>
-              <button type="submit" class="primary full-width" data-i18n="i18n_register_35">Register</button>
+              <!-- Registration Step 1: Basic Info -->
+              <div id="regStep1">
+                <label>
+                  <span data-i18n="i18n_fullname_27">Full name</span>
+                  <input type="text" id="registerName" placeholder="Enter your name" required="" data-i18n-placeholder="i18n_ph_enteryourname_28">
+                </label>
+                <label>
+                  <span data-i18n="i18n_email_29">Email</span>
+                  <input type="email" id="registerEmail" placeholder="you@example.com" required="" data-i18n-placeholder="i18n_ph_youexamplecom_30">
+                </label>
+                <label>
+                  <span data-i18n="i18n_phonenumber_31">Phone number</span>
+                  <input type="tel" id="registerPhone" placeholder="+91 98765 43210" required="" data-i18n-placeholder="i18n_ph_919876543210_32">
+                </label>
+                <label>
+                  <span data-i18n="i18n_addresslocation_33">Address / location</span>
+                  <textarea id="registerAddress" rows="2" placeholder="Village, block, district" required="" data-i18n-placeholder="i18n_ph_villageblockdis_34"></textarea>
+                </label>
+                <button type="button" class="primary full-width" id="regNextBtn" data-i18n="i18n_next_step">Next: Health Info ➔</button>
+              </div>
+
+              <!-- Registration Step 2: Health Info & Emergency Contact -->
+              <div id="regStep2" class="hidden">
+                <h4 style="margin: 0.5rem 0;" data-i18n="i18n_tell_us_health">Tell us about your health</h4>
+                
+                <!-- Gender IconChoiceGrid -->
+                <label><span data-i18n="i18n_gender">Gender</span></label>
+                <div class="icon-grid" id="regGenderGrid" data-single="true">
+                  <div class="icon-card selected" data-value="male"><span class="card-icon">👨</span> <span data-i18n="i18n_male">Male</span></div>
+                  <div class="icon-card" data-value="female"><span class="card-icon">👩</span> <span data-i18n="i18n_female">Female</span></div>
+                  <div class="icon-card" data-value="other"><span class="card-icon">⚧</span> <span data-i18n="i18n_other">Other</span></div>
+                </div>
+
+                <!-- Age Group IconChoiceGrid -->
+                <label><span data-i18n="i18n_age_group">Age group</span></label>
+                <div class="icon-grid" id="regAgeGrid" data-single="true">
+                  <div class="icon-card" data-value="child"><span class="card-icon">👶</span> <span data-i18n="i18n_child">Child (under 12)</span></div>
+                  <div class="icon-card selected" data-value="adult"><span class="card-icon">🧑</span> <span data-i18n="i18n_adult">Adult (12-60)</span></div>
+                  <div class="icon-card" data-value="elderly"><span class="card-icon">👴</span> <span data-i18n="i18n_elderly">Elderly (60+)</span></div>
+                </div>
+
+                <!-- Existing Conditions IconChoiceGrid -->
+                <label><span data-i18n="i18n_existing_conditions">Existing health conditions</span></label>
+                <div class="icon-grid" id="regCondGrid" data-multi="true">
+                  <div class="icon-card" data-value="diabetes"><span class="card-icon">🩸</span> <span data-i18n="i18n_diabetes">Diabetes</span></div>
+                  <div class="icon-card" data-value="heart_bp"><span class="card-icon">❤️</span> <span data-i18n="i18n_heart_bp">Heart / BP</span></div>
+                  <div class="icon-card" data-value="asthma"><span class="card-icon">😮💨</span> <span data-i18n="i18n_asthma">Asthma</span></div>
+                  <div class="icon-card hidden" id="regPregnancyCard" data-value="pregnancy"><span class="card-icon">🤰</span> <span data-i18n="i18n_pregnancy">Pregnancy</span></div>
+                  <div class="icon-card" data-value="injury"><span class="card-icon">🦴</span> <span data-i18n="i18n_injury">Injury / Disability</span></div>
+                  <div class="icon-card selected" data-value="none"><span class="card-icon">✅</span> <span data-i18n="i18n_none_these">None of these</span></div>
+                </div>
+
+                <!-- Allergies section + Yes/No tap toggle + VoiceInputButton -->
+                <label><span data-i18n="i18n_allergies">Do you have any allergies?</span></label>
+                <div class="icon-grid" id="regAllergyGrid" data-single="true" style="margin-bottom: 0.5rem;">
+                  <div class="icon-card selected" data-value="no"><span>❌ No</span></div>
+                  <div class="icon-card" data-value="yes"><span>⚠️ Yes</span></div>
+                </div>
+                <div id="regAllergyDetailWrap" class="hidden" style="margin-bottom: 1rem;">
+                  <button type="button" class="voice-input-btn" id="regAllergyVoiceBtn" style="margin-bottom: 0.5rem;">
+                    <span>🎤</span> <span data-i18n="i18n_tap_speak">Tap and speak</span>
+                  </button>
+                  <input type="text" id="regAllergyText" placeholder="Specify allergy (e.g. Penicillin, Peanuts)" data-i18n-placeholder="i18n_allergy_details">
+                </div>
+
+                <!-- Emergency Contact Section -->
+                <h4 style="margin: 1.25rem 0 0.5rem 0; color: #ef4444;" data-i18n="i18n_emergency_contact">Emergency Contact Person</h4>
+                <label><span data-i18n="i18n_contact_name">Contact Name</span>
+                  <input type="text" id="regEmergName" placeholder="e.g. Ramesh Kumar">
+                </label>
+                <label><span data-i18n="i18n_contact_phone">Contact Phone Number</span>
+                  <input type="tel" id="regEmergPhone" placeholder="+91 98765 00000">
+                </label>
+                <label><span data-i18n="i18n_contact_relation">Relationship</span>
+                  <input type="text" id="regEmergRelation" placeholder="e.g. Spouse, Brother, Friend">
+                </label>
+
+                <div class="cta-row" style="margin-top: 1rem;">
+                  <button type="button" class="secondary" id="regBackBtn">⬅ Back</button>
+                  <button type="submit" class="primary" id="regSubmitBtn" data-i18n="i18n_register_35">Save & Register</button>
+                </div>
+              </div>
             </form>
           </div>
 
@@ -129,12 +201,12 @@
               <h3 data-i18n="i18n_login_37">Login</h3>
             </div>
             <form id="loginForm" class="auth-form">
-              <label data-i18n="i18n_email_38">
-                Email
+              <label>
+                <span data-i18n="i18n_email_38">Email</span>
                 <input type="email" id="loginEmail" placeholder="Enter registered email" required="" data-i18n-placeholder="i18n_ph_enterregistered_39">
               </label>
-              <label data-i18n="i18n_phonenumber_40">
-                Phone number
+              <label>
+                <span data-i18n="i18n_phonenumber_40">Phone number</span>
                 <input type="tel" id="loginPhone" placeholder="Enter registered phone" required="" data-i18n-placeholder="i18n_ph_enterregistered_41">
               </label>
               <button type="submit" class="secondary full-width" data-i18n="i18n_login_42">Login</button>
@@ -299,6 +371,7 @@
               <button class="nav-item" data-panel="facilities" data-i18n="i18n_facilities_95">Facilities</button>
               <button class="nav-item" data-panel="passport" data-i18n="i18n_healthpassport_96">Health Passport</button>
               <button class="nav-item" data-panel="schemes" data-i18n="i18n_schemes_97">Schemes</button>
+              <button class="nav-item emergency-item" data-panel="emergency" data-i18n="i18n_emergency_sos">🆘 Emergency</button>
             </nav>
           </aside>
 
@@ -335,43 +408,117 @@
               </div>
             </div>
 
+            <!-- Conversational AI Assessment Wizard (Steps 1-5) -->
             <div id="assessment" class="panel">
               <div class="panel-head">
-                <h3 data-i18n="i18n_aihealthassessm_110">AI health assessment</h3>
+                <h3 id="wizardTitle" data-i18n="i18n_aihealthassessm_110">AI Health Assessment</h3>
+                <!-- WizardProgressDots Component -->
+                <div class="wizard-progress" id="aiWizardDots">
+                  <div class="wizard-dot active" id="aiDot1"></div>
+                  <div class="wizard-dot" id="aiDot2"></div>
+                  <div class="wizard-dot" id="aiDot3"></div>
+                  <div class="wizard-dot" id="aiDot4"></div>
+                  <div class="wizard-dot" id="aiDot5"></div>
+                </div>
               </div>
 
-              <div class="form-grid">
-                <label data-i18n="i18n_agegroup_111">
-                  Age group
-                  <select id="ageGroup">
-                    <option>18-29</option>
-                    <option>30-44</option>
-                    <option>45-59</option>
-                    <option>60+</option>
-                  </select>
-                </label>
+              <!-- Wizard Step 1: Symptoms -->
+              <div id="aiWizardStep1" class="wizard-step">
+                <h4 style="margin: 0.5rem 0;" data-i18n="i18n_step_wizard_1">What's bothering you today?</h4>
+                <button type="button" class="voice-input-btn" id="aiVoiceBtn">
+                  <span>🎤</span> <span data-i18n="i18n_tap_speak">Tap and speak</span>
+                </button>
+                <div class="icon-grid" id="aiSymptomGrid" data-multi="true">
+                  <div class="icon-card" data-value="fever"><span class="card-icon">🤒</span> <span data-i18n="i18n_fever_12">Fever</span></div>
+                  <div class="icon-card" data-value="cough"><span class="card-icon">😷</span> <span data-i18n="i18n_cough_14">Cough</span></div>
+                  <div class="icon-card" data-value="body pain"><span class="card-icon">🤕</span> <span>Body Pain</span></div>
+                  <div class="icon-card" data-value="weakness"><span class="card-icon">🥱</span> <span data-i18n="i18n_weakness_13">Weakness</span></div>
+                  <div class="icon-card" data-value="breathlessness"><span class="card-icon">😮💨</span> <span>Breathlessness</span></div>
+                  <div class="icon-card" data-value="vomiting"><span class="card-icon">🤮</span> <span>Vomiting</span></div>
+                  <div class="icon-card" data-value="bleeding"><span class="card-icon">🩸</span> <span>Bleeding</span></div>
+                  <div class="icon-card" data-value="cold"><span class="card-icon">🤧</span> <span>Cold</span></div>
+                  <div class="icon-card" data-value="other"><span class="card-icon">✏️</span> <span>Other</span></div>
+                </div>
+                <div id="aiOtherSymptomWrap" class="hidden" style="margin-top: 0.5rem;">
+                  <input type="text" id="aiOtherSymptomInput" placeholder="Specify other symptom...">
+                </div>
+                <button type="button" class="primary full-width" id="aiWizNext1" style="margin-top: 1rem;">Next: Severity ➔</button>
+              </div>
 
-                <label data-i18n="i18n_symptomseverity_112">
-                  Symptom severity
-                  <select id="severity">
-                    <option data-i18n="i18n_mild_113">Mild</option>
-                    <option selected="" data-i18n="i18n_moderate_114">Moderate</option>
-                    <option data-i18n="i18n_severe_115">Severe</option>
-                  </select>
-                </label>
+              <!-- Wizard Step 2: Severity -->
+              <div id="aiWizardStep2" class="wizard-step hidden">
+                <h4 style="margin: 0.5rem 0;" data-i18n="i18n_step_wizard_2">How bad does it feel?</h4>
+                <div class="icon-grid" id="aiSeverityGrid" data-single="true">
+                  <div class="icon-card" data-value="mild"><span class="card-icon">🙂</span> <span data-i18n="i18n_mild">Mild</span></div>
+                  <div class="icon-card selected" data-value="moderate"><span class="card-icon">😟</span> <span data-i18n="i18n_moderate">Moderate</span></div>
+                  <div class="icon-card" data-value="severe"><span class="card-icon">😰</span> <span data-i18n="i18n_severe">Severe</span></div>
+                </div>
+                <div class="cta-row" style="margin-top: 1.5rem;">
+                  <button type="button" class="secondary" id="aiWizBack2">⬅ Back</button>
+                  <button type="button" class="primary" id="aiWizNext2">Next: Duration ➔</button>
+                </div>
+              </div>
 
-                <label data-i18n="i18n_fever_116">
-                  Fever
-                  <select id="fever">
-                    <option data-i18n="i18n_no_117">No</option>
-                    <option selected="" data-i18n="i18n_low_118">Low</option>
-                    <option data-i18n="i18n_high_119">High</option>
-                  </select>
-                </label>
+              <!-- Wizard Step 3: Duration -->
+              <div id="aiWizardStep3" class="wizard-step hidden">
+                <h4 style="margin: 0.5rem 0;" data-i18n="i18n_step_wizard_3">Since when?</h4>
+                <div class="icon-grid" id="aiDurationGrid" data-single="true">
+                  <div class="icon-card selected" data-value="today"><span class="card-icon">🗓️</span> <span data-i18n="i18n_today">Today</span></div>
+                  <div class="icon-card" data-value="2-3_days"><span class="card-icon">⌛</span> <span data-i18n="i18n_days_2_3">2-3 days</span></div>
+                  <div class="icon-card" data-value="week"><span class="card-icon">📅</span> <span data-i18n="i18n_week_1">About a week</span></div>
+                  <div class="icon-card" data-value="more_than_week"><span class="card-icon">⏳</span> <span data-i18n="i18n_more_week">More than a week</span></div>
+                </div>
+                <div class="cta-row" style="margin-top: 1.5rem;">
+                  <button type="button" class="secondary" id="aiWizBack3">⬅ Back</button>
+                  <button type="button" class="primary" id="aiWizNext3">Next: Location ➔</button>
+                </div>
+              </div>
 
-                <label data-i18n="i18n_breathdifficult_120">
-                  Breath difficulty
-                  <select id="breath">
+              <!-- Wizard Step 4: Location -->
+              <div id="aiWizardStep4" class="wizard-step hidden">
+                <h4 style="margin: 0.5rem 0;" data-i18n="i18n_step_wizard_4">Where are you right now?</h4>
+                <div class="icon-grid" id="aiLocationGrid" data-single="true">
+                  <div class="icon-card selected" data-value="gps"><span class="card-icon">📍</span> <span data-i18n="i18n_use_gps">Use My Current Location</span></div>
+                  <div class="icon-card" data-value="manual"><span class="card-icon">🔎</span> <span data-i18n="i18n_manual_search">Search manually instead</span></div>
+                </div>
+                <div id="aiManualLocWrap" class="hidden" style="margin-top: 0.75rem;">
+                  <select id="location">
+                    <option data-i18n="i18n_ruralvillage_128">Rural village</option>
+                    <option selected="" data-i18n="i18n_blockphc_129">Block PHC</option>
+                    <option data-i18n="i18n_districthospita_130">District hospital</option>
+                  </select>
+                </div>
+                <div class="cta-row" style="margin-top: 1.5rem;">
+                  <button type="button" class="secondary" id="aiWizBack4">⬅ Back</button>
+                  <button type="button" class="primary" id="aiWizNext4">Next: Review ➔</button>
+                </div>
+              </div>
+
+              <!-- Wizard Step 5: Review & Submit -->
+              <div id="aiWizardStep5" class="wizard-step hidden">
+                <h4 style="margin: 0.5rem 0;" data-i18n="i18n_step_wizard_5">Review & Check Health</h4>
+                <div class="info-card" style="background: #f8fafc; border: 1.5px solid #cbd5e1; margin: 1rem 0;">
+                  <p><strong>Summary:</strong> <span id="aiWizSummaryText">Fever, Cough · Moderate · Today</span></p>
+                </div>
+                <div class="cta-row" style="margin-top: 1.5rem;">
+                  <button type="button" class="secondary" id="aiWizBack5">⬅ Edit Steps</button>
+                  <button type="button" class="primary" id="assessBtn" data-i18n="i18n_check_my_health">Check My Health</button>
+                </div>
+              </div>
+
+              <!-- Results display -->
+              <div class="result-box hidden" id="assessmentResult" style="margin-top: 1.5rem;">
+                <h4 data-i18n="i18n_assessmentresul_132">Assessment result</h4>
+                <p id="assessmentResultText">Symptoms suggest a moderate-risk case. Recommend a PHC or CHC review within 24 hours.</p>
+              </div>
+
+              <div class="cost-box hidden" id="costBox" style="margin-top: 1rem;">
+                <h4 data-i18n="i18n_estimatedtreatm_134">Estimated treatment cost</h4>
+                <div class="cost-row"><span data-i18n="i18n_consultation_135">Consultation</span><strong id="consultationCost">₹250</strong></div>
+                <div class="cost-row"><span data-i18n="i18n_tests_136">Tests</span><strong id="testCost">₹500</strong></div>
+                <div class="cost-row"><span data-i18n="i18n_medicines_137">Medicines</span><strong id="medicineCost">₹300</strong></div>
+                <div class="cost-row total"><span data-i18n="i18n_totalestimate_138">Total estimate</span><strong id="totalCost">₹1,050</strong></div>
+              </div>
                     <option data-i18n="i18n_no_121">No</option>
                     <option selected="" data-i18n="i18n_sometimes_122">Sometimes</option>
                     <option data-i18n="i18n_often_123">Often</option>
@@ -503,6 +650,65 @@
                   <h4 data-i18n="i18n_nationaltbelimi_178">National TB Elimination</h4>
                   <p data-i18n="i18n_screeningandtre_179">Screening and treatment support for rural patients.</p>
                   <span data-i18n="i18n_checkstatus_180">Check status</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Emergency SOS Panel -->
+            <div id="emergency" class="panel">
+              <div class="emergency-header-card">
+                <h2 data-i18n="i18n_emergency_header">🆘 Emergency — Finding help near you</h2>
+                <p>Real-time 24x7 emergency medical centers & instant SMS/WhatsApp location alerts</p>
+                <div style="margin-top: 0.5rem;" id="emergGpsStatus">
+                  <span class="chip success">📍 GPS Active</span>
+                </div>
+              </div>
+
+              <!-- Notify Emergency Contact Card -->
+              <div class="info-card" style="border: 2px solid #ef4444; background: #fff5f5; margin-bottom: 1.5rem;">
+                <h3 style="color: #dc2626;" data-i18n="i18n_emergency_contact">Notify Emergency Contact</h3>
+                <p style="font-size: 0.9rem; color: #4b5563;">Instantly send your current GPS coordinates & SOS message to your emergency contact via SMS & WhatsApp.</p>
+                
+                <div id="emergUserContactView">
+                  <div style="margin: 0.75rem 0; font-size: 1rem;">
+                    <strong>Target Contact:</strong> <span id="emergContactNameDisplay">Emergency Contact</span>
+                  </div>
+                </div>
+
+                <div id="emergGuestContactView" class="hidden">
+                  <div class="form-grid" style="margin: 0.75rem 0;">
+                    <label data-i18n="i18n_contact_name">Your Name
+                      <input type="text" id="emergGuestName" placeholder="Enter your name">
+                    </label>
+                    <label data-i18n="i18n_contact_phone">Emergency Contact Phone
+                      <input type="tel" id="emergGuestPhone" placeholder="+91 98765 00000">
+                    </label>
+                  </div>
+                </div>
+
+                <button type="button" class="btn-sos" id="emergSendLocationBtn" style="font-size: 1.05rem; padding: 0.75rem 1.5rem;" data-i18n="i18n_send_location">
+                  📡 Send My Location Now
+                </button>
+                <div id="emergNotifyToast" class="hidden" style="margin-top: 0.75rem; padding: 0.75rem; background: #dcfce7; color: #166534; border-radius: 0.5rem; font-weight: 600;">
+                  ✅ Sent via SMS & WhatsApp to contact!
+                </div>
+              </div>
+
+              <!-- Nearby Emergency Facilities List -->
+              <div class="panel-head">
+                <h3>24x7 Emergency Medical Facilities</h3>
+              </div>
+              <div class="facility-list" id="emergFacilityList">
+                <div class="facility-card emergency-facility-card">
+                  <div>
+                    <h4>District Hospital Emergency Center <span class="badge-24x7">24x7 EMERGENCY</span></h4>
+                    <p>Station Road, District HQ · <strong>3.2 km away</strong></p>
+                    <p style="margin-top: 0.4rem;">🚑 Ambulance Available · ICU · Trauma Care</p>
+                  </div>
+                  <div class="cta-row" style="margin-top: 0.75rem;">
+                    <a href="tel:108" class="btn-emergency-call" data-i18n="i18n_call_facility">📞 Call 108</a>
+                    <a href="https://maps.google.com" target="_blank" class="btn-emergency-dir" data-i18n="i18n_get_directions">🗺️ Directions</a>
+                  </div>
                 </div>
               </div>
             </div>

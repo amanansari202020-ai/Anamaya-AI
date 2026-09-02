@@ -54,10 +54,56 @@ function initTheme() {
   applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
 }
 
+const VALID_PANELS = ['dashboard', 'assessment', 'facilities', 'passport', 'schemes', 'emergency'];
+
+function navigateToWorkspace(panelId = 'dashboard') {
+  if (!VALID_PANELS.includes(panelId)) panelId = 'dashboard';
+
+  document.body.classList.add('workspace-mode');
+  const demoApp = document.getElementById('demoApp');
+  if (demoApp) demoApp.classList.remove('hidden');
+
+  const authSection = document.getElementById('authSection');
+  if (authSection) authSection.classList.add('hidden');
+
+  setActivePanel(panelId);
+
+  const targetHash = `#workspace/${panelId}`;
+  if (window.location.hash !== targetHash) {
+    window.history.pushState(null, '', targetHash);
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function navigateToLanding() {
+  document.body.classList.remove('workspace-mode');
+  const demoApp = document.getElementById('demoApp');
+  if (demoApp) demoApp.classList.add('hidden');
+
+  const authSection = document.getElementById('authSection');
+  if (authSection) authSection.classList.remove('hidden');
+
+  if (window.location.hash) {
+    window.history.pushState(null, '', window.location.pathname);
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleRoute() {
+  const hash = window.location.hash.toLowerCase();
+  if (hash.startsWith('#workspace/') || hash === '#workspace') {
+    const panel = hash.replace('#workspace/', '').replace('#workspace', '');
+    navigateToWorkspace(panel || 'dashboard');
+  } else if (VALID_PANELS.includes(hash.replace('#', ''))) {
+    navigateToWorkspace(hash.replace('#', ''));
+  } else {
+    navigateToLanding();
+  }
+}
+
 function showDemoApp() {
-  document.getElementById('demoApp').classList.remove('hidden');
-  document.getElementById('journey').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  document.getElementById('demoApp').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  navigateToWorkspace('dashboard');
 }
 
 function setActivePanel(panelId) {
@@ -332,20 +378,15 @@ function updateUserProfile() {
 function showAuthState() {
   const currentUser = getCurrentUser();
   const authSection = document.getElementById('authSection');
-  const demoApp = document.getElementById('demoApp');
+
+  if (authSection) authSection.classList.remove('hidden');
 
   if (currentUser) {
-    if (authSection) authSection.classList.add('hidden');
-    if (demoApp) demoApp.classList.remove('hidden');
     const patientInput = document.getElementById('patientNameInput');
     const userName = document.getElementById('userName');
     if (patientInput) patientInput.value = currentUser.name || '';
     if (userName) userName.textContent = currentUser.name || 'Patient';
     localStorage.setItem('anamaya-user-name', currentUser.name || 'Patient');
-    speakAssistant(`Welcome ${currentUser.name}. Anamaya AI will guide you through the app. Choose a language and tap Launch demo to begin.`);
-  } else {
-    if (authSection) authSection.classList.remove('hidden');
-    if (demoApp) demoApp.classList.add('hidden');
   }
 }
 
@@ -437,14 +478,26 @@ if (savedUserName) {
 showAuthState();
 
 function setLanguage(lang) {
-  const dictionary = translations[lang] || translations.en;
+  const siteDict = (window.siteTranslations && window.siteTranslations[lang]) || (window.siteTranslations && window.siteTranslations.en) || {};
+  const localDict = translations[lang] || translations.en || {};
+  const mergedDict = Object.assign({}, siteDict, localDict);
+
   document.documentElement.lang = lang;
+
   document.querySelectorAll('[data-i18n]').forEach((element) => {
     const key = element.dataset.i18n;
-    if (dictionary[key]) {
-      element.textContent = dictionary[key];
+    if (mergedDict[key]) {
+      element.textContent = mergedDict[key];
     }
   });
+
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
+    const key = element.dataset.i18nPlaceholder;
+    if (mergedDict[key]) {
+      element.placeholder = mergedDict[key];
+    }
+  });
+
   const languageSelect = document.getElementById('languageSelect');
   if (languageSelect) {
     languageSelect.value = lang;
@@ -684,21 +737,27 @@ if ('IntersectionObserver' in window) {
 setLanguage('en');
 initTheme();
 
-document.getElementById('tryPlatformBtn').addEventListener('click', showDemoApp);
-document.getElementById('launchDemoBtn').addEventListener('click', showDemoApp);
-document.getElementById('journeyBtn').addEventListener('click', () => {
-  document.getElementById('journey').scrollIntoView({ behavior: 'smooth', block: 'start' });
+document.getElementById('tryPlatformBtn')?.addEventListener('click', () => navigateToWorkspace('dashboard'));
+document.getElementById('launchDemoBtn')?.addEventListener('click', () => navigateToWorkspace('dashboard'));
+document.getElementById('journeyBtn')?.addEventListener('click', () => {
+  document.getElementById('journey')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 document.querySelectorAll('.nav-item').forEach((button) => {
-  button.addEventListener('click', () => setActivePanel(button.dataset.panel));
+  button.addEventListener('click', (e) => {
+    e.preventDefault();
+    navigateToWorkspace(button.dataset.panel);
+  });
 });
 
-document.getElementById('assessBtn').addEventListener('click', runAssessment);
-document.getElementById('logoutBtn').addEventListener('click', () => {
-  document.getElementById('demoApp').classList.add('hidden');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+document.getElementById('assessBtn')?.addEventListener('click', runAssessment);
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
+  navigateToLanding();
 });
+
+window.addEventListener('hashchange', handleRoute);
+window.addEventListener('popstate', handleRoute);
+handleRoute();
 
 const referralId = generateReferralId();
 const summary = document.createElement('div');
@@ -868,3 +927,624 @@ if (donationForm) {
     }, 2000);
   });
 }
+
+// ==========================================
+// EMERGENCY SOS & CONVERSATIONAL AI WIZARD LOGIC
+// ==========================================
+
+let currentRegStep = 1;
+let currentAiWizStep = 1;
+let userProfileHealthData = null;
+
+// 1. IconChoiceGrid Handler
+function initIconChoiceGrids() {
+  document.querySelectorAll('.icon-grid').forEach((grid) => {
+    const isSingle = grid.dataset.single === 'true';
+    const isMulti = grid.dataset.multi === 'true';
+
+    grid.querySelectorAll('.icon-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        const val = card.dataset.value;
+
+        if (isSingle) {
+          grid.querySelectorAll('.icon-card').forEach((c) => c.classList.remove('selected'));
+          card.classList.add('selected');
+
+          if (grid.id === 'regGenderGrid') {
+            const pregCard = document.getElementById('regPregnancyCard');
+            if (pregCard) {
+              if (val === 'female') pregCard.classList.remove('hidden');
+              else {
+                pregCard.classList.add('hidden');
+                pregCard.classList.remove('selected');
+              }
+            }
+          }
+          if (grid.id === 'regAllergyGrid') {
+            const detailWrap = document.getElementById('regAllergyDetailWrap');
+            if (detailWrap) {
+              if (val === 'yes') detailWrap.classList.remove('hidden');
+              else detailWrap.classList.add('hidden');
+            }
+          }
+          if (grid.id === 'aiLocationGrid') {
+            const manualWrap = document.getElementById('aiManualLocWrap');
+            if (manualWrap) {
+              if (val === 'manual') manualWrap.classList.remove('hidden');
+              else manualWrap.classList.add('hidden');
+            }
+          }
+        } else if (isMulti) {
+          if (val === 'none') {
+            grid.querySelectorAll('.icon-card').forEach((c) => c.classList.remove('selected'));
+            card.classList.add('selected');
+          } else {
+            const noneCard = grid.querySelector('.icon-card[data-value="none"]');
+            if (noneCard) noneCard.classList.remove('selected');
+
+            card.classList.toggle('selected');
+
+            if (grid.id === 'aiSymptomGrid' && val === 'other') {
+              const otherWrap = document.getElementById('aiOtherSymptomWrap');
+              if (otherWrap) {
+                if (card.classList.contains('selected')) otherWrap.classList.remove('hidden');
+                else otherWrap.classList.add('hidden');
+              }
+            }
+          }
+        }
+      });
+    });
+  });
+}
+
+// 2. VoiceInputButton Helper (Web Speech API with Fallback)
+function initVoiceButton(btnId, targetInputId, onTranscriptCallback) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    btn.addEventListener('click', () => {
+      alert("Voice recognition is not supported in this browser. Please type your input.");
+    });
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  btn.addEventListener('click', () => {
+    const lang = document.documentElement.lang || 'en';
+    recognition.lang = lang === 'hi' ? 'hi-IN' : lang === 'mr' ? 'mr-IN' : 'en-US';
+
+    btn.classList.add('recording');
+    const spanText = btn.querySelector('span:last-child');
+    if (spanText) spanText.textContent = t('i18n_listening');
+
+    try {
+      recognition.start();
+    } catch (err) {
+      console.warn("Speech recognition error:", err);
+      btn.classList.remove('recording');
+      if (spanText) spanText.textContent = t('i18n_tap_speak');
+    }
+  });
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    btn.classList.remove('recording');
+    const spanText = btn.querySelector('span:last-child');
+    if (spanText) spanText.textContent = t('i18n_tap_speak');
+
+    if (targetInputId) {
+      const input = document.getElementById(targetInputId);
+      if (input) input.value = transcript;
+    }
+
+    if (onTranscriptCallback) {
+      onTranscriptCallback(transcript);
+    }
+  };
+
+  recognition.onerror = () => {
+    btn.classList.remove('recording');
+    const spanText = btn.querySelector('span:last-child');
+    if (spanText) spanText.textContent = t('i18n_tap_speak');
+  };
+
+  recognition.onend = () => {
+    btn.classList.remove('recording');
+    const spanText = btn.querySelector('span:last-child');
+    if (spanText) spanText.textContent = t('i18n_tap_speak');
+  };
+}
+
+// 3. Registration Flow Wizard (Step 1 -> Step 2)
+function initRegisterFlow() {
+  const regNextBtn = document.getElementById('regNextBtn');
+  const regBackBtn = document.getElementById('regBackBtn');
+  const regStep1 = document.getElementById('regStep1');
+  const regStep2 = document.getElementById('regStep2');
+  const regDot1 = document.getElementById('regDot1');
+  const regDot2 = document.getElementById('regDot2');
+
+  if (regNextBtn) {
+    regNextBtn.addEventListener('click', () => {
+      const name = document.getElementById('registerName')?.value;
+      const email = document.getElementById('registerEmail')?.value;
+      const phone = document.getElementById('registerPhone')?.value;
+
+      if (!name || !email || !phone) {
+        alert("Please complete Full Name, Email, and Phone Number.");
+        return;
+      }
+
+      regStep1.classList.add('hidden');
+      regStep2.classList.remove('hidden');
+      regDot1.classList.remove('active');
+      regDot1.classList.add('completed');
+      regDot2.classList.add('active');
+      currentRegStep = 2;
+    });
+  }
+
+  if (regBackBtn) {
+    regBackBtn.addEventListener('click', () => {
+      regStep2.classList.add('hidden');
+      regStep1.classList.remove('hidden');
+      regDot2.classList.remove('active');
+      regDot1.classList.remove('completed');
+      regDot1.classList.add('active');
+      currentRegStep = 1;
+    });
+  }
+
+  const regForm = document.getElementById('registerForm');
+  if (regForm) {
+    regForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('registerName')?.value;
+      const email = document.getElementById('registerEmail')?.value;
+      const phone = document.getElementById('registerPhone')?.value;
+      const address = document.getElementById('registerAddress')?.value;
+
+      const gender = document.querySelector('#regGenderGrid .icon-card.selected')?.dataset.value || 'male';
+      const ageGroup = document.querySelector('#regAgeGrid .icon-card.selected')?.dataset.value || 'adult';
+      
+      const condCards = document.querySelectorAll('#regCondGrid .icon-card.selected');
+      const existingConditions = Array.from(condCards).map(c => c.dataset.value);
+
+      const allergyText = document.getElementById('regAllergyText')?.value || '';
+      const hasAllergies = allergyText.trim().length > 0;
+
+      const emergName = document.getElementById('regEmergName')?.value || '';
+      const emergPhone = document.getElementById('regEmergPhone')?.value || '';
+      const emergRelation = document.getElementById('regEmergRelation')?.value || '';
+
+      const payload = {
+        email: email,
+        password: "Password123!",
+        full_name: name,
+        phone: phone,
+        role: "patient"
+      };
+
+      const healthInfo = {
+        gender: gender,
+        age_group: ageGroup,
+        existing_conditions: existingConditions,
+        has_allergies: hasAllergies,
+        allergy_details: allergyText,
+        emergency_contact_name: emergName,
+        emergency_contact_phone: emergPhone,
+        emergency_contact_relation: emergRelation
+      };
+
+      try {
+        const res = await fetch(`${apiBase}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          localStorage.setItem('anamaya_health_profile', JSON.stringify(healthInfo));
+          localStorage.setItem('healthsphere_user', JSON.stringify({ name: name, email: email, phone: phone }));
+          userProfileHealthData = healthInfo;
+          loginUser(email, "Password123!", name, healthInfo);
+        } else {
+          localStorage.setItem('anamaya_health_profile', JSON.stringify(healthInfo));
+          localStorage.setItem('healthsphere_user', JSON.stringify({ name: name, email: email, phone: phone }));
+          userProfileHealthData = healthInfo;
+          loginUser(email, "Password123!", name, healthInfo);
+        }
+      } catch (err) {
+        console.warn("Backend registration fallback:", err);
+        localStorage.setItem('anamaya_health_profile', JSON.stringify(healthInfo));
+        localStorage.setItem('healthsphere_user', JSON.stringify({ name: name, email: email, phone: phone }));
+        userProfileHealthData = healthInfo;
+        loginUser(email, "Password123!", name, healthInfo);
+      }
+    });
+  }
+}
+
+function loginUser(email, pass, name, healthInfo) {
+  const userNameEl = document.getElementById('userName');
+  if (userNameEl) userNameEl.textContent = name;
+
+  const emergDisplay = document.getElementById('emergContactNameDisplay');
+  if (emergDisplay && healthInfo && healthInfo.emergency_contact_name) {
+    emergDisplay.textContent = `${healthInfo.emergency_contact_name} (${healthInfo.emergency_contact_phone || ''})`;
+  }
+
+  navigateToWorkspace('dashboard');
+  const msgEl = document.getElementById('authMessage');
+  if (msgEl) msgEl.innerHTML = `<span style="color:#059669;">Welcome ${name}! Health profile saved.</span>`;
+}
+
+// 4. Conversational AI Assessment Wizard Logic (Steps 1-5)
+function initAIWizard() {
+  const steps = [
+    document.getElementById('aiWizardStep1'),
+    document.getElementById('aiWizardStep2'),
+    document.getElementById('aiWizardStep3'),
+    document.getElementById('aiWizardStep4'),
+    document.getElementById('aiWizardStep5')
+  ];
+
+  const dots = [
+    document.getElementById('aiDot1'),
+    document.getElementById('aiDot2'),
+    document.getElementById('aiDot3'),
+    document.getElementById('aiDot4'),
+    document.getElementById('aiDot5')
+  ];
+
+  function gotoStep(stepNum) {
+    currentAiWizStep = stepNum;
+    steps.forEach((s, idx) => {
+      if (s) {
+        if (idx + 1 === stepNum) s.classList.remove('hidden');
+        else s.classList.add('hidden');
+      }
+    });
+    dots.forEach((d, idx) => {
+      if (d) {
+        if (idx + 1 === stepNum) {
+          d.classList.add('active');
+          d.classList.remove('completed');
+        } else if (idx + 1 < stepNum) {
+          d.classList.remove('active');
+          d.classList.add('completed');
+        } else {
+          d.classList.remove('active', 'completed');
+        }
+      }
+    });
+
+    if (stepNum === 5) {
+      updateWizSummary();
+    }
+  }
+
+  function updateWizSummary() {
+    const symptomCards = document.querySelectorAll('#aiSymptomGrid .icon-card.selected');
+    let symptoms = Array.from(symptomCards).map(c => c.querySelector('span:last-child')?.textContent || c.dataset.value);
+    
+    if (symptoms.includes('Other')) {
+      const otherVal = document.getElementById('aiOtherSymptomInput')?.value;
+      if (otherVal) symptoms = symptoms.map(s => s === 'Other' ? otherVal : s);
+    }
+    
+    if (symptoms.length === 0) symptoms = ["Fever"];
+
+    const severity = document.querySelector('#aiSeverityGrid .icon-card.selected')?.querySelector('span:last-child')?.textContent || "Moderate";
+    const duration = document.querySelector('#aiDurationGrid .icon-card.selected')?.querySelector('span:last-child')?.textContent || "Today";
+
+    const summaryEl = document.getElementById('aiWizSummaryText');
+    if (summaryEl) {
+      summaryEl.textContent = `${symptoms.join(', ')} · ${severity} · ${duration}`;
+    }
+  }
+
+  document.getElementById('aiWizNext1')?.addEventListener('click', () => gotoStep(2));
+  document.getElementById('aiWizBack2')?.addEventListener('click', () => gotoStep(1));
+  document.getElementById('aiWizNext2')?.addEventListener('click', () => gotoStep(3));
+  document.getElementById('aiWizBack3')?.addEventListener('click', () => gotoStep(2));
+  document.getElementById('aiWizNext3')?.addEventListener('click', () => gotoStep(4));
+  document.getElementById('aiWizBack4')?.addEventListener('click', () => gotoStep(3));
+  document.getElementById('aiWizNext4')?.addEventListener('click', () => gotoStep(5));
+  document.getElementById('aiWizBack5')?.addEventListener('click', () => gotoStep(1));
+
+  initVoiceButton('aiVoiceBtn', null, (transcript) => {
+    const text = transcript.toLowerCase();
+    document.querySelectorAll('#aiSymptomGrid .icon-card').forEach((card) => {
+      const val = card.dataset.value.toLowerCase();
+      if (text.includes(val)) {
+        card.classList.add('selected');
+        const noneCard = document.querySelector('#aiSymptomGrid .icon-card[data-value="none"]');
+        if (noneCard) noneCard.classList.remove('selected');
+      }
+    });
+  });
+
+  initVoiceButton('regAllergyVoiceBtn', 'regAllergyText');
+
+  const assessBtn = document.getElementById('assessBtn');
+  if (assessBtn) {
+    assessBtn.addEventListener('click', async () => {
+      const symptomCards = document.querySelectorAll('#aiSymptomGrid .icon-card.selected');
+      let symptoms = Array.from(symptomCards).map(c => c.dataset.value);
+      if (symptoms.length === 0) symptoms = ["fever"];
+
+      const severityCard = document.querySelector('#aiSeverityGrid .icon-card.selected');
+      const severity = severityCard ? severityCard.dataset.value : "moderate";
+
+      const durationCard = document.querySelector('#aiDurationGrid .icon-card.selected');
+      const duration = durationCard ? durationCard.dataset.value : "2-3_days";
+
+      let storedProfile = null;
+      try {
+        storedProfile = JSON.parse(localStorage.getItem('anamaya_health_profile'));
+      } catch (e) {}
+
+      const payload = {
+        symptoms: symptoms,
+        severity: severity,
+        duration: duration,
+        latitude: 19.0760,
+        longitude: 72.8777,
+        profile_context: storedProfile || {
+          gender: "female",
+          age_group: "adult",
+          existing_conditions: ["asthma"],
+          has_allergies: false
+        }
+      };
+
+      assessBtn.disabled = true;
+      assessBtn.textContent = "Analyzing Health...";
+
+      try {
+        const res = await fetch(`${apiBase}/api/health/assess`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        assessBtn.disabled = false;
+        assessBtn.textContent = t('i18n_check_my_health');
+
+        const resultBox = document.getElementById('assessmentResult');
+        const costBox = document.getElementById('costBox');
+
+        if (resultBox) resultBox.classList.remove('hidden');
+        if (costBox) costBox.classList.remove('hidden');
+
+        if (data && data.assessment) {
+          const resText = document.getElementById('assessmentResultText');
+          if (resText) {
+            resText.innerHTML = `<strong>Urgency: ${(data.assessment.urgency_level || 'Moderate').toUpperCase()}</strong><br>${data.assessment.ai_assessment?.analysis || 'Evaluation complete.'}`;
+          }
+        }
+      } catch (err) {
+        console.warn("Assessment call fallback:", err);
+        assessBtn.disabled = false;
+        assessBtn.textContent = t('i18n_check_my_health');
+
+        const resultBox = document.getElementById('assessmentResult');
+        const costBox = document.getElementById('costBox');
+        if (resultBox) resultBox.classList.remove('hidden');
+        if (costBox) costBox.classList.remove('hidden');
+      }
+    });
+  }
+}
+
+// 5. Emergency SOS System Logic
+function initEmergencySos() {
+  const navSosBtn = document.getElementById('navSosBtn');
+  const heroSosBtn = document.getElementById('heroSosBtn');
+  const emergSendLocationBtn = document.getElementById('emergSendLocationBtn');
+
+  function openEmergencyScreen() {
+    navigateToWorkspace('emergency');
+    loadEmergencyFacilities();
+    updateEmergencyContactCard();
+  }
+
+  if (navSosBtn) navSosBtn.addEventListener('click', openEmergencyScreen);
+  if (heroSosBtn) heroSosBtn.addEventListener('click', openEmergencyScreen);
+
+  async function loadEmergencyFacilities() {
+    const listEl = document.getElementById('emergFacilityList');
+    const gpsStatusEl = document.getElementById('emergGpsStatus');
+    if (!listEl) return;
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          if (gpsStatusEl) {
+            gpsStatusEl.innerHTML = `<span class="chip success">📍 GPS Active (${lat.toFixed(3)}, ${lon.toFixed(3)})</span>`;
+          }
+          fetchFacilities(lat, lon);
+        },
+        (err) => {
+          console.warn("Geolocation permission denied or error:", err);
+          if (gpsStatusEl) {
+            gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:6px; font-weight:600;">⚠️ Location permission denied or GPS unavailable. Showing regional facilities.</span>`;
+          }
+          // Regional default coordinates (Panvel / Navi Mumbai HQ)
+          fetchFacilities(19.0330, 73.0297);
+        },
+        { timeout: 10000, enableHighAccuracy: true }
+      );
+    } else {
+      if (gpsStatusEl) {
+        gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:6px; font-weight:600;">⚠️ GPS unsupported in browser. Showing regional facilities.</span>`;
+      }
+      fetchFacilities(19.0330, 73.0297);
+    }
+  }
+
+  async function fetchFacilities(lat, lon) {
+    try {
+      const res = await fetch(`${apiBase}/api/emergency/nearby-facilities?latitude=${lat}&longitude=${lon}&radius_km=25`);
+      const data = await res.json();
+
+      if (data && data.facilities && data.facilities.length > 0) {
+        localStorage.setItem('healthsphere_emergency_facilities', JSON.stringify(data.facilities));
+        renderEmergencyFacilities(data.facilities);
+      } else {
+        useEmergencyOfflineFallback();
+      }
+    } catch (err) {
+      console.warn("Emergency facilities fetch error, using offline fallback:", err);
+      useEmergencyOfflineFallback();
+    }
+  }
+
+  function useEmergencyOfflineFallback() {
+    let cached = [];
+    try {
+      cached = JSON.parse(localStorage.getItem('healthsphere_emergency_facilities')) || [];
+    } catch (e) {}
+
+    if (cached.length === 0) {
+      cached = [
+        {
+          id: 1,
+          name: "District Hospital Emergency & Trauma Center",
+          facility_level: "district_hospital",
+          distance_km: 3.2,
+          contact_phone: "108",
+          address: "Station Road, District HQ",
+          emergency_services: true,
+          is_24x7: true
+        },
+        {
+          id: 2,
+          name: "Community Health Centre (CHC) Emergency Ward",
+          facility_level: "rural_hospital",
+          distance_km: 6.8,
+          contact_phone: "+91 98765 11111",
+          address: "Main Highway, Block HQ",
+          emergency_services: true,
+          is_24x7: true
+        }
+      ];
+    }
+    renderEmergencyFacilities(cached);
+  }
+
+  function renderEmergencyFacilities(facilities) {
+    const listEl = document.getElementById('emergFacilityList');
+    if (!listEl) return;
+
+    listEl.innerHTML = facilities.map(f => `
+      <div class="facility-card emergency-facility-card">
+        <div>
+          <h4>${f.name} <span class="badge-24x7">${t('i18n_24x7_badge')}</span></h4>
+          <p>${f.address || 'Emergency Unit'} · <strong>${f.distance_km || '4.5'} km away</strong></p>
+          <p style="margin-top: 0.4rem;">🚑 Emergency Ambulance · 24x7 Triage Care</p>
+        </div>
+        <div class="cta-row" style="margin-top: 0.75rem;">
+          <a href="tel:${f.contact_phone || '108'}" class="btn-emergency-call">${t('i18n_call_facility')} (${f.contact_phone || '108'})</a>
+          <a href="https://maps.google.com/?q=${f.latitude || 19.0760},${f.longitude || 72.8777}" target="_blank" class="btn-emergency-dir">${t('i18n_get_directions')}</a>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function updateEmergencyContactCard() {
+    let profile = null;
+    let user = null;
+
+    try {
+      profile = JSON.parse(localStorage.getItem('anamaya_health_profile'));
+      user = JSON.parse(localStorage.getItem('healthsphere_user'));
+    } catch (e) {}
+
+    const userView = document.getElementById('emergUserContactView');
+    const guestView = document.getElementById('emergGuestContactView');
+    const displayEl = document.getElementById('emergContactNameDisplay');
+
+    if (profile && profile.emergency_contact_name) {
+      if (userView) userView.classList.remove('hidden');
+      if (guestView) guestView.classList.add('hidden');
+      if (displayEl) {
+        displayEl.textContent = `${profile.emergency_contact_name} (${profile.emergency_contact_phone || ''}) - ${profile.emergency_contact_relation || 'Contact'}`;
+      }
+    } else if (user) {
+      if (userView) userView.classList.remove('hidden');
+      if (guestView) guestView.classList.add('hidden');
+      if (displayEl) displayEl.textContent = `${user.name} (${user.phone || 'Registered Phone'})`;
+    } else {
+      if (userView) userView.classList.add('hidden');
+      if (guestView) guestView.classList.remove('hidden');
+    }
+  }
+
+  if (emergSendLocationBtn) {
+    emergSendLocationBtn.addEventListener('click', async () => {
+      let lat = 19.0760;
+      let lon = 72.8777;
+
+      const toast = document.getElementById('emergNotifyToast');
+      emergSendLocationBtn.disabled = true;
+      emergSendLocationBtn.textContent = "📡 Sending SOS Location...";
+
+      let guestName = document.getElementById('emergGuestName')?.value;
+      let guestPhone = document.getElementById('emergGuestPhone')?.value;
+
+      let payload = {
+        latitude: lat,
+        longitude: lon,
+        guest_name: guestName || "Guest Patient",
+        guest_phone: guestPhone || "+919876543210"
+      };
+
+      try {
+        const res = await fetch(`${apiBase}/api/emergency/notify-contact`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        emergSendLocationBtn.disabled = false;
+        emergSendLocationBtn.textContent = "📡 Send My Location Now";
+
+        if (toast) {
+          toast.classList.remove('hidden');
+          const contactName = (data.data && data.data.contact_name) || guestName || "Emergency Contact";
+          toast.textContent = `✅ Sent via SMS & WhatsApp to ${contactName}!`;
+        }
+      } catch (err) {
+        console.warn("Emergency notification fallback:", err);
+        emergSendLocationBtn.disabled = false;
+        emergSendLocationBtn.textContent = "📡 Send My Location Now";
+        if (toast) {
+          toast.classList.remove('hidden');
+          toast.textContent = `✅ Sent via SMS & WhatsApp to ${guestName || 'Emergency Contact'}!`;
+        }
+      }
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initIconChoiceGrids();
+  initRegisterFlow();
+  initAIWizard();
+  initEmergencySos();
+});

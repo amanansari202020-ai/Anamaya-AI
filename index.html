@@ -1,185 +1,352 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HealthSphere AI | Rural Healthcare Navigation</title>
-    <meta name="description" content="HealthSphere AI is an AI-powered rural healthcare navigation and continuity platform helping patients reach the right care faster." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="website/styles.css" />
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anamaya AI | Rural Healthcare Navigation</title>
+    <meta name="description" content="Anamaya AI is an AI-powered rural healthcare navigation and continuity platform helping patients reach the right care faster.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+    <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <header class="topbar">
       <div class="brand-wrap">
         <div class="brand-mark">H</div>
         <div>
-          <div class="brand-name">HealthSphere AI</div>
-          <div class="brand-subtitle">Smart rural care access</div>
+          <div class="brand-name" data-i18n="i18n_anamayaai_1">Anamaya AI</div>
+          <div class="brand-subtitle" data-i18n="i18n_smartruralcarea_2">Smart rural care access</div>
         </div>
       </div>
       <nav class="nav">
-        <a href="#features">Features</a>
-        <a href="#journey">Journey</a>
-        <a href="#impact">Impact</a>
+        <a href="#features" data-i18n="i18n_features_3">Features</a>
+        <a href="#journey" data-i18n="i18n_journey_4">Journey</a>
+        <a href="#impact" data-i18n="i18n_impact_5">Impact</a>
       </nav>
-      <button class="nav-button" id="launchDemoBtn">Launch demo</button>
+      <div class="header-actions">
+        <label class="lang-picker" aria-label="Select language">
+          <span>🌐</span>
+          <select id="languageSelect">
+            <option value="en" data-i18n="i18n_english_6">English</option>
+            <option value="hi">हिन्दी</option>
+            <option value="mr">मराठी</option>
+          </select>
+        </label>
+        <button class="voice-toggle" id="voiceAssistantBtn" aria-label="Voice assistant" data-i18n="i18n_assistant_7">🔊 Assistant</button>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" data-i18n="i18n_dark_8">🌙 Dark</button>
+        <button class="nav-sos-btn" id="navSosBtn" data-i18n="i18n_emergency_sos">🆘 Emergency SOS</button>
+        <button class="nav-button" id="launchDemoBtn" data-i18n="i18n_launchdemo_9">Launch demo</button>
+      </div>
     </header>
 
     <main>
       <section class="hero">
         <div class="hero-copy">
-          <span class="eyebrow">AI-powered rural healthcare navigation</span>
-          <h1>Connecting every patient to the right care, at the right place, at the right time.</h1>
-          <p>
-            HealthSphere AI helps communities find suitable facilities, understand symptoms,
+          <span class="eyebrow" data-i18n="heroEyebrow">AI-powered rural healthcare navigation</span>
+          <h1 data-i18n="heroHeading">Connecting every patient to the right care, at the right place, at the right time.</h1>
+          <p data-i18n="heroText">
+            Anamaya AI helps communities find suitable facilities, understand symptoms,
             track referrals, and access scheme support through a digital health passport.
           </p>
           <div class="cta-row">
-            <button class="primary" id="tryPlatformBtn">Try the platform</button>
-            <button class="secondary" id="journeyBtn">View patient journey</button>
+            <button class="btn-sos" id="heroSosBtn" data-i18n="i18n_emergency_sos">🆘 Emergency SOS</button>
+            <button class="primary" id="tryPlatformBtn" data-i18n="ctaPrimary">Try the platform</button>
+            <button class="secondary" id="journeyBtn" data-i18n="ctaSecondary">View patient journey</button>
           </div>
           <div class="status-card" id="backendStatus">
             <div class="status-dot"></div>
-            <span>Checking backend connection...</span>
+            <span data-i18n="statusChecking">Checking backend connection...</span>
           </div>
         </div>
 
         <div class="hero-panel">
           <div class="mini-card large">
             <div class="mini-header">
-              <span>AI Health Check</span>
-              <span class="chip success">Low risk</span>
+              <span data-i18n="i18n_aihealthcheck_10">AI Health Check</span>
+              <span class="chip success" data-i18n="i18n_lowrisk_11">Low risk</span>
             </div>
             <div class="symptom-list">
-              <span>Fever</span>
-              <span>Weakness</span>
-              <span>Cough</span>
+              <span data-i18n="i18n_fever_12">Fever</span>
+              <span data-i18n="i18n_weakness_13">Weakness</span>
+              <span data-i18n="i18n_cough_14">Cough</span>
             </div>
             <div class="advice-box">
-              <strong>Suggested next step:</strong>
-              <p>Visit a nearby primary health centre for vitals and assessment.</p>
+              <strong data-i18n="i18n_suggestednextst_15">Suggested next step:</strong>
+              <p data-i18n="i18n_visitanearbypri_16">Visit a nearby primary health centre for vitals and assessment.</p>
             </div>
           </div>
 
           <div class="mini-grid">
             <div class="mini-card">
-              <label>Referral</label>
-              <strong>HS-2048</strong>
+              <label data-i18n="i18n_referral_17">Referral</label>
+              <strong data-i18n="i18n_hs2048_18">HS-2048</strong>
             </div>
             <div class="mini-card">
-              <label>Distance</label>
-              <strong>4.8 km</strong>
+              <label data-i18n="i18n_distance_19">Distance</label>
+              <strong data-i18n="i18n_48km_20">4.8 km</strong>
             </div>
             <div class="mini-card">
-              <label>Scheme</label>
-              <strong>PM-JAY</strong>
+              <label data-i18n="i18n_scheme_21">Scheme</label>
+              <strong data-i18n="i18n_pmjay_22">PM-JAY</strong>
             </div>
             <div class="mini-card">
-              <label>Wait time</label>
-              <strong>18 min</strong>
+              <label data-i18n="i18n_waittime_23">Wait time</label>
+              <strong data-i18n="i18n_18min_24">18 min</strong>
             </div>
           </div>
         </div>
       </section>
 
+      <section id="authSection" class="section auth-section">
+        <div class="auth-grid">
+          <div class="auth-card register-card">
+            <div class="auth-header">
+              <span class="eyebrow" data-i18n="i18n_createaccount_25">Create account</span>
+              <h3 id="regStepTitle" data-i18n="i18n_registerpatient_26">Register patient</h3>
+              <!-- WizardProgressDots Component -->
+              <div class="wizard-progress" id="regWizardDots">
+                <div class="wizard-dot active" id="regDot1" title="Account Info"></div>
+                <div class="wizard-dot" id="regDot2" title="Health Info"></div>
+              </div>
+            </div>
+            <form id="registerForm" class="auth-form">
+              <!-- Registration Step 1: Basic Info -->
+              <div id="regStep1">
+                <label>
+                  <span data-i18n="i18n_fullname_27">Full name</span>
+                  <input type="text" id="registerName" placeholder="Enter your name" required="" data-i18n-placeholder="i18n_ph_enteryourname_28">
+                </label>
+                <label>
+                  <span data-i18n="i18n_email_29">Email</span>
+                  <input type="email" id="registerEmail" placeholder="you@example.com" required="" data-i18n-placeholder="i18n_ph_youexamplecom_30">
+                </label>
+                <label>
+                  <span data-i18n="i18n_phonenumber_31">Phone number</span>
+                  <input type="tel" id="registerPhone" placeholder="+91 98765 43210" required="" data-i18n-placeholder="i18n_ph_919876543210_32">
+                </label>
+                <label>
+                  <span data-i18n="i18n_addresslocation_33">Address / location</span>
+                  <textarea id="registerAddress" rows="2" placeholder="Village, block, district" required="" data-i18n-placeholder="i18n_ph_villageblockdis_34"></textarea>
+                </label>
+                <button type="button" class="primary full-width" id="regNextBtn" data-i18n="i18n_next_step">Next: Health Info ➔</button>
+              </div>
+
+              <!-- Registration Step 2: Health Info & Emergency Contact -->
+              <div id="regStep2" class="hidden">
+                <h4 style="margin: 0.5rem 0;" data-i18n="i18n_tell_us_health">Tell us about your health</h4>
+                
+                <!-- Gender IconChoiceGrid -->
+                <label><span data-i18n="i18n_gender">Gender</span></label>
+                <div class="icon-grid" id="regGenderGrid" data-single="true">
+                  <div class="icon-card selected" data-value="male"><span class="card-icon">👨</span> <span data-i18n="i18n_male">Male</span></div>
+                  <div class="icon-card" data-value="female"><span class="card-icon">👩</span> <span data-i18n="i18n_female">Female</span></div>
+                  <div class="icon-card" data-value="other"><span class="card-icon">⚧</span> <span data-i18n="i18n_other">Other</span></div>
+                </div>
+
+                <!-- Age Group IconChoiceGrid -->
+                <label><span data-i18n="i18n_age_group">Age group</span></label>
+                <div class="icon-grid" id="regAgeGrid" data-single="true">
+                  <div class="icon-card" data-value="child"><span class="card-icon">👶</span> <span data-i18n="i18n_child">Child (under 12)</span></div>
+                  <div class="icon-card selected" data-value="adult"><span class="card-icon">🧑</span> <span data-i18n="i18n_adult">Adult (12-60)</span></div>
+                  <div class="icon-card" data-value="elderly"><span class="card-icon">👴</span> <span data-i18n="i18n_elderly">Elderly (60+)</span></div>
+                </div>
+
+                <!-- Existing Conditions IconChoiceGrid -->
+                <label><span data-i18n="i18n_existing_conditions">Existing health conditions</span></label>
+                <div class="icon-grid" id="regCondGrid" data-multi="true">
+                  <div class="icon-card" data-value="diabetes"><span class="card-icon">🩸</span> <span data-i18n="i18n_diabetes">Diabetes</span></div>
+                  <div class="icon-card" data-value="heart_bp"><span class="card-icon">❤️</span> <span data-i18n="i18n_heart_bp">Heart / BP</span></div>
+                  <div class="icon-card" data-value="asthma"><span class="card-icon">😮💨</span> <span data-i18n="i18n_asthma">Asthma</span></div>
+                  <div class="icon-card hidden" id="regPregnancyCard" data-value="pregnancy"><span class="card-icon">🤰</span> <span data-i18n="i18n_pregnancy">Pregnancy</span></div>
+                  <div class="icon-card" data-value="injury"><span class="card-icon">🦴</span> <span data-i18n="i18n_injury">Injury / Disability</span></div>
+                  <div class="icon-card selected" data-value="none"><span class="card-icon">✅</span> <span data-i18n="i18n_none_these">None of these</span></div>
+                </div>
+
+                <!-- Allergies section + Yes/No tap toggle + VoiceInputButton -->
+                <label><span data-i18n="i18n_allergies">Do you have any allergies?</span></label>
+                <div class="icon-grid" id="regAllergyGrid" data-single="true" style="margin-bottom: 0.5rem;">
+                  <div class="icon-card selected" data-value="no"><span>❌ No</span></div>
+                  <div class="icon-card" data-value="yes"><span>⚠️ Yes</span></div>
+                </div>
+                <div id="regAllergyDetailWrap" class="hidden" style="margin-bottom: 1rem;">
+                  <button type="button" class="voice-input-btn" id="regAllergyVoiceBtn" style="margin-bottom: 0.5rem;">
+                    <span>🎤</span> <span data-i18n="i18n_tap_speak">Tap and speak</span>
+                  </button>
+                  <input type="text" id="regAllergyText" placeholder="Specify allergy (e.g. Penicillin, Peanuts)" data-i18n-placeholder="i18n_allergy_details">
+                </div>
+
+                <!-- Emergency Contact Section -->
+                <h4 style="margin: 1.25rem 0 0.5rem 0; color: #ef4444;" data-i18n="i18n_emergency_contact">Emergency Contact Person</h4>
+                <label><span data-i18n="i18n_contact_name">Contact Name</span>
+                  <input type="text" id="regEmergName" placeholder="e.g. Ramesh Kumar">
+                </label>
+                <label><span data-i18n="i18n_contact_phone">Contact Phone Number</span>
+                  <input type="tel" id="regEmergPhone" placeholder="+91 98765 00000">
+                </label>
+                <label><span data-i18n="i18n_contact_relation">Relationship</span>
+                  <input type="text" id="regEmergRelation" placeholder="e.g. Spouse, Brother, Friend">
+                </label>
+
+                <div class="cta-row" style="margin-top: 1rem;">
+                  <button type="button" class="secondary" id="regBackBtn">⬅ Back</button>
+                  <button type="submit" class="primary" id="regSubmitBtn" data-i18n="i18n_register_35">Save & Register</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class="auth-card login-card">
+            <div class="auth-header">
+              <span class="eyebrow" data-i18n="i18n_welcomeback_36">Welcome back</span>
+              <h3 data-i18n="i18n_login_37">Login</h3>
+            </div>
+            <form id="loginForm" class="auth-form">
+              <label>
+                <span data-i18n="i18n_email_38">Email</span>
+                <input type="email" id="loginEmail" placeholder="Enter registered email" required="" data-i18n-placeholder="i18n_ph_enterregistered_39">
+              </label>
+              <label>
+                <span data-i18n="i18n_phonenumber_40">Phone number</span>
+                <input type="tel" id="loginPhone" placeholder="Enter registered phone" required="" data-i18n-placeholder="i18n_ph_enterregistered_41">
+              </label>
+              <button type="submit" class="secondary full-width" data-i18n="i18n_login_42">Login</button>
+            </form>
+            <div id="authMessage" class="auth-message" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section trust-strip">
+        <div class="brand-badges">
+          <span data-i18n="i18n_communityfirst_43">Community first</span>
+          <span data-i18n="i18n_offlineready_44">Offline ready</span>
+          <span data-i18n="i18n_aitriage_45">AI triage</span>
+          <span data-i18n="i18n_referralcontinu_46">Referral continuity</span>
+          <span data-i18n="i18n_schemesupport_47">Scheme support</span>
+        </div>
+      </section>
+
+      <section class="section why-us">
+        <div class="section-head">
+          <span class="eyebrow" data-i18n="i18n_whyanamaya_48">Why Anamaya</span>
+          <h2 data-i18n="i18n_builtforthereal_49">Built for the realities of rural care delivery.</h2>
+        </div>
+
+        <div class="why-grid">
+          <article class="why-card reveal">
+            <div class="why-icon">⚡</div>
+            <h3 data-i18n="i18n_fasterdecisions_50">Faster decisions</h3>
+            <p data-i18n="i18n_patientsgetprac_51">Patients get practical next steps quickly, even when they are far from a specialist or hospital.</p>
+          </article>
+          <article class="why-card reveal">
+            <div class="why-icon">🤝</div>
+            <h3 data-i18n="i18n_continuityacros_52">Continuity across facilities</h3>
+            <p data-i18n="i18n_referraldataand_53">Referral data and record history stay connected so patients do not lose context during transfers.</p>
+          </article>
+          <article class="why-card reveal">
+            <div class="why-icon">📉</div>
+            <h3 data-i18n="i18n_lowercarebarrie_54">Lower care barriers</h3>
+            <p data-i18n="i18n_transparentcost_55">Transparent cost guidance and eligibility support reduce delays caused by confusion or affordability.</p>
+          </article>
+        </div>
+      </section>
+
       <section id="features" class="section">
         <div class="section-head">
-          <span class="eyebrow">Core capabilities</span>
-          <h2>Everything rural healthcare teams need to act faster.</h2>
+          <span class="eyebrow" data-i18n="i18n_corecapabilitie_56">Core capabilities</span>
+          <h2 data-i18n="i18n_everythingrural_57">Everything rural healthcare teams need to act faster.</h2>
         </div>
 
         <div class="feature-grid">
           <article class="feature-card">
             <div class="icon">🩺</div>
-            <h3>AI symptom guidance</h3>
-            <p>Structured patient triage that helps communities identify urgency and choose the right level of care.</p>
+            <h3 data-i18n="i18n_aisymptomguidan_58">AI symptom guidance</h3>
+            <p data-i18n="i18n_structuredpatie_59">Structured patient triage that helps communities identify urgency and choose the right level of care.</p>
           </article>
           <article class="feature-card">
             <div class="icon">📍</div>
-            <h3>Facility matching</h3>
-            <p>Location-aware recommendations for PHCs, CHCs, district hospitals, and emergency pathways.</p>
+            <h3 data-i18n="i18n_facilitymatchin_60">Facility matching</h3>
+            <p data-i18n="i18n_locationawarere_61">Location-aware recommendations for PHCs, CHCs, district hospitals, and emergency pathways.</p>
           </article>
           <article class="feature-card">
             <div class="icon">🔗</div>
-            <h3>Smart referrals</h3>
-            <p>Digital referral flow with QR access, consent-aware sharing, and continuity of patient history.</p>
+            <h3 data-i18n="i18n_smartreferrals_62">Smart referrals</h3>
+            <p data-i18n="i18n_digitalreferral_63">Digital referral flow with QR access, consent-aware sharing, and continuity of patient history.</p>
           </article>
           <article class="feature-card">
             <div class="icon">🧾</div>
-            <h3>Health passport</h3>
-            <p>Records and treatments stay connected across facilities for safer, more continuous care.</p>
+            <h3 data-i18n="i18n_healthpassport_64">Health passport</h3>
+            <p data-i18n="i18n_recordsandtreat_65">Records and treatments stay connected across facilities for safer, more continuous care.</p>
           </article>
           <article class="feature-card">
             <div class="icon">💸</div>
-            <h3>Budget support</h3>
-            <p>Transparent cost estimation and scheme guidance to reduce financial barriers to care.</p>
+            <h3 data-i18n="i18n_budgetsupport_66">Budget support</h3>
+            <p data-i18n="i18n_transparentcost_67">Transparent cost estimation and scheme guidance to reduce financial barriers to care.</p>
           </article>
           <article class="feature-card">
             <div class="icon">📶</div>
-            <h3>Offline-ready</h3>
-            <p>Designed for weak connectivity environments with local continuity and sync-ready workflows.</p>
+            <h3 data-i18n="i18n_offlineready_68">Offline-ready</h3>
+            <p data-i18n="i18n_designedforweak_69">Designed for weak connectivity environments with local continuity and sync-ready workflows.</p>
           </article>
         </div>
       </section>
 
       <section id="journey" class="section alt">
         <div class="section-head">
-          <span class="eyebrow">Patient flow</span>
-          <h2>A simple care journey from symptom to follow-up.</h2>
+          <span class="eyebrow" data-i18n="i18n_patientflow_70">Patient flow</span>
+          <h2 data-i18n="i18n_asimplecarejour_71">A simple care journey from symptom to follow-up.</h2>
         </div>
 
         <div class="journey-grid">
           <div class="step">
             <div class="step-number">01</div>
-            <h3>Register</h3>
-            <p>Create an account and complete the basic profile for rural healthcare access.</p>
+            <h3 data-i18n="i18n_register_72">Register</h3>
+            <p data-i18n="i18n_createanaccount_73">Create an account and complete the basic profile for rural healthcare access.</p>
           </div>
           <div class="step">
             <div class="step-number">02</div>
-            <h3>Assess</h3>
-            <p>Use the AI health check to capture symptoms and receive next-step guidance.</p>
+            <h3 data-i18n="i18n_assess_74">Assess</h3>
+            <p data-i18n="i18n_usetheaihealthc_75">Use the AI health check to capture symptoms and receive next-step guidance.</p>
           </div>
           <div class="step">
             <div class="step-number">03</div>
-            <h3>Navigate</h3>
-            <p>Find the closest and most suitable facility or care pathway without confusion.</p>
+            <h3 data-i18n="i18n_navigate_76">Navigate</h3>
+            <p data-i18n="i18n_findtheclosesta_77">Find the closest and most suitable facility or care pathway without confusion.</p>
           </div>
           <div class="step">
             <div class="step-number">04</div>
-            <h3>Follow-up</h3>
-            <p>Track referrals, passport records, and government support for continuity of care.</p>
+            <h3 data-i18n="i18n_followup_78">Follow-up</h3>
+            <p data-i18n="i18n_trackreferralsp_79">Track referrals, passport records, and government support for continuity of care.</p>
           </div>
         </div>
       </section>
 
       <section id="impact" class="section metrics">
         <div class="metric-card">
-          <strong>3x</strong>
-          <span>faster referral decisions</span>
+          <strong data-i18n="i18n_3x_80">3x</strong>
+          <span data-i18n="i18n_fasterreferrald_81">faster referral decisions</span>
         </div>
         <div class="metric-card">
           <strong>50+</strong>
-          <span>scheme matches</span>
+          <span data-i18n="i18n_schemematches_82">scheme matches</span>
         </div>
         <div class="metric-card">
           <strong>24/7</strong>
-          <span>digital continuity</span>
+          <span data-i18n="i18n_digitalcontinui_83">digital continuity</span>
         </div>
         <div class="metric-card">
           <strong>0</strong>
-          <span>friction in patient handoff</span>
+          <span data-i18n="i18n_frictioninpatie_84">friction in patient handoff</span>
         </div>
       </section>
 
       <section id="demoApp" class="demo-shell hidden">
         <div class="demo-header">
           <div>
-            <span class="eyebrow">Demo portal</span>
-            <h2>HealthSphere AI workspace</h2>
+            <span class="eyebrow" data-i18n="i18n_demoportal_85">Demo portal</span>
+            <h2 data-i18n="i18n_anamayaaiworksp_86">Anamaya AI workspace</h2>
           </div>
-          <button class="ghost-button" id="logoutBtn">Log out</button>
+          <button class="ghost-button" id="logoutBtn" data-i18n="i18n_logout_87">Log out</button>
         </div>
 
         <div class="demo-grid">
@@ -187,17 +354,24 @@
             <div class="profile-box">
               <div class="avatar">P</div>
               <div>
-                <h3 id="userName">Priya Sharma</h3>
-                <p>Patient · Rural care</p>
+                <h3 id="userName" data-i18n="i18n_priyasharma_88">Priya Sharma</h3>
+                <p data-i18n="i18n_patientruralcar_89">Patient · Rural care</p>
               </div>
             </div>
 
+            <div class="profile-editor">
+              <label for="patientNameInput" data-i18n="i18n_patientname_90">Patient name</label>
+              <input id="patientNameInput" type="text" placeholder="Enter your name" value="Priya Sharma" data-i18n-placeholder="i18n_ph_enteryourname_91">
+              <button class="primary full-width" id="saveProfileBtn" type="button" data-i18n="i18n_saveprofile_92">Save profile</button>
+            </div>
+
             <nav class="sidebar-nav">
-              <button class="nav-item active" data-panel="dashboard">Dashboard</button>
-              <button class="nav-item" data-panel="assessment">AI Assessment</button>
-              <button class="nav-item" data-panel="facilities">Facilities</button>
-              <button class="nav-item" data-panel="passport">Health Passport</button>
-              <button class="nav-item" data-panel="schemes">Schemes</button>
+              <button class="nav-item active" data-panel="dashboard" data-i18n="i18n_dashboard_93">Dashboard</button>
+              <button class="nav-item" data-panel="assessment" data-i18n="i18n_aiassessment_94">AI Assessment</button>
+              <button class="nav-item" data-panel="facilities" data-i18n="i18n_facilities_95">Facilities</button>
+              <button class="nav-item" data-panel="passport" data-i18n="i18n_healthpassport_96">Health Passport</button>
+              <button class="nav-item" data-panel="schemes" data-i18n="i18n_schemes_97">Schemes</button>
+              <button class="nav-item emergency-item" data-panel="emergency" data-i18n="i18n_emergency_sos">🆘 Emergency</button>
             </nav>
           </aside>
 
@@ -205,42 +379,370 @@
             <div id="dashboard" class="panel active">
               <div class="kpis">
                 <div class="kpi-card">
-                  <span>Risk level</span>
-                  <strong>Low</strong>
+                  <span data-i18n="i18n_risklevel_98">Risk level</span>
+                  <strong id="riskKpi" data-i18n="i18n_low_99">Low</strong>
                 </div>
                 <div class="kpi-card">
-                  <span>Referral ID</span>
-                  <strong>HS-2048</strong>
+                  <span data-i18n="i18n_referralid_100">Referral ID</span>
+                  <strong id="referralKpi" data-i18n="i18n_hs2048_101">HS-2048</strong>
                 </div>
                 <div class="kpi-card">
-                  <span>Distance</span>
-                  <strong>4.8 km</strong>
+                  <span data-i18n="i18n_distance_102">Distance</span>
+                  <strong id="distanceKpi" data-i18n="i18n_48km_103">4.8 km</strong>
                 </div>
                 <div class="kpi-card">
-                  <span>Scheme</span>
-                  <strong>PM-JAY</strong>
+                  <span data-i18n="i18n_scheme_104">Scheme</span>
+                  <strong id="schemeKpi" data-i18n="i18n_pmjay_105">PM-JAY</strong>
                 </div>
               </div>
 
               <div class="card-grid two-col">
                 <div class="info-card">
-                  <h3>Recommended action</h3>
-                  <p>Visit the nearest PHC for blood pressure, fever screening and follow-up consultation.</p>
+                  <h3 data-i18n="i18n_recommendedacti_106">Recommended action</h3>
+                  <p id="dashboardRecommendation" data-i18n="i18n_visitthenearest_107">Visit the nearest PHC for blood pressure, fever screening and follow-up consultation.</p>
                 </div>
                 <div class="info-card">
-                  <h3>Continuity status</h3>
-                  <p>Digital passport synced with district hospital and local referral queue.</p>
+                  <h3 data-i18n="i18n_continuitystatu_108">Continuity status</h3>
+                  <p id="dashboardStatus" data-i18n="i18n_digitalpassport_109">Digital passport synced with district hospital and local referral queue.</p>
                 </div>
               </div>
             </div>
 
+            <!-- Conversational AI Assessment Wizard (Steps 1-5) -->
             <div id="assessment" class="panel">
               <div class="panel-head">
-                <h3>AI health assessment</h3>
+                <h3 id="wizardTitle" data-i18n="i18n_aihealthassessm_110">AI Health Assessment</h3>
+                <!-- WizardProgressDots Component -->
+                <div class="wizard-progress" id="aiWizardDots">
+                  <div class="wizard-dot active" id="aiDot1"></div>
+                  <div class="wizard-dot" id="aiDot2"></div>
+                  <div class="wizard-dot" id="aiDot3"></div>
+                  <div class="wizard-dot" id="aiDot4"></div>
+                  <div class="wizard-dot" id="aiDot5"></div>
+                </div>
+              </div>
+
+              <!-- Wizard Step 1: Symptoms -->
+              <div id="aiWizardStep1" class="wizard-step">
+                <h4 style="margin: 0.5rem 0;" data-i18n="i18n_step_wizard_1">What's bothering you today?</h4>
+                <button type="button" class="voice-input-btn" id="aiVoiceBtn">
+                  <span>🎤</span> <span data-i18n="i18n_tap_speak">Tap and speak</span>
+                </button>
+                <div class="icon-grid" id="aiSymptomGrid" data-multi="true">
+                  <div class="icon-card" data-value="fever"><span class="card-icon">🤒</span> <span data-i18n="i18n_fever_12">Fever</span></div>
+                  <div class="icon-card" data-value="cough"><span class="card-icon">😷</span> <span data-i18n="i18n_cough_14">Cough</span></div>
+                  <div class="icon-card" data-value="body pain"><span class="card-icon">🤕</span> <span>Body Pain</span></div>
+                  <div class="icon-card" data-value="weakness"><span class="card-icon">🥱</span> <span data-i18n="i18n_weakness_13">Weakness</span></div>
+                  <div class="icon-card" data-value="breathlessness"><span class="card-icon">😮💨</span> <span>Breathlessness</span></div>
+                  <div class="icon-card" data-value="vomiting"><span class="card-icon">🤮</span> <span>Vomiting</span></div>
+                  <div class="icon-card" data-value="bleeding"><span class="card-icon">🩸</span> <span>Bleeding</span></div>
+                  <div class="icon-card" data-value="cold"><span class="card-icon">🤧</span> <span>Cold</span></div>
+                  <div class="icon-card" data-value="other"><span class="card-icon">✏️</span> <span>Other</span></div>
+                </div>
+                <div id="aiOtherSymptomWrap" class="hidden" style="margin-top: 0.5rem;">
+                  <input type="text" id="aiOtherSymptomInput" placeholder="Specify other symptom...">
+                </div>
+                <button type="button" class="primary full-width" id="aiWizNext1" style="margin-top: 1rem;">Next: Severity ➔</button>
+              </div>
+
+              <!-- Wizard Step 2: Severity -->
+              <div id="aiWizardStep2" class="wizard-step hidden">
+                <h4 style="margin: 0.5rem 0;" data-i18n="i18n_step_wizard_2">How bad does it feel?</h4>
+                <div class="icon-grid" id="aiSeverityGrid" data-single="true">
+                  <div class="icon-card" data-value="mild"><span class="card-icon">🙂</span> <span data-i18n="i18n_mild">Mild</span></div>
+                  <div class="icon-card selected" data-value="moderate"><span class="card-icon">😟</span> <span data-i18n="i18n_moderate">Moderate</span></div>
+                  <div class="icon-card" data-value="severe"><span class="card-icon">😰</span> <span data-i18n="i18n_severe">Severe</span></div>
+                </div>
+                <div class="cta-row" style="margin-top: 1.5rem;">
+                  <button type="button" class="secondary" id="aiWizBack2">⬅ Back</button>
+                  <button type="button" class="primary" id="aiWizNext2">Next: Duration ➔</button>
+                </div>
+              </div>
+
+              <!-- Wizard Step 3: Duration -->
+              <div id="aiWizardStep3" class="wizard-step hidden">
+                <h4 style="margin: 0.5rem 0;" data-i18n="i18n_step_wizard_3">Since when?</h4>
+                <div class="icon-grid" id="aiDurationGrid" data-single="true">
+                  <div class="icon-card selected" data-value="today"><span class="card-icon">🗓️</span> <span data-i18n="i18n_today">Today</span></div>
+                  <div class="icon-card" data-value="2-3_days"><span class="card-icon">⌛</span> <span data-i18n="i18n_days_2_3">2-3 days</span></div>
+                  <div class="icon-card" data-value="week"><span class="card-icon">📅</span> <span data-i18n="i18n_week_1">About a week</span></div>
+                  <div class="icon-card" data-value="more_than_week"><span class="card-icon">⏳</span> <span data-i18n="i18n_more_week">More than a week</span></div>
+                </div>
+                <div class="cta-row" style="margin-top: 1.5rem;">
+                  <button type="button" class="secondary" id="aiWizBack3">⬅ Back</button>
+                  <button type="button" class="primary" id="aiWizNext3">Next: Location ➔</button>
+                </div>
+              </div>
+
+              <!-- Wizard Step 4: Location -->
+              <div id="aiWizardStep4" class="wizard-step hidden">
+                <h4 style="margin: 0.5rem 0;" data-i18n="i18n_step_wizard_4">Where are you right now?</h4>
+                <div class="icon-grid" id="aiLocationGrid" data-single="true">
+                  <div class="icon-card selected" data-value="gps"><span class="card-icon">📍</span> <span data-i18n="i18n_use_gps">Use My Current Location</span></div>
+                  <div class="icon-card" data-value="manual"><span class="card-icon">🔎</span> <span data-i18n="i18n_manual_search">Search manually instead</span></div>
+                </div>
+                <div id="aiManualLocWrap" class="hidden" style="margin-top: 0.75rem;">
+                  <select id="location">
+                    <option data-i18n="i18n_ruralvillage_128">Rural village</option>
+                    <option selected="" data-i18n="i18n_blockphc_129">Block PHC</option>
+                    <option data-i18n="i18n_districthospita_130">District hospital</option>
+                  </select>
+                </div>
+                <div class="cta-row" style="margin-top: 1.5rem;">
+                  <button type="button" class="secondary" id="aiWizBack4">⬅ Back</button>
+                  <button type="button" class="primary" id="aiWizNext4">Next: Review ➔</button>
+                </div>
+              </div>
+
+              <!-- Wizard Step 5: Review & Submit -->
+              <div id="aiWizardStep5" class="wizard-step hidden">
+                <h4 style="margin: 0.5rem 0;" data-i18n="i18n_step_wizard_5">Review & Check Health</h4>
+                <div class="info-card" style="background: #f8fafc; border: 1.5px solid #cbd5e1; margin: 1rem 0;">
+                  <p><strong>Summary:</strong> <span id="aiWizSummaryText">Fever, Cough · Moderate · Today</span></p>
+                </div>
+                <div class="cta-row" style="margin-top: 1.5rem;">
+                  <button type="button" class="secondary" id="aiWizBack5">⬅ Edit Steps</button>
+                  <button type="button" class="primary" id="assessBtn" data-i18n="i18n_check_my_health">Check My Health</button>
+                </div>
+              </div>
+
+              <!-- Results display -->
+              <div class="result-box hidden" id="assessmentResult" style="margin-top: 1.5rem;">
+                <h4 data-i18n="i18n_assessmentresul_132">Assessment result</h4>
+                <p id="assessmentResultText">Symptoms suggest a moderate-risk case. Recommend a PHC or CHC review within 24 hours.</p>
+              </div>
+
+              <div class="cost-box hidden" id="costBox" style="margin-top: 1rem;">
+                <h4 data-i18n="i18n_estimatedtreatm_134">Estimated treatment cost</h4>
+                <div class="cost-row"><span data-i18n="i18n_consultation_135">Consultation</span><strong id="consultationCost">₹250</strong></div>
+                <div class="cost-row"><span data-i18n="i18n_tests_136">Tests</span><strong id="testCost">₹500</strong></div>
+                <div class="cost-row"><span data-i18n="i18n_medicines_137">Medicines</span><strong id="medicineCost">₹300</strong></div>
+                <div class="cost-row total"><span data-i18n="i18n_totalestimate_138">Total estimate</span><strong id="totalCost">₹1,050</strong></div>
+              </div>
+                    <option data-i18n="i18n_no_121">No</option>
+                    <option selected="" data-i18n="i18n_sometimes_122">Sometimes</option>
+                    <option data-i18n="i18n_often_123">Often</option>
+                  </select>
+                </label>
+
+                <label data-i18n="i18n_persistentweakn_124">
+                  Persistent weakness
+                  <select id="weakness">
+                    <option data-i18n="i18n_no_125">No</option>
+                    <option selected="" data-i18n="i18n_yes_126">Yes</option>
+                  </select>
+                </label>
+
+                <label data-i18n="i18n_location_127">
+                  Location
+                  <select id="location">
+                    <option data-i18n="i18n_ruralvillage_128">Rural village</option>
+                    <option selected="" data-i18n="i18n_blockphc_129">Block PHC</option>
+                    <option data-i18n="i18n_districthospita_130">District hospital</option>
+                  </select>
+                </label>
+              </div>
+
+              <button class="primary full-width" id="assessBtn" data-i18n="i18n_runaiassessment_131">Run AI assessment</button>
+
+              <div class="result-box" id="assessmentResult">
+                <h4 data-i18n="i18n_assessmentresul_132">Assessment result</h4>
+                <p data-i18n="i18n_symptomssuggest_133">Symptoms suggest a moderate-risk case. Recommend a PHC or CHC review within 24 hours.</p>
+              </div>
+
+              <div class="cost-box" id="costBox">
+                <h4 data-i18n="i18n_estimatedtreatm_134">Estimated treatment cost</h4>
+                <div class="cost-row"><span data-i18n="i18n_consultation_135">Consultation</span><strong id="consultationCost">₹250</strong></div>
+                <div class="cost-row"><span data-i18n="i18n_tests_136">Tests</span><strong id="testCost">₹500</strong></div>
+                <div class="cost-row"><span data-i18n="i18n_medicines_137">Medicines</span><strong id="medicineCost">₹300</strong></div>
+                <div class="cost-row total"><span data-i18n="i18n_totalestimate_138">Total estimate</span><strong id="totalCost">₹1,050</strong></div>
+              </div>
+
+              <div class="chatbot-box">
+                <div class="chatbot-header">
+                  <h4 data-i18n="i18n_aicareassistant_139">AI care assistant</h4>
+                  <span class="vision-badge" data-i18n="i18n_photoanalysisen_140">📷 Photo Analysis Enabled</span>
+                </div>
+                <div id="chatLog" class="chat-log">
+                  <div class="chat-bubble bot" data-i18n="i18n_hellotellmeyour_141">
+                    Hello! Tell me your symptoms or upload a photo of a skin rash, reaction, or lesion for instant AI visual analysis and guidance.
+                  </div>
+                </div>
+                <div id="chatImagePreviewContainer" class="image-preview-container hidden">
+                  <div class="image-preview-wrapper">
+                    <img id="chatImagePreview" src="" alt="Selected symptom photo">
+                    <button id="removeImageBtn" type="button" class="remove-image-btn" title="Remove photo">×</button>
+                  </div>
+                  <span class="preview-note" data-i18n="i18n_photoattachedfo_142">Photo attached for analysis</span>
+                </div>
+                <div class="chat-input-row">
+                  <input type="file" id="chatImageInput" accept="image/*" class="hidden-file-input">
+                  <button id="uploadPhotoBtn" type="button" class="icon-button" title="Attach photo of skin rash or reaction">📷</button>
+                  <input id="chatInput" type="text" placeholder="Describe symptoms or upload a photo..." data-i18n-placeholder="i18n_ph_describesymptom_143">
+                  <button id="chatSendBtn" class="primary" type="button" data-i18n="i18n_send_144">Send</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="facilities" class="panel">
+              <div class="panel-head">
+                <h3 data-i18n="i18n_nearbyfacilitie_145">Nearby facilities</h3>
+                <select id="specialtyFilter" class="filter-dropdown">
+                  <option value="All" data-i18n="i18n_allspecializati_146">All Specializations</option>
+                  <option value="General" data-i18n="i18n_general_147">General</option>
+                  <option value="Emergency" data-i18n="i18n_emergency_148">Emergency</option>
+                  <option value="Pediatrics" data-i18n="i18n_pediatrics_149">Pediatrics</option>
+                  <option value="Cardiology" data-i18n="i18n_cardiology_150">Cardiology</option>
+                  <option value="Maternity / Gynecology" data-i18n="i18n_maternitygyneco_151">Maternity / Gynecology</option>
+                  <option value="Neurology" data-i18n="i18n_neurology_152">Neurology</option>
+                  <option value="Orthopedics" data-i18n="i18n_orthopedics_153">Orthopedics</option>
+                  <option value="Oncology" data-i18n="i18n_oncology_154">Oncology</option>
+                  <option value="Dermatology" data-i18n="i18n_dermatology_155">Dermatology</option>
+                  <option value="Psychiatry" data-i18n="i18n_psychiatry_156">Psychiatry</option>
+                  <option value="Ophthalmology" data-i18n="i18n_ophthalmology_157">Ophthalmology</option>
+                </select>
+              </div>
+
+              <div id="map" class="facilities-map"></div>
+
+              <div class="facility-list" id="facilityList">
+                <!-- Facilities will be rendered here dynamically -->
+                <div class="facility-card">
+                  <div>
+                    <h4 data-i18n="i18n_loadinghospital_158">Loading hospitals...</h4>
+                    <p data-i18n="i18n_fetchingrealnea_159">Fetching real nearby facilities...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="passport" class="panel">
+              <div class="panel-head">
+                <h3 data-i18n="i18n_digitalhealthpa_160">Digital health passport</h3>
+              </div>
+
+              <div class="passport-card">
+                <div class="passport-row"><span data-i18n="i18n_patient_161">Patient</span><strong data-i18n="i18n_priyasharma_162">Priya Sharma</strong></div>
+                <div class="passport-row"><span data-i18n="i18n_bloodgroup_163">Blood group</span><strong data-i18n="i18n_o_164">O+</strong></div>
+                <div class="passport-row"><span data-i18n="i18n_lastvisit_165">Last visit</span><strong data-i18n="i18n_12aug2026_166">12 Aug 2026</strong></div>
+                <div class="passport-row"><span data-i18n="i18n_conditions_167">Conditions</span><strong data-i18n="i18n_asthmamildanaem_168">Asthma, mild anaemia</strong></div>
+                <div class="passport-row"><span data-i18n="i18n_consent_169">Consent</span><strong data-i18n="i18n_sharedwithphc_170">Shared with PHC</strong></div>
+              </div>
+            </div>
+
+            <div id="schemes" class="panel">
+              <div class="panel-head">
+                <h3 data-i18n="i18n_governmentschem_171">Government scheme eligibility</h3>
+              </div>
+
+              <div class="scheme-list" id="schemeList">
+                <div class="scheme-card">
+                  <h4 data-i18n="i18n_pmjay_172">PM-JAY</h4>
+                  <p data-i18n="i18n_hospitaltreatme_173">Hospital treatment support for eligible families and women.</p>
+                  <span data-i18n="i18n_eligible_174">Eligible</span>
+                </div>
+                <div class="scheme-card">
+                  <h4 data-i18n="i18n_ayushmanbharat_175">Ayushman Bharat</h4>
+                  <p data-i18n="i18n_cashlessseconda_176">Cashless secondary and tertiary care assistance.</p>
+                  <span data-i18n="i18n_eligible_177">Eligible</span>
+                </div>
+                <div class="scheme-card">
+                  <h4 data-i18n="i18n_nationaltbelimi_178">National TB Elimination</h4>
+                  <p data-i18n="i18n_screeningandtre_179">Screening and treatment support for rural patients.</p>
+                  <span data-i18n="i18n_checkstatus_180">Check status</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Emergency SOS Panel -->
+            <div id="emergency" class="panel">
+              <div class="emergency-header-card">
+                <h2 data-i18n="i18n_emergency_header">🆘 Emergency — Finding help near you</h2>
+                <p>Real-time 24x7 emergency medical centers & instant SMS/WhatsApp location alerts</p>
+                <div style="margin-top: 0.5rem;" id="emergGpsStatus">
+                  <span class="chip success">📍 GPS Active</span>
+                </div>
+              </div>
+
+              <!-- Notify Emergency Contact Card -->
+              <div class="info-card" style="border: 2px solid #ef4444; background: #fff5f5; margin-bottom: 1.5rem;">
+                <h3 style="color: #dc2626;" data-i18n="i18n_emergency_contact">Notify Emergency Contact</h3>
+                <p style="font-size: 0.9rem; color: #4b5563;">Instantly send your current GPS coordinates & SOS message to your emergency contact via SMS & WhatsApp.</p>
+                
+                <div id="emergUserContactView">
+                  <div style="margin: 0.75rem 0; font-size: 1rem;">
+                    <strong>Target Contact:</strong> <span id="emergContactNameDisplay">Emergency Contact</span>
+                  </div>
+                </div>
+
+                <div id="emergGuestContactView" class="hidden">
+                  <div class="form-grid" style="margin: 0.75rem 0;">
+                    <label data-i18n="i18n_contact_name">Your Name
+                      <input type="text" id="emergGuestName" placeholder="Enter your name">
+                    </label>
+                    <label data-i18n="i18n_contact_phone">Emergency Contact Phone
+                      <input type="tel" id="emergGuestPhone" placeholder="+91 98765 00000">
+                    </label>
+                  </div>
+                </div>
+
+                <button type="button" class="btn-sos" id="emergSendLocationBtn" style="font-size: 1.05rem; padding: 0.75rem 1.5rem;" data-i18n="i18n_send_location">
+                  📡 Send My Location Now
+                </button>
+                <div id="emergNotifyToast" class="hidden" style="margin-top: 0.75rem; padding: 0.75rem; background: #dcfce7; color: #166534; border-radius: 0.5rem; font-weight: 600;">
+                  ✅ Sent via SMS & WhatsApp to contact!
+                </div>
+              </div>
+
+              <!-- Nearby Emergency Facilities List -->
+              <div class="panel-head">
+                <h3>24x7 Emergency Medical Facilities</h3>
+              </div>
+              <div class="facility-list" id="emergFacilityList">
+                <div class="facility-card emergency-facility-card">
+                  <div>
+                    <h4>District Hospital Emergency Center <span class="badge-24x7">24x7 EMERGENCY</span></h4>
+                    <p>Station Road, District HQ · <strong>3.2 km away</strong></p>
+                    <p style="margin-top: 0.4rem;">🚑 Ambulance Available · ICU · Trauma Care</p>
+                  </div>
+                  <div class="cta-row" style="margin-top: 0.75rem;">
+                    <a href="tel:108" class="btn-emergency-call" data-i18n="i18n_call_facility">📞 Call 108</a>
+                    <a href="https://maps.google.com" target="_blank" class="btn-emergency-dir" data-i18n="i18n_get_directions">🗺️ Directions</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+                  <strong id="referralKpi" data-i18n="i18n_hs2048_181">HS-2048</strong>
+                </div>
+                <div class="kpi-card">
+                  <span data-i18n="i18n_distance_182">Distance</span>
+                  <strong id="distanceKpi" data-i18n="i18n_48km_183">4.8 km</strong>
+                </div>
+                <div class="kpi-card">
+                  <span data-i18n="i18n_scheme_184">Scheme</span>
+                  <strong id="schemeKpi" data-i18n="i18n_pmjay_185">PM-JAY</strong>
+                </div>
+              </div>
+
+              <div class="card-grid two-col">
+                <div class="info-card">
+                  <h3 data-i18n="i18n_recommendedacti_186">Recommended action</h3>
+                  <p id="dashboardRecommendation" data-i18n="i18n_visitthenearest_187">Visit the nearest PHC for blood pressure, fever screening and follow-up consultation.</p>
+                </div>
+                <div class="info-card">
+                  <h3 data-i18n="i18n_continuitystatu_188">Continuity status</h3>
+                  <p id="dashboardStatus" data-i18n="i18n_digitalpassport_189">Digital passport synced with district hospital and local referral queue.</p>
+                </div>
+              </div>
+            
+
+            <div id="assessment" class="panel">
+              <div class="panel-head">
+                <h3 data-i18n="i18n_aihealthassessm_190">AI health assessment</h3>
               </div>
 
               <div class="form-grid">
-                <label>
+                <label data-i18n="i18n_agegroup_191">
                   Age group
                   <select id="ageGroup">
                     <option>18-29</option>
@@ -250,144 +752,201 @@
                   </select>
                 </label>
 
-                <label>
+                <label data-i18n="i18n_symptomseverity_192">
                   Symptom severity
                   <select id="severity">
-                    <option>Mild</option>
-                    <option selected>Moderate</option>
-                    <option>Severe</option>
+                    <option data-i18n="i18n_mild_193">Mild</option>
+                    <option selected="" data-i18n="i18n_moderate_194">Moderate</option>
+                    <option data-i18n="i18n_severe_195">Severe</option>
                   </select>
                 </label>
 
-                <label>
+                <label data-i18n="i18n_fever_196">
                   Fever
                   <select id="fever">
-                    <option>No</option>
-                    <option selected>Low</option>
-                    <option>High</option>
+                    <option data-i18n="i18n_no_197">No</option>
+                    <option selected="" data-i18n="i18n_low_198">Low</option>
+                    <option data-i18n="i18n_high_199">High</option>
                   </select>
                 </label>
 
-                <label>
+                <label data-i18n="i18n_breathdifficult_200">
                   Breath difficulty
                   <select id="breath">
-                    <option>No</option>
-                    <option selected>Sometimes</option>
-                    <option>Often</option>
+                    <option data-i18n="i18n_no_201">No</option>
+                    <option selected="" data-i18n="i18n_sometimes_202">Sometimes</option>
+                    <option data-i18n="i18n_often_203">Often</option>
                   </select>
                 </label>
 
-                <label>
+                <label data-i18n="i18n_persistentweakn_204">
                   Persistent weakness
                   <select id="weakness">
-                    <option>No</option>
-                    <option selected>Yes</option>
+                    <option data-i18n="i18n_no_205">No</option>
+                    <option selected="" data-i18n="i18n_yes_206">Yes</option>
                   </select>
                 </label>
 
-                <label>
+                <label data-i18n="i18n_location_207">
                   Location
                   <select id="location">
-                    <option>Rural village</option>
-                    <option selected>Block PHC</option>
-                    <option>District hospital</option>
+                    <option data-i18n="i18n_ruralvillage_208">Rural village</option>
+                    <option selected="" data-i18n="i18n_blockphc_209">Block PHC</option>
+                    <option data-i18n="i18n_districthospita_210">District hospital</option>
                   </select>
                 </label>
               </div>
 
-              <button class="primary full-width" id="assessBtn">Run AI assessment</button>
+              <button class="primary full-width" id="assessBtn" data-i18n="i18n_runaiassessment_211">Run AI assessment</button>
 
               <div class="result-box" id="assessmentResult">
-                <h4>Assessment result</h4>
-                <p>Symptoms suggest a moderate-risk case. Recommend a PHC or CHC review within 24 hours.</p>
+                <h4 data-i18n="i18n_assessmentresul_212">Assessment result</h4>
+                <p data-i18n="i18n_symptomssuggest_213">Symptoms suggest a moderate-risk case. Recommend a PHC or CHC review within 24 hours.</p>
+              </div>
+
+              <div class="cost-box" id="costBox">
+                <h4 data-i18n="i18n_estimatedtreatm_214">Estimated treatment cost</h4>
+                <div class="cost-row"><span data-i18n="i18n_consultation_215">Consultation</span><strong id="consultationCost">₹250</strong></div>
+                <div class="cost-row"><span data-i18n="i18n_tests_216">Tests</span><strong id="testCost">₹500</strong></div>
+                <div class="cost-row"><span data-i18n="i18n_medicines_217">Medicines</span><strong id="medicineCost">₹300</strong></div>
+                <div class="cost-row total"><span data-i18n="i18n_totalestimate_218">Total estimate</span><strong id="totalCost">₹1,050</strong></div>
+              </div>
+
+              <div class="chatbot-box">
+                <div class="chatbot-header">
+                  <h4 data-i18n="i18n_aicareassistant_219">AI care assistant</h4>
+                  <span class="vision-badge" data-i18n="i18n_photoanalysisen_220">📷 Photo Analysis Enabled</span>
+                </div>
+                <div id="chatLog" class="chat-log">
+                  <div class="chat-bubble bot" data-i18n="i18n_hellotellmeyour_221">
+                    Hello! Tell me your symptoms or upload a photo of a skin rash, reaction, or lesion for instant AI visual analysis and guidance.
+                  </div>
+                </div>
+                <div id="chatImagePreviewContainer" class="image-preview-container hidden">
+                  <div class="image-preview-wrapper">
+                    <img id="chatImagePreview" src="" alt="Selected symptom photo">
+                    <button id="removeImageBtn" type="button" class="remove-image-btn" title="Remove photo">×</button>
+                  </div>
+                  <span class="preview-note" data-i18n="i18n_photoattachedfo_222">Photo attached for analysis</span>
+                </div>
+                <div class="chat-input-row">
+                  <input type="file" id="chatImageInput" accept="image/*" class="hidden-file-input">
+                  <button id="uploadPhotoBtn" type="button" class="icon-button" title="Attach photo of skin rash or reaction">📷</button>
+                  <input id="chatInput" type="text" placeholder="Describe symptoms or upload a photo..." data-i18n-placeholder="i18n_ph_describesymptom_223">
+                  <button id="chatSendBtn" class="primary" type="button" data-i18n="i18n_send_224">Send</button>
+                </div>
               </div>
             </div>
 
             <div id="facilities" class="panel">
               <div class="panel-head">
-                <h3>Nearby facilities</h3>
+                <h3 data-i18n="i18n_nearbyfacilitie_225">Nearby facilities</h3>
+                <select id="specialtyFilter" class="filter-dropdown">
+                  <option value="All" data-i18n="i18n_allspecializati_226">All Specializations</option>
+                  <option value="General" data-i18n="i18n_general_227">General</option>
+                  <option value="Emergency" data-i18n="i18n_emergency_228">Emergency</option>
+                  <option value="Pediatrics" data-i18n="i18n_pediatrics_229">Pediatrics</option>
+                  <option value="Cardiology" data-i18n="i18n_cardiology_230">Cardiology</option>
+                  <option value="Maternity / Gynecology" data-i18n="i18n_maternitygyneco_231">Maternity / Gynecology</option>
+                  <option value="Neurology" data-i18n="i18n_neurology_232">Neurology</option>
+                  <option value="Orthopedics" data-i18n="i18n_orthopedics_233">Orthopedics</option>
+                  <option value="Oncology" data-i18n="i18n_oncology_234">Oncology</option>
+                  <option value="Dermatology" data-i18n="i18n_dermatology_235">Dermatology</option>
+                  <option value="Psychiatry" data-i18n="i18n_psychiatry_236">Psychiatry</option>
+                  <option value="Ophthalmology" data-i18n="i18n_ophthalmology_237">Ophthalmology</option>
+                </select>
               </div>
 
+              <div id="map" class="facilities-map"></div>
+
               <div class="facility-list" id="facilityList">
+                <!-- Facilities will be rendered here dynamically -->
                 <div class="facility-card">
                   <div>
-                    <h4>PHC Khandwa</h4>
-                    <p>Primary care · 4.8 km</p>
+                    <h4 data-i18n="i18n_loadinghospital_238">Loading hospitals...</h4>
+                    <p data-i18n="i18n_fetchingrealnea_239">Fetching real nearby facilities...</p>
                   </div>
-                  <span class="badge">Open now</span>
-                </div>
-                <div class="facility-card">
-                  <div>
-                    <h4>CHC Borgaon</h4>
-                    <p>Secondary care · 8.2 km</p>
-                  </div>
-                  <span class="badge alt">Queue: 12 min</span>
-                </div>
-                <div class="facility-card">
-                  <div>
-                    <h4>District Hospital</h4>
-                    <p>Referral centre · 22 km</p>
-                  </div>
-                  <span class="badge alt">Emergency ready</span>
                 </div>
               </div>
             </div>
 
             <div id="passport" class="panel">
               <div class="panel-head">
-                <h3>Digital health passport</h3>
+                <h3 data-i18n="i18n_digitalhealthpa_240">Digital health passport</h3>
               </div>
 
               <div class="passport-card">
-                <div class="passport-row"><span>Patient</span><strong>Priya Sharma</strong></div>
-                <div class="passport-row"><span>Blood group</span><strong>O+</strong></div>
-                <div class="passport-row"><span>Last visit</span><strong>12 Aug 2026</strong></div>
-                <div class="passport-row"><span>Conditions</span><strong>Asthma, mild anaemia</strong></div>
-                <div class="passport-row"><span>Consent</span><strong>Shared with PHC</strong></div>
+                <div class="passport-row"><span data-i18n="i18n_patient_241">Patient</span><strong data-i18n="i18n_priyasharma_242">Priya Sharma</strong></div>
+                <div class="passport-row"><span data-i18n="i18n_bloodgroup_243">Blood group</span><strong data-i18n="i18n_o_244">O+</strong></div>
+                <div class="passport-row"><span data-i18n="i18n_lastvisit_245">Last visit</span><strong data-i18n="i18n_12aug2026_246">12 Aug 2026</strong></div>
+                <div class="passport-row"><span data-i18n="i18n_conditions_247">Conditions</span><strong data-i18n="i18n_asthmamildanaem_248">Asthma, mild anaemia</strong></div>
+                <div class="passport-row"><span data-i18n="i18n_consent_249">Consent</span><strong data-i18n="i18n_sharedwithphc_250">Shared with PHC</strong></div>
               </div>
             </div>
 
             <div id="schemes" class="panel">
               <div class="panel-head">
-                <h3>Government scheme eligibility</h3>
+                <h3 data-i18n="i18n_governmentschem_251">Government scheme eligibility</h3>
               </div>
 
               <div class="scheme-list" id="schemeList">
                 <div class="scheme-card">
-                  <h4>PM-JAY</h4>
-                  <p>Hospital treatment support for eligible families and women.</p>
-                  <span>Eligible</span>
+                  <h4 data-i18n="i18n_pmjay_252">PM-JAY</h4>
+                  <p data-i18n="i18n_hospitaltreatme_253">Hospital treatment support for eligible families and women.</p>
+                  <span data-i18n="i18n_eligible_254">Eligible</span>
                 </div>
                 <div class="scheme-card">
-                  <h4>Ayushman Bharat</h4>
-                  <p>Cashless secondary and tertiary care assistance.</p>
-                  <span>Eligible</span>
+                  <h4 data-i18n="i18n_ayushmanbharat_255">Ayushman Bharat</h4>
+                  <p data-i18n="i18n_cashlessseconda_256">Cashless secondary and tertiary care assistance.</p>
+                  <span data-i18n="i18n_eligible_257">Eligible</span>
                 </div>
                 <div class="scheme-card">
-                  <h4>National TB Elimination</h4>
-                  <p>Screening and treatment support for rural patients.</p>
-                  <span>Check status</span>
+                  <h4 data-i18n="i18n_nationaltbelimi_258">National TB Elimination</h4>
+                  <p data-i18n="i18n_screeningandtre_259">Screening and treatment support for rural patients.</p>
+                  <span data-i18n="i18n_checkstatus_260">Check status</span>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          
+        
       </section>
     </main>
 
     <footer class="footer">
       <div>
-        <strong>HealthSphere AI</strong>
-        <p>Designed for rural and underserved communities.</p>
+        <strong data-i18n="i18n_anamayaai_261">Anamaya AI</strong>
+        <p data-i18n="i18n_designedforrura_262">Designed for rural and underserved communities.</p>
       </div>
       <div class="footer-links">
-        <a href="#features">Features</a>
-        <a href="#journey">Journey</a>
-        <a href="#impact">Impact</a>
+        <a href="#features" data-i18n="i18n_features_263">Features</a>
+        <a href="#journey" data-i18n="i18n_journey_264">Journey</a>
+        <a href="#impact" data-i18n="i18n_impact_265">Impact</a>
       </div>
     </footer>
 
-    <script src="website/config.js"></script>
-    <script src="website/script.js"></script>
-  </body>
-</html>
+    <!-- Donation Modal -->
+    <div id="donationModal" class="donation-modal hidden">
+      <div class="donation-modal-content">
+        <span class="donation-close">×</span>
+        <h2 data-i18n="i18n_supportanamayaa_266">Support Anamaya AI</h2>
+        <p data-i18n="i18n_yourcontributio_267">Your contribution helps provide free digital health access to remote rural areas.</p>
+        <form id="donationForm" style="display:flex; flex-direction:column; gap:12px; margin-top:20px;">
+          <input type="number" placeholder="Amount (₹)" min="10" required="" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text);" data-i18n-placeholder="i18n_ph_amount_268">
+          <button type="submit" class="primary" data-i18n="i18n_proceedtopaymen_269">Proceed to Payment</button>
+        </form>
+        <p style="font-size: 0.75rem; color: var(--muted); margin-top: 12px; text-align: center;" data-i18n="i18n_thisdemopayment_270">*This demo payment system will be replaced by Razorpay later.</p>
+        <div id="donationMessage" class="hidden" style="margin-top:20px; font-weight:600; text-align: center;"></div>
+      </div>
+    </div>
+
+    <button id="donationBtn" class="floating-donation">
+      <span class="donation-icon">🐷</span>
+      <span data-i18n="i18n_donate_271">Donate</span>
+    </button>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="config.js"></script>
+    <script src="translations.js"></script>
+    <script src="script.js"></script>
+  
+
+</body></html>

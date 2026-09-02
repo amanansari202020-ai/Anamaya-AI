@@ -47,7 +47,7 @@ class User(Base):
     patient_profile = relationship("PatientProfile", back_populates="user", uselist=False)
     health_records = relationship("HealthRecord", back_populates="patient")
     referrals = relationship("Referral", foreign_keys="Referral.patient_id", back_populates="patient")
-    consultations = relationship("Consultation", back_populates="patient")
+    consultations = relationship("Consultation", foreign_keys="Consultation.patient_id", back_populates="patient")
 
 
 # Patient Profile
@@ -58,13 +58,20 @@ class PatientProfile(Base):
     user_id = Column(Integer, ForeignKey("users.id"), unique=True)
     date_of_birth = Column(DateTime, nullable=True)
     gender = Column(String(20), nullable=True)
+    age_group = Column(String(20), nullable=True)  # child, adult, elderly
     blood_group = Column(String(10), nullable=True)
     allergies = Column(Text, nullable=True)
+    has_allergies = Column(Boolean, default=False)
+    allergy_details = Column(Text, nullable=True)
     chronic_conditions = Column(Text, nullable=True)
+    existing_conditions = Column(JSON, nullable=True)  # diabetes, heart_bp, asthma, pregnancy, injury, none
     preferred_language = Column(String(20), default="en")
     location_latitude = Column(Float, nullable=True)
     location_longitude = Column(Float, nullable=True)
     insurance_provider = Column(String(255), nullable=True)
+    emergency_contact_name = Column(String(255), nullable=True)
+    emergency_contact_phone = Column(String(50), nullable=True)
+    emergency_contact_relation = Column(String(100), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -116,18 +123,35 @@ class HealthcareFacility(Base):
     longitude = Column(Float)
     address = Column(Text)
     phone = Column(String(20), nullable=True)
+    contact_phone = Column(String(50), nullable=True)
     email = Column(String(255), nullable=True)
     opening_hours = Column(String(255), nullable=True)
     is_government = Column(Boolean, default=True)
     available_services = Column(JSON)  # List of available services
     available_specialists = Column(JSON)  # List of available specialists
     emergency_available = Column(Boolean, default=False)
+    emergency_services = Column(Boolean, default=False)
+    is_24x7 = Column(Boolean, default=False)
     beds_available = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    referrals = relationship("Referral", back_populates="facility")
+    referrals = relationship("Referral", foreign_keys="Referral.to_facility_id", back_populates="facility")
+
+
+# Emergency Notifications
+class EmergencyNotification(Base):
+    __tablename__ = "emergency_notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    contact_name = Column(String(255), nullable=True)
+    contact_phone = Column(String(50))
+    channel = Column(String(50))  # sms, whatsapp
+    status = Column(String(50))  # sent, failed
+    message_body = Column(Text)
+    sent_at = Column(DateTime, default=datetime.utcnow)
 
 
 # Referrals
@@ -149,7 +173,7 @@ class Referral(Base):
 
     # Relationships
     patient = relationship("User", foreign_keys=[patient_id], back_populates="referrals")
-    facility = relationship("HealthcareFacility", back_populates="referrals")
+    facility = relationship("HealthcareFacility", foreign_keys=[to_facility_id], back_populates="referrals")
 
 
 # Consultations

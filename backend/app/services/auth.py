@@ -11,9 +11,10 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.models import User, PatientProfile, UserRole
 from app.schemas import UserRegister, UserLogin, TokenResponse
 from app.config import settings
+from app.database import get_db
 
 # Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256", "bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 
@@ -22,13 +23,15 @@ class AuthService:
     
     @staticmethod
     def hash_password(password: str) -> str:
-        """Hash a password"""
-        return pwd_context.hash(password)
+        """Hash a password safely with 72-byte max length for bcrypt"""
+        truncated = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
+        return pwd_context.hash(truncated)
     
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
         """Verify a password"""
-        return pwd_context.verify(plain_password, hashed_password)
+        truncated = plain_password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
+        return pwd_context.verify(truncated, hashed_password)
     
     @staticmethod
     def create_access_token(user_id: int, role: str) -> TokenResponse:
@@ -88,7 +91,7 @@ class AuthService:
         return self.create_access_token(user.id, user.role.value)
     
     async def get_current_user(
-        self, credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(None)
+        self, credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)
     ) -> User:
         """Get current authenticated user from token"""
         token = credentials.credentials
@@ -99,10 +102,6 @@ class AuthService:
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
         except JWTError:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-        
-        # Get database session
-        from app.database import SessionLocal
-        db = SessionLocal()
         
         user = db.query(User).filter(User.id == int(user_id)).first()
         if user is None:

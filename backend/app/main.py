@@ -15,21 +15,27 @@ from sqlalchemy.orm import Session
 import logging
 from app.config import settings
 from app.database import engine, get_db, Base
+from app.database.migration import run_migrations
 from app.models import User, UserRole
-from app.schemas import UserRegister, UserLogin, TokenResponse, ImageAnalysisRequest
+from app.schemas import UserRegister, UserLogin, TokenResponse, ImageAnalysisRequest, EmergencyNotifyRequest
 from app.services.auth import AuthService
 from app.services.ai_guidance import AIGuidanceService
 from app.services.facility_finder import FacilityFinderService
 from app.services.referral import ReferralService
 from app.services.health_record import HealthRecordService
 from app.services.government_scheme import GovernmentSchemeService
+from app.services.emergency import EmergencyService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create tables
+# Run schema migrations and create tables
 Base.metadata.create_all(bind=engine)
+try:
+    run_migrations()
+except Exception as err:
+    logger.warning(f"Migration warning: {err}")
 
 # Create FastAPI app
 app = FastAPI(
@@ -54,6 +60,7 @@ facility_service = FacilityFinderService()
 referral_service = ReferralService()
 health_record_service = HealthRecordService()
 scheme_service = GovernmentSchemeService()
+emergency_service = EmergencyService()
 
 
 # ============================================================================
@@ -124,6 +131,54 @@ async def update_patient_profile(
         db, current_user.id, profile_data
     )
     return {"success": True, "profile": updated_profile}
+
+
+@app.put("/api/patient-profile/health-info", tags=["Patient Profile"])
+async def update_patient_health_info(
+    health_data: dict,
+    current_user: User = Depends(auth_service.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update patient's health profile and emergency contact information"""
+    updated_profile = await auth_service.update_patient_profile(
+        db, current_user.id, health_data
+    )
+    return {"success": True, "profile": updated_profile}
+
+
+# ============================================================================
+# EMERGENCY SOS ENDPOINTS (PUBLIC ACCESS)
+# ============================================================================
+
+@app.get("/api/emergency/nearby-facilities", tags=["Emergency SOS"])
+async def get_nearby_emergency_facilities(
+    latitude: float,
+    longitude: float,
+    radius_km: float = 25.0,
+    db: Session = Depends(get_db)
+):
+    """Public endpoint to get nearby 24x7 emergency facilities"""
+    facilities = await emergency_service.get_nearby_emergency_facilities(
+        db, latitude, longitude, radius_km
+    )
+    return {"success": True, "facilities": facilities}
+
+
+@app.post("/api/emergency/notify-contact", tags=["Emergency SOS"])
+async def notify_emergency_contact(
+    payload: EmergencyNotifyRequest,
+    db: Session = Depends(get_db)
+):
+    """Public endpoint to send emergency location notification via SMS & WhatsApp"""
+    res = await emergency_service.notify_emergency_contact(
+        db,
+        latitude=payload.latitude,
+        longitude=payload.longitude,
+        patient_id=payload.patient_id,
+        guest_name=payload.guest_name,
+        guest_phone=payload.guest_phone
+    )
+    return {"success": True, "data": res}
 
 
 # ============================================================================

@@ -80,43 +80,92 @@ class AIGuidanceService:
         symptom_input: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
-        Assess symptoms and provide guidance
+        Assess symptoms and provide guidance, factoring in profile_context (existing conditions, age, allergies, pregnancy)
         """
         symptoms = symptom_input.get("symptoms", [])
         duration = symptom_input.get("duration", "unknown")
         severity = symptom_input.get("severity", "moderate")
-        
+        profile_context = symptom_input.get("profile_context") or {}
+
+        # If profile_context is missing or empty, fetch from database
+        if not profile_context and db and user_id:
+            try:
+                from app.models import PatientProfile
+                profile = db.query(PatientProfile).filter(PatientProfile.user_id == user_id).first()
+                if profile:
+                    profile_context = {
+                        "gender": profile.gender,
+                        "age_group": profile.age_group,
+                        "existing_conditions": profile.existing_conditions or [],
+                        "has_allergies": profile.has_allergies or bool(profile.allergies),
+                        "allergy_details": profile.allergy_details or profile.allergies,
+                    }
+            except Exception as ex:
+                logger.warning(f"Could not load patient profile context: {ex}")
+
         # Normalize symptoms to lowercase
         symptoms = [s.lower() for s in symptoms]
-        
+        symptoms_str = " ".join(symptoms)
+
         # Check for emergency signs
         is_emergency = any(
-            emergency_sign in " ".join(symptoms).lower()
+            emergency_sign in symptoms_str
             for emergency_sign in self.EMERGENCY_SIGNS
         )
-        
+
         # Analyze symptoms
         conditions = []
         specialists = []
         max_urgency = "low"
-        
+
         for symptom in symptoms:
             if symptom in self.SYMPTOM_CONDITIONS_MAP:
                 data = self.SYMPTOM_CONDITIONS_MAP[symptom]
                 conditions.extend(data["conditions"])
                 specialists.extend(data["specialists"])
-                
-                # Update urgency level
+
                 if data["urgency"] == "high":
                     max_urgency = "high"
                 elif data["urgency"] == "medium" and max_urgency != "high":
                     max_urgency = "medium"
-        
+
+        # Apply Rule-Based Risk Adjustments using Profile Context
+        existing_conds = profile_context.get("existing_conditions") or []
+        if isinstance(existing_conds, str):
+            existing_conds = [existing_conds]
+        existing_conds = [str(c).lower() for c in existing_conds]
+
+        gender = (profile_context.get("gender") or "").lower()
+        age_group = (profile_context.get("age_group") or "").lower()
+
+        risk_warnings = []
+
+        # Rule 1: Asthma + Breathlessness/Cough -> Raise urgency
+        if "asthma" in existing_conds and any(s in symptoms_str for s in ["breathlessness", "cough", "shortness of breath"]):
+            max_urgency = "high"
+            risk_warnings.append("High Risk: Patient has pre-existing asthma with respiratory symptoms.")
+
+        # Rule 2: Pregnancy + Fever/Bleeding/Vomiting -> Raise urgency
+        if "pregnancy" in existing_conds and any(s in symptoms_str for s in ["fever", "bleeding", "vomiting", "pain"]):
+            max_urgency = "high"
+            risk_warnings.append("High Risk: Pregnancy with systemic symptoms requires urgent obstetric evaluation.")
+
+        # Rule 3: Elderly + Severe symptoms -> Raise urgency
+        if age_group == "elderly" and (severity == "severe" or max_urgency in ["medium", "high"]):
+            if max_urgency == "medium":
+                max_urgency = "high"
+            risk_warnings.append("Elevated Risk: Elderly patient presenting with significant health symptoms.")
+
+        # Rule 4: Heart/BP + Chest Pain/Shortness of Breath -> Emergency
+        if ("heart_bp" in existing_conds or "heart" in existing_conds) and any(s in symptoms_str for s in ["chest pain", "pain", "breathlessness"]):
+            is_emergency = True
+            risk_warnings.append("Critical Risk: History of cardiovascular condition with acute symptoms.")
+
         # Remove duplicates
         conditions = list(set(conditions))
         specialists = list(set(specialists))
-        
-        # Determine facility level
+
+        # Determine facility level & urgency
         if is_emergency:
             facility_level = HealthcareLevelEnum.DISTRICT_HOSPITAL
             urgency_level = "critical"

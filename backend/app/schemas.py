@@ -38,13 +38,20 @@ class UserResponse(UserBase):
 class PatientProfileBase(BaseModel):
     date_of_birth: Optional[datetime] = None
     gender: Optional[str] = None
+    age_group: Optional[str] = None  # child, adult, elderly
     blood_group: Optional[str] = None
     allergies: Optional[str] = None
+    has_allergies: bool = False
+    allergy_details: Optional[str] = None
     chronic_conditions: Optional[str] = None
+    existing_conditions: Optional[List[str]] = None  # diabetes, heart_bp, asthma, pregnancy, injury, none
     preferred_language: str = "en"
     location_latitude: Optional[float] = None
     location_longitude: Optional[float] = None
     insurance_provider: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+    emergency_contact_relation: Optional[str] = None
 
 
 class PatientProfileCreate(PatientProfileBase):
@@ -68,6 +75,9 @@ class SymptomInput(BaseModel):
     severity: Optional[str] = None  # mild, moderate, severe
     associated_symptoms: Optional[List[str]] = None
     relevant_medical_history: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    profile_context: Optional[Dict[str, Any]] = None
 
 
 class SymptomAssessmentResponse(BaseModel):
@@ -92,12 +102,15 @@ class HealthcareFacilityBase(BaseModel):
     longitude: float
     address: str
     phone: Optional[str] = None
+    contact_phone: Optional[str] = None
     email: Optional[str] = None
     opening_hours: Optional[str] = None
     is_government: bool = True
     available_services: List[str] = []
     available_specialists: List[str] = []
     emergency_available: bool = False
+    emergency_services: bool = False
+    is_24x7: bool = False
     beds_available: Optional[int] = None
 
 
@@ -112,6 +125,38 @@ class HealthcareFacilityResponse(HealthcareFacilityBase):
 
     class Config:
         from_attributes = True
+
+
+# Emergency SOS Schemas
+class EmergencyFacilityResponse(BaseModel):
+    id: int
+    name: str
+    facility_level: str
+    latitude: float
+    longitude: float
+    address: str
+    phone: Optional[str] = None
+    contact_phone: Optional[str] = None
+    distance_km: float
+    emergency_services: bool = True
+    is_24x7: bool = True
+    available_services: List[str] = []
+
+
+class EmergencyNotifyRequest(BaseModel):
+    patient_id: Optional[int] = None
+    latitude: float
+    longitude: float
+    guest_name: Optional[str] = None
+    guest_phone: Optional[str] = None
+
+
+class EmergencyNotifyResponse(BaseModel):
+    status: str
+    contact_name: str
+    contact_phone: str
+    channels: List[str]
+    sent_at: str
 
 
 # Referral Schemas
