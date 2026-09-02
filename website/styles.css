@@ -355,3 +355,106 @@ body[data-theme="dark"] .analysis-section { background: rgba(0, 0, 0, 0.2); }
   .demo-grid { display: block; }
   .sidebar { margin-bottom: 18px; }
 }
+
+/* Map specific styles */
+.facilities-map {
+  width: 100%;
+  height: 350px;
+  border-radius: 18px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  z-index: 1; /* Keep map below modals/overlays */
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.filter-dropdown {
+  max-width: 200px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel-solid);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+/* Floating Donation Button */
+.floating-donation {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: linear-gradient(135deg, #f4b740, #ff8c00);
+  color: #fff;
+  border-radius: 999px;
+  padding: 12px 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 25px rgba(255, 140, 0, 0.4);
+  font-weight: 800;
+  z-index: 1000;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+}
+.floating-donation:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 15px 35px rgba(255, 140, 0, 0.5);
+  color: #fff;
+}
+.donation-icon {
+  font-size: 1.8rem;
+}
+.donation-modal {
+  position: fixed;
+  z-index: 1001;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.donation-modal.hidden {
+  display: none !important;
+}
+.donation-modal-content {
+  background: var(--panel);
+  margin: auto;
+  padding: 30px;
+  border: 1px solid var(--border);
+  width: 90%;
+  max-width: 450px;
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  position: relative;
+  color: var(--text);
+}
+.donation-modal-content h2 { margin-top: 0; }
+.donation-close {
+  color: var(--muted);
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.donation-close:hover,
+.donation-close:focus {
+  color: var(--text);
+  text-decoration: none;
+}

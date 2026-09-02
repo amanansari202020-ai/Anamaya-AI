@@ -177,7 +177,7 @@ function renderDashboardAssessment(riskLevel, recommendation, referralId) {
   if (distanceKpi) distanceKpi.textContent = riskLevel === 'High' ? '8.2 km' : riskLevel === 'Moderate' ? '4.8 km' : '3.1 km';
   if (schemeKpi) schemeKpi.textContent = riskLevel === 'High' ? 'Ayushman Bharat' : 'PM-JAY';
   if (dashboardRecommendation) dashboardRecommendation.textContent = recommendation;
-  if (dashboardStatus) dashboardStatus.textContent = `Digital passport synced with ${riskLevel === 'High' ? 'district emergency queue' : 'nearest PHC referral lane'}.`;
+  if (dashboardStatus) dashboardStatus.textContent = riskLevel === 'High' ? t('Digital passport synced with district emergency queue.') : t('Digital passport synced with nearest PHC referral lane.');
 }
 
 function renderFacilityRecommendations(level) {
@@ -241,7 +241,7 @@ function runAssessment() {
   if (chatLog) {
     const botReply = document.createElement('div');
     botReply.className = 'chat-bubble bot';
-    botReply.textContent = `AI guidance: ${risk.recommendation} Estimated care cost is about ₹${cost.total}. ${patientName}, please speak to a nearby clinic or primary care center if symptoms worsen.`;
+    botReply.textContent = `${t('AI guidance:')} ${risk.recommendation} ${t('Estimated care cost is about')} ₹${cost.total}. ${patientName}, ${t('please speak to a nearby clinic or primary care center if symptoms worsen.')}`;
     chatLog.appendChild(botReply);
     chatLog.scrollTop = chatLog.scrollHeight;
   }
@@ -518,32 +518,32 @@ function renderVisualAnalysisCard(data) {
 
   card.innerHTML = `
     <div class="analysis-header">
-      <span class="analysis-title">🔍 ${data.condition_name || 'Visual Reaction Analysis'}</span>
+      <span class="analysis-title">🔍 ${data.condition_name || t('Visual Reaction Analysis')}</span>
       <span class="severity-tag ${severityClass}">${data.severity || 'Moderate'}</span>
     </div>
 
     ${data.symptoms && data.symptoms.length ? `
     <div class="analysis-section">
-      <h5>📋 Expected Symptoms</h5>
+      <h5>📋 ${t('Expected Symptoms')}</h5>
       <ul>${data.symptoms.map(s => `<li>${s}</li>`).join('')}</ul>
     </div>
     ` : ''}
 
     ${data.precautions && data.precautions.length ? `
     <div class="analysis-section">
-      <h5>🛡️ Immediate Precautions</h5>
+      <h5>🛡️ ${t('Immediate Precautions')}</h5>
       <ul>${data.precautions.map(p => `<li>${p}</li>`).join('')}</ul>
     </div>
     ` : ''}
 
     <div class="analysis-section">
-      <h5>👨‍⚕️ Doctor to Consult</h5>
+      <h5>👨‍⚕️ ${t('Doctor to Consult')}</h5>
       <p><strong>${data.doctor_specialist || 'General Physician / Dermatologist'}</strong> at <em>${data.recommended_facility || 'Primary Health Centre (PHC)'}</em></p>
     </div>
 
     ${data.next_steps && data.next_steps.length ? `
     <div class="analysis-section">
-      <h5>🚀 What to Do Next</h5>
+      <h5>🚀 ${t('What to Do Next')}</h5>
       <ul>${data.next_steps.map(n => `<li>${n}</li>`).join('')}</ul>
     </div>
     ` : ''}
@@ -595,7 +595,7 @@ if (chatSendBtn) {
     // Create thinking bot bubble
     const botBubble = document.createElement('div');
     botBubble.className = 'chat-bubble bot';
-    botBubble.textContent = hasImage ? 'Analyzing photo and symptoms...' : 'Thinking...';
+    botBubble.textContent = hasImage ? t('Analyzing photo and symptoms...') : t('Thinking...');
     chatLog.appendChild(botBubble);
     chatLog.scrollTop = chatLog.scrollHeight;
 
@@ -648,11 +648,7 @@ if (chatSendBtn) {
     }
 
     // Text-only guidance
-    const answer = textValue.toLowerCase().includes('fever') || textValue.toLowerCase().includes('cough')
-      ? 'Please monitor symptoms, drink fluids, and visit a primary health center if fever remains high or breathing worsens.'
-      : textValue.toLowerCase().includes('pain')
-        ? 'Try rest and hydration, and seek a nearby clinic if the pain is severe or persistent.'
-        : 'Please speak with a nearby clinic or health worker for a proper checkup and guidance.';
+    const answer = textValue.toLowerCase().includes('fever') || textValue.toLowerCase().includes('cough') ? t('Please monitor symptoms, drink fluids, and visit a primary health center if fever remains high or breathing worsens.') : textValue.toLowerCase().includes('pain') ? t('Try rest and hydration, and seek a nearby clinic if the pain is severe or persistent.') : t('Please speak with a nearby clinic or health worker for a proper checkup and guidance.');
 
     botBubble.textContent = answer;
     chatLog.scrollTop = chatLog.scrollHeight;
@@ -707,10 +703,168 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 const referralId = generateReferralId();
 const summary = document.createElement('div');
 summary.className = 'result-box';
-summary.innerHTML = `<h4>Generated referral</h4><p><strong>ID:</strong> ${referralId}<br><strong>Destination:</strong> CHC Borgaon · Follow-up in 48 hours</p>`;
+summary.innerHTML = `<h4>${t('js_generated_referral')}</h4><p><strong>${t('js_id')}</strong> ${referralId}<br><strong>${t('js_destination')}</strong> ${t('CHC Borgaon · Follow-up in 48 hours')}</p>`;
 const assessmentResult = document.getElementById('assessmentResult');
 if (assessmentResult) {
   assessmentResult.appendChild(summary);
 }
 
 checkBackend();
+
+
+// ==========================================
+// NEW LOGIC (Map, Donation, and Localization Fixes)
+// ==========================================
+
+function t(key) {
+  const lang = document.documentElement.lang || 'en';
+  const dict = (window.siteTranslations && window.siteTranslations[lang]) || (window.siteTranslations && window.siteTranslations.en) || {};
+  return dict[key] || key;
+}
+
+// Map Logic
+let mapInstance = null;
+let facilityMarkers = [];
+let allFetchedFacilities = [];
+
+async function initMap() {
+  if (mapInstance) return;
+  const mapContainer = document.getElementById('map');
+  if (!mapContainer) return;
+
+  const lat = 21.1458;
+  const lon = 79.0882;
+  mapInstance = L.map('map').setView([lat, lon], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(mapInstance);
+
+  L.marker([lat, lon]).addTo(mapInstance)
+    .bindPopup('<b>Current Location</b><br>Rural area, near Nagpur.')
+    .openPopup();
+
+  document.getElementById('specialtyFilter')?.addEventListener('change', renderFacilities);
+
+  const loadingEl = document.createElement('div');
+  loadingEl.id = 'mapLoading';
+  loadingEl.innerHTML = `<div style="padding: 10px; background: rgba(255,255,255,0.9); position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; border-radius: 8px; font-weight: 500; font-size: 14px;">${t('i18n_fetchingrealnea_159')}</div>`;
+  mapContainer.appendChild(loadingEl);
+
+  try {
+    const query = `
+      [out:json][timeout:25];
+      (
+        node["amenity"="hospital"](around:25000,${lat},${lon});
+        node["amenity"="clinic"](around:25000,${lat},${lon});
+        way["amenity"="hospital"](around:25000,${lat},${lon});
+        way["amenity"="clinic"](around:25000,${lat},${lon});
+      );
+      out center;
+    `;
+    const response = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      body: query
+    });
+    const data = await response.json();
+
+    const specializations = ["General", "Emergency", "Pediatrics", "Cardiology", "Maternity / Gynecology", "Neurology", "Orthopedics", "Oncology", "Dermatology", "Psychiatry", "Ophthalmology"];
+    
+    allFetchedFacilities = data.elements.map((el, index) => {
+      let fLat = el.lat || el.center.lat;
+      let fLon = el.lon || el.center.lon;
+      return {
+        id: el.id,
+        name: el.tags.name || `Healthcare Facility #${index+1}`,
+        lat: fLat,
+        lon: fLon,
+        specialty: specializations[index % specializations.length],
+        distance: (Math.random() * 20 + 1).toFixed(1) + ' km',
+        status: (Math.random() > 0.3) ? t('js_open') : t('js_referral')
+      };
+    });
+    
+    if (document.getElementById('mapLoading')) {
+      document.getElementById('mapLoading').remove();
+    }
+    
+    renderFacilities();
+  } catch (error) {
+    console.error("Failed to load map data", error);
+    if (document.getElementById('mapLoading')) {
+      document.getElementById('mapLoading').innerHTML = t('Failed to load facilities.');
+    }
+  }
+}
+
+function renderFacilities() {
+  const filter = document.getElementById('specialtyFilter')?.value || 'All';
+  const list = document.getElementById('facilityList');
+  
+  if (facilityMarkers && mapInstance) {
+    facilityMarkers.forEach(m => mapInstance.removeLayer(m));
+  }
+  facilityMarkers = [];
+  
+  const filtered = allFetchedFacilities.filter(f => filter === 'All' || f.specialty === filter);
+  
+  if (list) {
+    list.innerHTML = filtered.map(f => `
+      <div class="facility-card">
+        <div>
+          <h4>${f.name}</h4>
+          <p>${f.specialty} · ${f.distance} ${t('js_km_away')}</p>
+        </div>
+        <span class="badge ${f.status === t('js_referral') ? 'alt' : ''}">${f.status}</span>
+      </div>
+    `).join('');
+  }
+  
+  if (mapInstance) {
+    filtered.forEach(f => {
+      const marker = L.marker([f.lat, f.lon]).addTo(mapInstance)
+        .bindPopup(`<b>${f.name}</b><br>${f.specialty}<br>${f.distance} away`);
+      facilityMarkers.push(marker);
+    });
+  }
+}
+
+// Donation Logic
+const donationBtn = document.getElementById('donationBtn');
+const donationModal = document.getElementById('donationModal');
+const donationForm = document.getElementById('donationForm');
+const donationMessage = document.getElementById('donationMessage');
+
+if (donationBtn) {
+  donationBtn.addEventListener('click', () => {
+    if (donationModal) {
+      donationModal.classList.remove('hidden');
+      if(donationMessage) donationMessage.classList.add('hidden');
+      if(donationForm) donationForm.style.display = 'flex';
+    }
+  });
+}
+
+document.querySelectorAll('.donation-close').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (donationModal) donationModal.classList.add('hidden');
+  });
+});
+
+if (donationForm) {
+  donationForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const amount = document.getElementById('donationAmount').value;
+    
+    donationForm.style.display = 'none';
+    donationMessage.classList.remove('hidden');
+    donationMessage.innerHTML = `<span style=\"color:#e67e22;\">${t('Redirecting to Razorpay secure gateway for ₹')}${amount}...</span>`;
+    
+    setTimeout(() => {
+      donationMessage.innerHTML = `<span style=\"color:#2ecc71;\">${t('Payment of ₹')}${amount}${t(' successful! Thank you for your support.')}</span>`;
+      setTimeout(() => {
+        donationModal.classList.add('hidden');
+      }, 3000);
+    }, 2000);
+  });
+}
