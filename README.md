@@ -1,545 +1,182 @@
-# Anamaya AI
+# Anamaya AI 🏥
 
 ## Connecting Every Patient to the Right Care, at the Right Place, at the Right Time.
 
-### An AI-powered Rural Healthcare Navigation and Continuity Platform
+### An AI-Powered Rural Healthcare Navigation & Continuity Platform
 
-GitHub Repository: https://github.com/amanansari202020-ai/Anamaya-AI
+**GitHub Repository**: [https://github.com/amanansari202020-ai/Anamaya-AI](https://github.com/amanansari202020-ai/Anamaya-AI)  
+**Live Local Preview**: [http://localhost:8001](http://localhost:8001) | **Backend API**: [http://localhost:8000](http://localhost:8000)
 
 ---
 
 ## 🎯 Project Overview
 
-Anamaya AI is a comprehensive healthcare solution designed specifically for rural and underserved communities. It solves critical healthcare challenges by providing:
+**Anamaya AI** (formerly HealthSphere AI) is an end-to-end, multilingual healthcare navigation platform designed specifically for rural, remote, and underserved communities. It bridges critical healthcare access gaps by providing:
 
-- **Intelligent Healthcare Guidance**: AI-powered symptom assessment without diagnosis claims
-- **Smart Facility Navigation**: Recommendations for appropriate healthcare facility levels
-- **Seamless Referrals**: QR code-enabled patient transfers with full medical history
-- **Portable Health Records**: Digital health passport accessible across facilities
-- **Offline Capability**: Full functionality without internet connectivity
-- **Government Scheme Access**: Automated eligibility matching for health subsidies
-- **Multilingual Support**: Healthcare guidance in multiple regional languages
-- **Cost Transparency**: Healthcare expense estimation and budgeting tools
+- 🤖 **Interactive AI Health Guidance**: Conversational symptom assessment wizard with urgency detection and instant treatment cost estimates.
+- 📷 **AI Photo Symptom Analysis**: Visual reaction screening for skin rashes, burns, or lesions with medical precautions and specialist guidance.
+- 💬 **AI Care Assistant Chatbox**: Embedded conversational chatbox in the AI Assessment suite with `Enter` key submit and voice output support.
+- 🗺️ **Real Location-Based Facility Discovery**: GPS Geolocation integration (`navigator.geolocation`), Nominatim search, Leaflet interactive map, and OpenStreetMap Overpass API for real hospitals, clinics, PHCs, and CHCs with Haversine distance calculations.
+- 🚨 **Real 24x7 Emergency SOS**: Instant location-based emergency medical facility search with direct phone dialers (`tel:`), Google Maps directions, and 1-click SMS/WhatsApp location alerts.
+- 💳 **Digital Health Passport**: Portable medical history card with Patient Name, Blood Group, Last Visit, Conditions, and `HS-2048` passport code, fully responsive to Dark and Light theme toggled modes.
+- 🏷️ **Interactive 2-Step Registration**: Clean dark-theme auth cards with tap-to-select chips for Gender, Age Group, Existing Conditions, Allergies, and Emergency Contacts.
+- 🌐 **Multilingual & Voice Support**: Seamless English (`en`), Hindi (`hi`), and Marathi (`mr`) internationalization across 412+ translation keys with voice assistant speech output (`speakAssistant`).
+- 🐷 **Community Support**: Floating orange gradient donation button and modal for rural healthcare access funding.
+
+---
+
+## 🏗️ Technology Stack
+
+### Web Frontend & UI Engine
+- **Core Technology**: Vanilla HTML5, Modern JavaScript (ES6+), Vanilla CSS Design System.
+- **Theme Architecture**: CSS Custom Properties (`--bg`, `--panel-solid`, `--text`, `--muted`, `--border`, `--shadow`) supporting dynamic Dark Mode (`body[data-theme="dark"]`) and Light Mode transitions.
+- **Mapping & GIS**: Leaflet.js (Interactive OpenStreetMap tile layer), Geolocation API (`navigator.geolocation`), Nominatim Geocoding API, OpenStreetMap Overpass API (`amenity=hospital`, `amenity=clinic`).
+- **Audio & Voice**: Web Speech API (`SpeechSynthesisUtterance`) for multilingual voice guidance.
+
+### Backend API
+- **Framework**: FastAPI (Python 3.9+)
+- **Database & ORM**: PostgreSQL / SQLite + SQLAlchemy ORM (16 Core Tables)
+- **Authentication**: JWT tokens (OAuth2 with Passlib & bcrypt)
+- **API Docs**: OpenAPI / Swagger UI at `http://localhost:8000/docs`
 
 ---
 
 ## 📦 Project Structure
 
 ```
-HealthSphere AI/
-├── backend/                    # FastAPI + Python backend
+Anamaya-AI/
+├── website/                   # Production Web Application
+│   ├── index.html            # Main Single-Page Application (SPA) shell & workspace panels
+│   ├── script.js             # Client logic (Routing, Geolocation, Leaflet map, i18n, Chatbot, SOS)
+│   ├── styles.css            # Complete design system & Dark/Light mode theme CSS tokens
+│   └── translations.js       # Multilingual dictionary (English, Hindi, Marathi - 412 keys)
+│
+├── backend/                   # FastAPI Python backend
 │   ├── app/
-│   │   ├── models/            # Database schemas (16 core tables)
-│   │   ├── services/          # Business logic layer
-│   │   ├── schemas.py         # Pydantic validation
-│   │   ├── main.py            # FastAPI application
-│   │   └── config.py          # Configuration
-│   ├── requirements.txt         # Python dependencies
-│   ├── .env.example            # Environment template
-│   └── README.md               # Backend documentation
+│   │   ├── models/           # SQLAlchemy DB models (Users, Facilities, Assessments, Passport)
+│   │   ├── services/         # AI Guidance engine, Image analysis, Facility search logic
+│   │   ├── database/         # SQLite/PostgreSQL connection & DB migration scripts
+│   │   ├── schemas.py        # Pydantic data validation
+│   │   └── main.py           # FastAPI application entry point
+│   ├── requirements.txt      # Python dependencies
+│   └── .env.example          # Backend environment configuration
 │
-├── frontend/                   # React Native + Expo frontend
-│   ├── src/
-│   │   ├── screens/           # UI screens for all features
-│   │   ├── services/          # API client layer
-│   │   ├── stores/            # State management (Zustand)
-│   │   ├── components/        # Reusable components
-│   │   └── utils/             # Themes, helpers, validators
-│   ├── App.tsx                # Navigation setup
-│   ├── package.json           # Dependencies
-│   ├── app.json               # Expo configuration
-│   ├── .env.example           # Environment template
-│   └── README.md              # Frontend documentation
-│
-├── PROJECT_SETUP_GUIDE.md     # Complete setup instructions
-└── README.md                  # This file
+├── frontend/                  # React Native + Expo Mobile Application (Optional build)
+├── index.html                 # Root web entry point (synced with website/index.html)
+├── start_app.bat              # 1-Click Windows launch script
+└── README.md                  # Project documentation
 ```
 
 ---
 
-## 🌐 Demo & Access
+## 🚀 Quick Start Guide
 
-### Project Demo and Repository
-- Local website: http://localhost:8001
-- GitHub Repository: https://github.com/amanansari202020-ai/Anamaya-AI
-- Project purpose: Anamaya AI helps rural communities find the right care, track referrals, understand symptoms, and access scheme support in multilingual and voice-friendly ways.
+### Prerequisites
+- **Python 3.9+** (For backend API)
+- **Node.js 16+** (Optional for scratch testing/tooling)
+- Modern web browser (Chrome, Edge, Firefox, Safari with Geolocation enabled)
 
-### How to Open the App
-1. Start the backend from the backend folder.
-2. Open the website locally in a browser at http://localhost:8003.
-3. Use the language selector and voice assistant for easier access in English, Hindi, or Marathi.
+### Running the Platform (1-Click)
 
----
+On Windows, double-click **`start_app.bat`** or run:
 
-## 🚀 Quick Start
+```powershell
+.\start_app.bat
+```
 
-### Minimum Requirements
-- Python 3.9+
-- Node.js 16+
-- PostgreSQL 12+ (or SQLite for development)
-- 10 minutes for quick setup
+### Manual Setup Steps
 
-### Quick Setup (3 Commands)
-
+#### 1. Launch Backend API (Terminal 1)
 ```bash
-# 1. Backend Setup
 cd backend
-python -m venv venv && source venv/bin/activate  # or venv\Scripts\activate on Windows
-pip install -r requirements.txt && python app/main.py
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On Linux/macOS:
+source venv/bin/activate
 
-# 2. Frontend Setup (in new terminal)
-cd frontend && npm install && npm start
-
-# 3. Login
-# Use default test credentials in app:
-# Email: user@example.com
-# Password: password123
+pip install -r requirements.txt
+python app/main.py
 ```
+> Backend runs at: `http://localhost:8000` (Swagger docs: `http://localhost:8000/docs`)
 
-**Backend Running**: http://localhost:8000
-**Frontend Running**: Expo Dev Server (press 'a' for Android, 'i' for iOS)
+#### 2. Launch Web Application (Terminal 2)
+```bash
+cd website
+python -m http.server 8001
+```
+> Web Application runs at: `http://localhost:8001`
 
 ---
 
-## 📚 Full Documentation
+## 🌟 Key Application Features & Workflows
 
-| Document | Content |
-|----------|---------|
-| **[PROJECT_SETUP_GUIDE.md](PROJECT_SETUP_GUIDE.md)** | Complete installation, architecture, API reference, demo scenario |
-| **[backend/README.md](backend/README.md)** | Backend setup, API endpoints, database schema, troubleshooting |
-| **[frontend/README.md](frontend/README.md)** | Frontend setup, screens, services, state management, offline mode |
+### 1. Public Landing vs. Post-Registration Workspace Isolation
+- **Public Landing Page**: Features hero eyebrow, patient journey, feature cards, impact statistics, and floating donation pig button 🐷.
+- **Workspace App Shell**: Shown post-registration/login at `http://localhost:8001/#workspace/dashboard`. Automatically hides landing marketing sections for a clean, focused application dashboard with sidebar navigation.
 
----
+### 2. Interactive 2-Step Registration & Health Profile
+- **Step 1**: Basic Details (Full Name, Email, Phone Number, Home Address).
+- **Step 2**: Interactive Health Profile Chips:
+  - **Gender**: `👨 Male`, `👩 Female`, `⚧ Other`
+  - **Age Group**: `👶 Child (under 12)`, `🧑 Adult (12-60)`, `👴 Elderly (60+)`
+  - **Existing Conditions**: `🩸 Diabetes`, `❤️ Heart / BP`, `😮💨 Asthma`, `🤰 Pregnancy`, `🦴 Injury / Disability`, `✅ None of these`
+  - **Allergies**: `❌ No` / `⚠️ Yes` toggle with voice input button 🎤.
+  - **Emergency Contact**: Name, Phone Number, and Relationship.
 
-## 🏗️ Technology Stack
-
-### Backend
-- **Framework**: FastAPI (Python)
-- **Database**: PostgreSQL + SQLAlchemy ORM
-- **Authentication**: JWT with Passlib
-- **API Documentation**: OpenAPI (Swagger)
-- **Testing**: pytest
-- **Deployment**: Docker, AWS, Heroku
-
-### Frontend
-- **Framework**: React Native + Expo
-- **Language**: TypeScript
-- **State Management**: Zustand
-- **UI Library**: React Native Paper (Material Design 3)
-- **Navigation**: React Navigation
-- **Storage**: AsyncStorage + SQLite
-- **Mapping**: Google Maps / OpenStreetMap (ready)
-- **Speech**: Expo Speech (Voice I/O)
-
-### Database (16 Core Tables)
-```
-Authentication & Users:
-- users, patient_profiles
-
-Health Management:
-- health_records, symptom_assessments, consultations
-
-Facilities:
-- healthcare_facilities, referrals
-
-Information:
-- government_schemes, medicines
-
-Infrastructure:
-- data_sync (for offline)
-```
-
----
-
-## 🎯 Core Features
-
-### 1. AI Health Guidance
-- Symptom assessment without diagnosis
-- Urgency level detection
-- Emergency warning sign identification
-- Specialist recommendation
-- Medical disclaimers on all output
-
-### 2. Healthcare Facility Discovery
-- Location-based search with distance calculation
-- Filter by facility level (5 levels from home guidance to district hospital)
-- Services and specialists availability
-- Operating hours and contact information
-- Emergency service availability
-
-### 3. Smart Referral System
-- AI-assisted referral generation
-- Unique referral ID and QR code
-- Complete patient history integration
-- Status tracking and history
-- Access control and consent management
+### 3. Real Location-Based Facilities Discovery
+- **Geolocation API**: Requests browser GPS coordinates (`navigator.geolocation.getCurrentPosition`).
+- **OpenStreetMap Overpass API**: Queries real hospitals and clinics within configurable radii (10 km, 25 km, 50 km).
+- **Fallback Database**: 10 real Maharashtra healthcare facilities (*Navi Mumbai Municipal Hospital Vashi*, *MGM Hospital Kamothe*, *Panvel Sub-District Hospital*, *KEM Hospital Mumbai*, *Civil Hospital Alibag*, etc.).
+- **Haversine Distance**: Displays exact calculated distances (`📍 X.X km away`).
+- **Interactive Leaflet Map**: Renders map pins for user location and nearby facilities with clickable popups.
 
 ### 4. Digital Health Passport
-- Complete medical history in one place
-- Record organization by type
-- Consent-based sharing with facilities
-- Access history and audit logs
-- QR code export for portable access
+- Structured rounded card (`.passport-card`) displaying:
+  - **Patient**: Registered user name (dynamically synced)
+  - **Blood group**: `O+`
+  - **Last visit**: `12 Aug 2026`
+  - **Conditions**: Registered profile health conditions
+  - **Consent**: `Shared with PHC`
+  - **Passport Code**: `HS-2048`
+- **Theme Responsiveness**: Card background, borders, and text automatically change between Dark Mode (`#10263a` dark card background) and Light Mode (`#ffffff` card background) when toggling themes.
 
-### 5. Offline & Sync
-- Full functionality without internet
-- Automatic sync when connection restored
-- Conflict resolution for simultaneous updates
-- Local encrypted storage
-- Connectivity status indicator
+### 5. Real 24x7 Emergency SOS
+- Location-based 24x7 emergency medical centers and trauma units query.
+- Instant 1-click **Send My Location Now** button that sends current GPS coordinates via simulated SMS & WhatsApp to your emergency contact.
+- Direct **📞 Call Facility** dialer buttons (`tel:`) and **🗺️ Get Directions** Google Maps route links.
 
-### 6. Government Schemes Matcher
-- 50+ healthcare schemes database
-- Eligibility assessment based on:
-  - Age group
-  - Income category
-  - State/Location
-  - Employment status
-- Benefits, eligibility criteria, application process
-- Official links and helpline numbers
+### 6. AI Assessment & AI Care Assistant Chatbox
+- **5-Step Assessment Wizard**: Symptoms selection, severity chips (`🙂 Mild`, `😟 Moderate`, `😰 Severe`), duration, location, and health check summary.
+- **Cost Estimator**: Displays estimated consultation, diagnostics, and medicine expenses (`Total estimate: ₹1,050`).
+- **Embedded AI Chatbox (`.chatbot-box`)**:
+  - Text-based health Q&A with `Enter` key submit listener.
+  - Photo attachment 📷 for visual skin rash/lesion analysis (`/api/health/analyze-image`).
+  - Multilingual voice output 🔊 using `speakAssistant()`.
 
-### 7. Budget Estimator
-- Cost estimation by facility level
-- Breakdown: Consultation, Diagnostics, Travel, Medicine
-- Government scheme affordability alternatives
-- Cost transparency and disclaimers
-
-### 8. Multilingual Support
-- English, Hindi, Marathi (extensible)
-- Voice input/output in local languages
-- All healthcare information translated
-- Regional healthcare scheme information
-
-### 9. User Roles
-- **Patient**: Enter symptoms, view records, manage referrals
-- **Healthcare Worker**: View patient history, create referrals, update status
-- **Admin**: Manage facilities, schemes, users
-
-### 10. Security & Privacy
-- JWT-based authentication
-- Password hashing with bcrypt
-- Patient consent for data sharing
-- Access logging and audit trail
-- Role-based access control
-- Data encryption for offline storage
+### 7. Multilingual Internationalization (i18n)
+- 412+ synchronized translation keys across **English (`en`)**, **Hindi (`hi`)**, and **Marathi (`mr`)**.
+- Fallback hierarchy in `setLanguage(lang)` ensures 100% of UI elements (including wizard chips, sidebar Emergency SOS, and chat prompts) switch languages seamlessly.
 
 ---
 
-## 📱 App Workflows
+## 🔌 API Endpoints Summary
 
-### Patient Journey
-
-```
-1. Register/Login
-        ↓
-2. Complete Health Profile
-        ↓
-3. Enter Symptoms (Text or Voice)
-        ↓
-4. Receive AI Assessment & Facility Recommendation
-        ↓
-5. View Nearby Healthcare Facilities
-        ↓
-6. Choose Facility & Book/Visit
-        ↓
-7. Healthcare Worker Creates Referral (if needed)
-        ↓
-8. Patient Carries Referral QR Code to Next Facility
-        ↓
-9. Healthcare Worker Scans QR & Views Complete History
-        ↓
-10. Digital Health Passport Updated with New Records
-        ↓
-11. Patient Discovers Government Schemes for Help
-```
-
-### Offline Workflow
-
-```
-Patient goes offline:
-- Can still view downloaded health records
-- Can create referrals locally
-- Can browse healthcare facilities
-- Can access government schemes info
-- Can estimate healthcare costs
-
-When connection returns:
-- App detects connectivity
-- Automatically syncs pending data
-- Resolves any conflicts
-- Notifies patient of successful sync
-- Shows sync status in UI
-```
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/auth/register` | Register new patient account |
+| `POST` | `/auth/login` | Authenticate user & get JWT token |
+| `GET` | `/api/emergency/nearby-facilities` | Fetch nearby emergency hospitals by lat, lon & radius |
+| `POST` | `/api/health/analyze-image` | AI visual analysis for symptom photos |
+| `POST` | `/api/health/guidance` | AI conversational health guidance |
+| `GET` | `/api/health-passport` | Retrieve digital health passport data |
+| `POST` | `/api/schemes/match` | Assessment of government health scheme eligibility |
 
 ---
 
-## 🔌 API Endpoints Overview
+## 📄 License & Attribution
 
-### Public Endpoints
-```
-POST   /auth/register          - Register new user
-POST   /auth/login             - Login and get JWT token
-GET    /health                 - API health check
-```
-
-### Patient Endpoints (Authenticated)
-```
-GET    /api/patient/profile    - Get patient profile
-PUT    /api/patient/profile    - Update patient profile
-
-POST   /api/health/assess      - AI symptom assessment
-GET    /api/health/assessment/{id} - Get past assessment
-
-GET    /api/journey/{id}       - Healthcare journey recommendation
-POST   /api/budget/estimate    - Estimate healthcare costs
-
-GET    /api/facilities/nearby  - Find nearby facilities
-GET    /api/facilities/{id}    - Facility details
-
-POST   /api/referral/create    - Create referral
-GET    /api/referral/{id}      - Get referral details
-
-GET    /api/health-passport    - Digital health passport
-POST   /api/health-passport/record - Add health record
-GET    /api/health-passport/export-qr - Export as QR
-
-POST   /api/schemes/match      - Find eligible schemes
-GET    /api/schemes/{id}       - Scheme details
-
-POST   /api/sync/pending       - Sync offline data
-```
-
-### Healthcare Worker Endpoints
-```
-PUT    /api/referral/{id}      - Update referral status
-GET    /api/referral/           - List referrals
-```
-
-See **[backend/README.md](backend/README.md)** for complete API documentation.
-
----
-
-## 🎨 UI/UX Features
-
-- **Mood-Based Interface**: Select mood → adaptive UI themes
-- **Connectivity Indicator**: Real-time online/offline status
-- **Accessible Design**: WCAG AA contrast ratios, 48dp touch targets
-- **Responsive Layout**: Works on 5" to 7" screens
-- **Material Design 3**: Modern, consistent UI
-- **Dark Mode**: System and manual toggle
-- **Voice Support**: Hands-free operation
-- **Large Text Options**: Improved readability
-
----
-
-## 🔐 Security & Privacy
-
-### Authentication & Authorization
-- JWT token-based authentication
-- 30-minute token expiration
-- Secure password hashing with bcrypt
-- Role-based access control
-- Token refresh mechanism
-
-### Data Privacy
-- Patient consent required for data sharing
-- Access logging for all records
-- Ability to revoke facility access
-- Data deletion controls
-- HIPAA-compliant audit trails
-
-### Offline Security
-- Encrypted local storage
-- Isolated data per user
-- Automatic session timeout
-- Secure token handling
-
----
-
-## 📊 Testing the System
-
-### Using Swagger UI
-1. Go to http://localhost:8000/docs
-2. Click "Try it out" on any endpoint
-3. Test complete workflow
-
-### Using cURL or Postman
-```bash
-# 1. Register
-curl -X POST http://localhost:8000/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"pass123","full_name":"Test","phone":"9876543210","role":"patient"}'
-
-# 2. Login
-curl -X POST http://localhost:8000/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"pass123"}'
-
-# 3. Assess symptoms
-curl -X POST http://localhost:8000/api/health/assess \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"symptoms":["fever","headache"],"duration":"2 days","severity":"moderate"}'
-```
-
----
-
-## 🎯 MVP Checklist
-
-### ✅ Must Have (Phase 1)
-- [x] User Authentication (Login/Register)
-- [x] Patient Profile Management
-- [x] AI Symptom Assessment
-- [x] Healthcare Facility Recommendation
-- [x] Nearby Facility Search
-- [x] Smart Referral with QR Code
-- [x] Digital Health Passport
-- [x] Government Scheme Matcher
-- [x] Budget Estimator
-- [x] Offline Mode with Sync
-- [x] Database Schema (16 tables)
-- [x] Complete API Implementation
-- [x] Frontend UI Screens
-
-### 🔄 Secondary (Phase 2)
-- [ ] Voice Input/Output
-- [ ] Real Healthcare Facility Data
-- [ ] Advanced AI Models
-- [ ] Multi-language Translation
-- [ ] Medicine Database Integration
-- [ ] Appointment Booking
-- [ ] SMS/Push Notifications
-
-### 💫 Future Enhancements
-- [ ] Telemedicine Integration
-- [ ] Blockchain Health Records
-- [ ] Insurance Integration
-- [ ] Analytics Dashboard
-- [ ] Mobile App Distribution
-- [ ] Web Portal for Healthcare Workers
-
----
-
-## 🚀 Deployment
-
-### Development
-```bash
-# Backend
-python app/main.py
-
-# Frontend  
-npm start
-```
-
-### Production
-```bash
-# Using Docker
-docker-compose up -d
-
-# Or
-eas build --platform android
-eas build --platform ios
-```
-
-See **[PROJECT_SETUP_GUIDE.md](PROJECT_SETUP_GUIDE.md#-deployment)** for detailed deployment instructions.
-
----
-
-## 🆘 Support
-
-### Common Issues
-
-**Port 8000 already in use:**
-```bash
-lsof -i :8000
-kill -9 <PID>
-```
-
-**npm/pip package conflicts:**
-```bash
-pip install -r requirements.txt --force-reinstall
-npm cache clean --force && npm install
-```
-
-**Database connection error:**
-```bash
-# Check if PostgreSQL running
-pg_isready -h localhost
-# Or use SQLite: sqlite:///./healthsphere.db
-```
-
-See **[PROJECT_SETUP_GUIDE.md](PROJECT_SETUP_GUIDE.md#-troubleshooting)** for more troubleshooting.
-
----
-
-## 📊 Project Statistics
-
-| Metric | Value |
-|--------|-------|
-| **Backend Lines of Code** | ~2,500 |
-| **Frontend Components** | 15+ |
-| **Database Tables** | 16 |
-| **API Endpoints** | 25+ |
-| **Test Coverage** | Extensible |
-| **Supported Languages** | 3+ |
-| **Estimated Setup Time** | 30-45 min |
-| **Estimated Development** | 40-60 hours |
-
----
-
-## 🏆 Hackathon Value Proposition
-
-Anamaya AI demonstrates measurable impact:
-
-✅ **Reduced Unnecessary Travel**: Smart facility recommendation reduces wrong facility visits by ~60%
-✅ **Faster Referrals**: QR code-based referrals reduce transfer time by ~50%
-✅ **Better Continuity**: Digital passport ensures medical history follows patient
-✅ **Lower Costs**: Budget estimator shows ~30% savings through government schemes
-✅ **Offline Capability**: 100% functionality in low-connectivity areas
-✅ **Accessibility**: Multilingual support reaches 500M+ regional language speakers
-✅ **Measurable Impact**: Reduces healthcare access time, improves outcomes
-
----
-
-## 📄 License
-
-This project is developed for the hackathon and is subject to submission guidelines.
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📞 Contact & Resources
-
-- **Backend Docs**: [backend/README.md](backend/README.md)
-- **Frontend Docs**: [frontend/README.md](frontend/README.md)
-- **Setup Guide**: [PROJECT_SETUP_GUIDE.md](PROJECT_SETUP_GUIDE.md)
-- **API Docs**: http://localhost:8000/docs (when running)
-
----
-
-## 🎯 Next Steps
-
-1. **Read**: [PROJECT_SETUP_GUIDE.md](PROJECT_SETUP_GUIDE.md) (5 minutes)
-2. **Setup Backend**: Follow backend setup (10 minutes)
-3. **Setup Frontend**: Follow frontend setup (10 minutes)
-4. **Test**: Run complete workflow (15 minutes)
-5. **Explore**: Try all features and customize
-6. **Deploy**: Deploy to production or cloud
-
----
-
-**Status**: ✅ Ready for Development  
-**Last Updated**: 2026-08-31  
-**Version**: 1.0.0 MVP  
+Developed for hackathons and community healthcare initiatives. OpenStreetMap data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright).
 
 ---
 
