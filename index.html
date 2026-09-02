@@ -519,53 +519,16 @@
                 <div class="cost-row"><span data-i18n="i18n_medicines_137">Medicines</span><strong id="medicineCost">₹300</strong></div>
                 <div class="cost-row total"><span data-i18n="i18n_totalestimate_138">Total estimate</span><strong id="totalCost">₹1,050</strong></div>
               </div>
-                    <option data-i18n="i18n_no_121">No</option>
-                    <option selected="" data-i18n="i18n_sometimes_122">Sometimes</option>
-                    <option data-i18n="i18n_often_123">Often</option>
-                  </select>
-                </label>
 
-                <label data-i18n="i18n_persistentweakn_124">
-                  Persistent weakness
-                  <select id="weakness">
-                    <option data-i18n="i18n_no_125">No</option>
-                    <option selected="" data-i18n="i18n_yes_126">Yes</option>
-                  </select>
-                </label>
-
-                <label data-i18n="i18n_location_127">
-                  Location
-                  <select id="location">
-                    <option data-i18n="i18n_ruralvillage_128">Rural village</option>
-                    <option selected="" data-i18n="i18n_blockphc_129">Block PHC</option>
-                    <option data-i18n="i18n_districthospita_130">District hospital</option>
-                  </select>
-                </label>
-              </div>
-
-              <button class="primary full-width" id="assessBtn" data-i18n="i18n_runaiassessment_131">Run AI assessment</button>
-
-              <div class="result-box" id="assessmentResult">
-                <h4 data-i18n="i18n_assessmentresul_132">Assessment result</h4>
-                <p data-i18n="i18n_symptomssuggest_133">Symptoms suggest a moderate-risk case. Recommend a PHC or CHC review within 24 hours.</p>
-              </div>
-
-              <div class="cost-box" id="costBox">
-                <h4 data-i18n="i18n_estimatedtreatm_134">Estimated treatment cost</h4>
-                <div class="cost-row"><span data-i18n="i18n_consultation_135">Consultation</span><strong id="consultationCost">₹250</strong></div>
-                <div class="cost-row"><span data-i18n="i18n_tests_136">Tests</span><strong id="testCost">₹500</strong></div>
-                <div class="cost-row"><span data-i18n="i18n_medicines_137">Medicines</span><strong id="medicineCost">₹300</strong></div>
-                <div class="cost-row total"><span data-i18n="i18n_totalestimate_138">Total estimate</span><strong id="totalCost">₹1,050</strong></div>
-              </div>
-
-              <div class="chatbot-box">
+              <!-- AI Assessment Chatbot Box -->
+              <div class="chatbot-box" style="margin-top: 1.75rem;">
                 <div class="chatbot-header">
                   <h4 data-i18n="i18n_aicareassistant_139">AI care assistant</h4>
                   <span class="vision-badge" data-i18n="i18n_photoanalysisen_140">📷 Photo Analysis Enabled</span>
                 </div>
                 <div id="chatLog" class="chat-log">
                   <div class="chat-bubble bot" data-i18n="i18n_hellotellmeyour_141">
-                    Hello! Tell me your symptoms or upload a photo of a skin rash, reaction, or lesion for instant AI visual analysis and guidance.
+                    Hello! Tell me your health questions or symptoms, or upload a photo of a skin rash or reaction for instant AI visual analysis and guidance.
                   </div>
                 </div>
                 <div id="chatImagePreviewContainer" class="image-preview-container hidden">
@@ -578,56 +541,69 @@
                 <div class="chat-input-row">
                   <input type="file" id="chatImageInput" accept="image/*" class="hidden-file-input">
                   <button id="uploadPhotoBtn" type="button" class="icon-button" title="Attach photo of skin rash or reaction">📷</button>
-                  <input id="chatInput" type="text" placeholder="Describe symptoms or upload a photo..." data-i18n-placeholder="i18n_ph_describesymptom_143">
+                  <input id="chatInput" type="text" placeholder="Ask AI about your health or describe symptoms..." data-i18n-placeholder="i18n_ph_describesymptom_143">
                   <button id="chatSendBtn" class="primary" type="button" data-i18n="i18n_send_144">Send</button>
                 </div>
               </div>
             </div>
 
             <div id="facilities" class="panel">
-              <div class="panel-head">
-                <h3 data-i18n="i18n_nearbyfacilitie_145">Nearby facilities</h3>
-                <select id="specialtyFilter" class="filter-dropdown">
-                  <option value="All" data-i18n="i18n_allspecializati_146">All Specializations</option>
-                  <option value="General" data-i18n="i18n_general_147">General</option>
-                  <option value="Emergency" data-i18n="i18n_emergency_148">Emergency</option>
-                  <option value="Pediatrics" data-i18n="i18n_pediatrics_149">Pediatrics</option>
-                  <option value="Cardiology" data-i18n="i18n_cardiology_150">Cardiology</option>
-                  <option value="Maternity / Gynecology" data-i18n="i18n_maternitygyneco_151">Maternity / Gynecology</option>
-                  <option value="Neurology" data-i18n="i18n_neurology_152">Neurology</option>
-                  <option value="Orthopedics" data-i18n="i18n_orthopedics_153">Orthopedics</option>
-                  <option value="Oncology" data-i18n="i18n_oncology_154">Oncology</option>
-                  <option value="Dermatology" data-i18n="i18n_dermatology_155">Dermatology</option>
-                  <option value="Psychiatry" data-i18n="i18n_psychiatry_156">Psychiatry</option>
-                  <option value="Ophthalmology" data-i18n="i18n_ophthalmology_157">Ophthalmology</option>
-                </select>
+              <div class="panel-head" style="flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+                <div>
+                  <h3 data-i18n="i18n_nearbyfacilitie_145" style="margin:0;">Nearby facilities</h3>
+                  <span id="facilitiesGpsStatus" style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px; display: block;">📍 Requesting GPS location...</span>
+                </div>
+
+                <div class="facilities-controls" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                  <!-- Manual Location Search Fallback -->
+                  <div id="facManualSearchWrap" class="manual-loc-wrap" style="display: flex; gap: 6px;">
+                    <input type="text" id="facManualInput" placeholder="Enter village / city name..." style="padding: 8px 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #f8fafc; font-size: 0.85rem; width: 180px;">
+                    <button type="button" id="facManualBtn" class="secondary" style="padding: 8px 12px; font-size: 0.85rem;">🔍 Search</button>
+                  </div>
+
+                  <!-- Radius Selector -->
+                  <select id="facRadiusSelect" class="filter-dropdown" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #f8fafc; font-size: 0.85rem;">
+                    <option value="10">10 km radius</option>
+                    <option value="25" selected>25 km radius</option>
+                    <option value="50">50 km radius</option>
+                  </select>
+
+                  <!-- Filter Dropdown -->
+                  <select id="specialtyFilter" class="filter-dropdown" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #f8fafc; font-size: 0.85rem;">
+                    <option value="All" data-i18n="i18n_allspecializati_146">All Types</option>
+                    <option value="Hospital">Hospital</option>
+                    <option value="Clinic">Clinic</option>
+                    <option value="PHC">PHC (Primary Centre)</option>
+                    <option value="CHC">CHC (Community Centre)</option>
+                  </select>
+                </div>
               </div>
 
-              <div id="map" class="facilities-map"></div>
+              <div id="map" class="facilities-map" style="height: 340px; border-radius: 16px; margin: 16px 0; border: 1px solid #334155;"></div>
 
               <div class="facility-list" id="facilityList">
-                <!-- Facilities will be rendered here dynamically -->
-                <div class="facility-card">
-                  <div>
-                    <h4 data-i18n="i18n_loadinghospital_158">Loading hospitals...</h4>
-                    <p data-i18n="i18n_fetchingrealnea_159">Fetching real nearby facilities...</p>
-                  </div>
+                <div class="facility-card loading-card" style="padding: 24px; text-align: center; color: #94a3b8;">
+                  <div style="font-size: 1.5rem; margin-bottom: 8px;">⏳</div>
+                  <h4 data-i18n="i18n_loadinghospital_158">Locating nearby facilities...</h4>
+                  <p data-i18n="i18n_fetchingrealnea_159">Requesting location and fetching real nearby hospitals and clinics...</p>
                 </div>
               </div>
             </div>
 
             <div id="passport" class="panel">
               <div class="panel-head">
-                <h3 data-i18n="i18n_digitalhealthpa_160">Digital health passport</h3>
+                <h3 data-i18n="i18n_digitalhealthpa_160" style="margin-bottom: 1.25rem;">Digital health passport</h3>
               </div>
 
               <div class="passport-card">
-                <div class="passport-row"><span data-i18n="i18n_patient_161">Patient</span><strong data-i18n="i18n_priyasharma_162">Priya Sharma</strong></div>
-                <div class="passport-row"><span data-i18n="i18n_bloodgroup_163">Blood group</span><strong data-i18n="i18n_o_164">O+</strong></div>
-                <div class="passport-row"><span data-i18n="i18n_lastvisit_165">Last visit</span><strong data-i18n="i18n_12aug2026_166">12 Aug 2026</strong></div>
-                <div class="passport-row"><span data-i18n="i18n_conditions_167">Conditions</span><strong data-i18n="i18n_asthmamildanaem_168">Asthma, mild anaemia</strong></div>
-                <div class="passport-row"><span data-i18n="i18n_consent_169">Consent</span><strong data-i18n="i18n_sharedwithphc_170">Shared with PHC</strong></div>
+                <div class="passport-row"><span data-i18n="i18n_patient_161">Patient</span><strong id="passportPatientName" data-i18n="i18n_priyasharma_162">Priya Sharma</strong></div>
+                <div class="passport-row"><span data-i18n="i18n_bloodgroup_163">Blood group</span><strong id="passportBloodGroup" data-i18n="i18n_o_164">O+</strong></div>
+                <div class="passport-row"><span data-i18n="i18n_lastvisit_165">Last visit</span><strong id="passportLastVisit" data-i18n="i18n_12aug2026_166">12 Aug 2026</strong></div>
+                <div class="passport-row"><span data-i18n="i18n_conditions_167">Conditions</span><strong id="passportConditions" data-i18n="i18n_asthmamildanaem_168">Asthma, mild anaemia</strong></div>
+                <div class="passport-row"><span data-i18n="i18n_consent_169">Consent</span><strong id="passportConsent" data-i18n="i18n_sharedwithphc_170">Shared with PHC</strong></div>
               </div>
+
+              <div class="passport-code" id="passportCode">HS-2048</div>
             </div>
 
             <div id="schemes" class="panel">
@@ -701,209 +677,9 @@
               <div class="facility-list" id="emergFacilityList">
                 <div class="facility-card emergency-facility-card">
                   <div>
-                    <h4>District Hospital Emergency Center <span class="badge-24x7">24x7 EMERGENCY</span></h4>
-                    <p>Station Road, District HQ · <strong>3.2 km away</strong></p>
-                    <p style="margin-top: 0.4rem;">🚑 Ambulance Available · ICU · Trauma Care</p>
+                    <h4>Locating 24x7 emergency medical centers...</h4>
+                    <p>Fetching real emergency hospitals near your location...</p>
                   </div>
-                  <div class="cta-row" style="margin-top: 0.75rem;">
-                    <a href="tel:108" class="btn-emergency-call" data-i18n="i18n_call_facility">📞 Call 108</a>
-                    <a href="https://maps.google.com" target="_blank" class="btn-emergency-dir" data-i18n="i18n_get_directions">🗺️ Directions</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-                  <strong id="referralKpi" data-i18n="i18n_hs2048_181">HS-2048</strong>
-                </div>
-                <div class="kpi-card">
-                  <span data-i18n="i18n_distance_182">Distance</span>
-                  <strong id="distanceKpi" data-i18n="i18n_48km_183">4.8 km</strong>
-                </div>
-                <div class="kpi-card">
-                  <span data-i18n="i18n_scheme_184">Scheme</span>
-                  <strong id="schemeKpi" data-i18n="i18n_pmjay_185">PM-JAY</strong>
-                </div>
-              </div>
-
-              <div class="card-grid two-col">
-                <div class="info-card">
-                  <h3 data-i18n="i18n_recommendedacti_186">Recommended action</h3>
-                  <p id="dashboardRecommendation" data-i18n="i18n_visitthenearest_187">Visit the nearest PHC for blood pressure, fever screening and follow-up consultation.</p>
-                </div>
-                <div class="info-card">
-                  <h3 data-i18n="i18n_continuitystatu_188">Continuity status</h3>
-                  <p id="dashboardStatus" data-i18n="i18n_digitalpassport_189">Digital passport synced with district hospital and local referral queue.</p>
-                </div>
-              </div>
-            
-
-            <div id="assessment" class="panel">
-              <div class="panel-head">
-                <h3 data-i18n="i18n_aihealthassessm_190">AI health assessment</h3>
-              </div>
-
-              <div class="form-grid">
-                <label data-i18n="i18n_agegroup_191">
-                  Age group
-                  <select id="ageGroup">
-                    <option>18-29</option>
-                    <option>30-44</option>
-                    <option>45-59</option>
-                    <option>60+</option>
-                  </select>
-                </label>
-
-                <label data-i18n="i18n_symptomseverity_192">
-                  Symptom severity
-                  <select id="severity">
-                    <option data-i18n="i18n_mild_193">Mild</option>
-                    <option selected="" data-i18n="i18n_moderate_194">Moderate</option>
-                    <option data-i18n="i18n_severe_195">Severe</option>
-                  </select>
-                </label>
-
-                <label data-i18n="i18n_fever_196">
-                  Fever
-                  <select id="fever">
-                    <option data-i18n="i18n_no_197">No</option>
-                    <option selected="" data-i18n="i18n_low_198">Low</option>
-                    <option data-i18n="i18n_high_199">High</option>
-                  </select>
-                </label>
-
-                <label data-i18n="i18n_breathdifficult_200">
-                  Breath difficulty
-                  <select id="breath">
-                    <option data-i18n="i18n_no_201">No</option>
-                    <option selected="" data-i18n="i18n_sometimes_202">Sometimes</option>
-                    <option data-i18n="i18n_often_203">Often</option>
-                  </select>
-                </label>
-
-                <label data-i18n="i18n_persistentweakn_204">
-                  Persistent weakness
-                  <select id="weakness">
-                    <option data-i18n="i18n_no_205">No</option>
-                    <option selected="" data-i18n="i18n_yes_206">Yes</option>
-                  </select>
-                </label>
-
-                <label data-i18n="i18n_location_207">
-                  Location
-                  <select id="location">
-                    <option data-i18n="i18n_ruralvillage_208">Rural village</option>
-                    <option selected="" data-i18n="i18n_blockphc_209">Block PHC</option>
-                    <option data-i18n="i18n_districthospita_210">District hospital</option>
-                  </select>
-                </label>
-              </div>
-
-              <button class="primary full-width" id="assessBtn" data-i18n="i18n_runaiassessment_211">Run AI assessment</button>
-
-              <div class="result-box" id="assessmentResult">
-                <h4 data-i18n="i18n_assessmentresul_212">Assessment result</h4>
-                <p data-i18n="i18n_symptomssuggest_213">Symptoms suggest a moderate-risk case. Recommend a PHC or CHC review within 24 hours.</p>
-              </div>
-
-              <div class="cost-box" id="costBox">
-                <h4 data-i18n="i18n_estimatedtreatm_214">Estimated treatment cost</h4>
-                <div class="cost-row"><span data-i18n="i18n_consultation_215">Consultation</span><strong id="consultationCost">₹250</strong></div>
-                <div class="cost-row"><span data-i18n="i18n_tests_216">Tests</span><strong id="testCost">₹500</strong></div>
-                <div class="cost-row"><span data-i18n="i18n_medicines_217">Medicines</span><strong id="medicineCost">₹300</strong></div>
-                <div class="cost-row total"><span data-i18n="i18n_totalestimate_218">Total estimate</span><strong id="totalCost">₹1,050</strong></div>
-              </div>
-
-              <div class="chatbot-box">
-                <div class="chatbot-header">
-                  <h4 data-i18n="i18n_aicareassistant_219">AI care assistant</h4>
-                  <span class="vision-badge" data-i18n="i18n_photoanalysisen_220">📷 Photo Analysis Enabled</span>
-                </div>
-                <div id="chatLog" class="chat-log">
-                  <div class="chat-bubble bot" data-i18n="i18n_hellotellmeyour_221">
-                    Hello! Tell me your symptoms or upload a photo of a skin rash, reaction, or lesion for instant AI visual analysis and guidance.
-                  </div>
-                </div>
-                <div id="chatImagePreviewContainer" class="image-preview-container hidden">
-                  <div class="image-preview-wrapper">
-                    <img id="chatImagePreview" src="" alt="Selected symptom photo">
-                    <button id="removeImageBtn" type="button" class="remove-image-btn" title="Remove photo">×</button>
-                  </div>
-                  <span class="preview-note" data-i18n="i18n_photoattachedfo_222">Photo attached for analysis</span>
-                </div>
-                <div class="chat-input-row">
-                  <input type="file" id="chatImageInput" accept="image/*" class="hidden-file-input">
-                  <button id="uploadPhotoBtn" type="button" class="icon-button" title="Attach photo of skin rash or reaction">📷</button>
-                  <input id="chatInput" type="text" placeholder="Describe symptoms or upload a photo..." data-i18n-placeholder="i18n_ph_describesymptom_223">
-                  <button id="chatSendBtn" class="primary" type="button" data-i18n="i18n_send_224">Send</button>
-                </div>
-              </div>
-            </div>
-
-            <div id="facilities" class="panel">
-              <div class="panel-head">
-                <h3 data-i18n="i18n_nearbyfacilitie_225">Nearby facilities</h3>
-                <select id="specialtyFilter" class="filter-dropdown">
-                  <option value="All" data-i18n="i18n_allspecializati_226">All Specializations</option>
-                  <option value="General" data-i18n="i18n_general_227">General</option>
-                  <option value="Emergency" data-i18n="i18n_emergency_228">Emergency</option>
-                  <option value="Pediatrics" data-i18n="i18n_pediatrics_229">Pediatrics</option>
-                  <option value="Cardiology" data-i18n="i18n_cardiology_230">Cardiology</option>
-                  <option value="Maternity / Gynecology" data-i18n="i18n_maternitygyneco_231">Maternity / Gynecology</option>
-                  <option value="Neurology" data-i18n="i18n_neurology_232">Neurology</option>
-                  <option value="Orthopedics" data-i18n="i18n_orthopedics_233">Orthopedics</option>
-                  <option value="Oncology" data-i18n="i18n_oncology_234">Oncology</option>
-                  <option value="Dermatology" data-i18n="i18n_dermatology_235">Dermatology</option>
-                  <option value="Psychiatry" data-i18n="i18n_psychiatry_236">Psychiatry</option>
-                  <option value="Ophthalmology" data-i18n="i18n_ophthalmology_237">Ophthalmology</option>
-                </select>
-              </div>
-
-              <div id="map" class="facilities-map"></div>
-
-              <div class="facility-list" id="facilityList">
-                <!-- Facilities will be rendered here dynamically -->
-                <div class="facility-card">
-                  <div>
-                    <h4 data-i18n="i18n_loadinghospital_238">Loading hospitals...</h4>
-                    <p data-i18n="i18n_fetchingrealnea_239">Fetching real nearby facilities...</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div id="passport" class="panel">
-              <div class="panel-head">
-                <h3 data-i18n="i18n_digitalhealthpa_240">Digital health passport</h3>
-              </div>
-
-              <div class="passport-card">
-                <div class="passport-row"><span data-i18n="i18n_patient_241">Patient</span><strong data-i18n="i18n_priyasharma_242">Priya Sharma</strong></div>
-                <div class="passport-row"><span data-i18n="i18n_bloodgroup_243">Blood group</span><strong data-i18n="i18n_o_244">O+</strong></div>
-                <div class="passport-row"><span data-i18n="i18n_lastvisit_245">Last visit</span><strong data-i18n="i18n_12aug2026_246">12 Aug 2026</strong></div>
-                <div class="passport-row"><span data-i18n="i18n_conditions_247">Conditions</span><strong data-i18n="i18n_asthmamildanaem_248">Asthma, mild anaemia</strong></div>
-                <div class="passport-row"><span data-i18n="i18n_consent_249">Consent</span><strong data-i18n="i18n_sharedwithphc_250">Shared with PHC</strong></div>
-              </div>
-            </div>
-
-            <div id="schemes" class="panel">
-              <div class="panel-head">
-                <h3 data-i18n="i18n_governmentschem_251">Government scheme eligibility</h3>
-              </div>
-
-              <div class="scheme-list" id="schemeList">
-                <div class="scheme-card">
-                  <h4 data-i18n="i18n_pmjay_252">PM-JAY</h4>
-                  <p data-i18n="i18n_hospitaltreatme_253">Hospital treatment support for eligible families and women.</p>
-                  <span data-i18n="i18n_eligible_254">Eligible</span>
-                </div>
-                <div class="scheme-card">
-                  <h4 data-i18n="i18n_ayushmanbharat_255">Ayushman Bharat</h4>
-                  <p data-i18n="i18n_cashlessseconda_256">Cashless secondary and tertiary care assistance.</p>
-                  <span data-i18n="i18n_eligible_257">Eligible</span>
-                </div>
-                <div class="scheme-card">
-                  <h4 data-i18n="i18n_nationaltbelimi_258">National TB Elimination</h4>
-                  <p data-i18n="i18n_screeningandtre_259">Screening and treatment support for rural patients.</p>
-                  <span data-i18n="i18n_checkstatus_260">Check status</span>
                 </div>
               </div>
             </div>

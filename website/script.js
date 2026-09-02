@@ -113,6 +113,17 @@ function setActivePanel(panelId) {
   document.querySelectorAll('.panel').forEach((panel) => {
     panel.classList.toggle('active', panel.id === panelId);
   });
+
+  if (panelId === 'facilities') {
+    setTimeout(() => {
+      initMap();
+      if (mapInstance) {
+        mapInstance.invalidateSize();
+      }
+    }, 50);
+  } else if (panelId === 'emergency') {
+    loadEmergencyFacilities();
+  }
 }
 
 function getTreatmentCost(severity, location, age) {
@@ -356,11 +367,13 @@ function setCurrentUser(user) {
 function updateUserProfile() {
   const userName = document.getElementById('userName');
   const patientInput = document.getElementById('patientNameInput');
+  const passportPatient = document.getElementById('passportPatientName');
 
   if (!userName || !patientInput) return;
 
   const name = patientInput.value.trim() || 'Patient';
   userName.textContent = name;
+  if (passportPatient) passportPatient.textContent = name;
   localStorage.setItem('anamaya-user-name', name);
 
   const currentUser = getCurrentUser();
@@ -384,8 +397,10 @@ function showAuthState() {
   if (currentUser) {
     const patientInput = document.getElementById('patientNameInput');
     const userName = document.getElementById('userName');
+    const passportPatient = document.getElementById('passportPatientName');
     if (patientInput) patientInput.value = currentUser.name || '';
     if (userName) userName.textContent = currentUser.name || 'Patient';
+    if (passportPatient) passportPatient.textContent = currentUser.name || 'Priya Sharma';
     localStorage.setItem('anamaya-user-name', currentUser.name || 'Patient');
   }
 }
@@ -478,9 +493,10 @@ if (savedUserName) {
 showAuthState();
 
 function setLanguage(lang) {
-  const siteDict = (window.siteTranslations && window.siteTranslations[lang]) || (window.siteTranslations && window.siteTranslations.en) || {};
-  const localDict = translations[lang] || translations.en || {};
-  const mergedDict = Object.assign({}, siteDict, localDict);
+  const enBase = (window.siteTranslations && window.siteTranslations.en) || translations.en || {};
+  const siteDict = (window.siteTranslations && window.siteTranslations[lang]) || {};
+  const localDict = translations[lang] || {};
+  const mergedDict = Object.assign({}, enBase, siteDict, localDict);
 
   document.documentElement.lang = lang;
 
@@ -501,6 +517,11 @@ function setLanguage(lang) {
   const languageSelect = document.getElementById('languageSelect');
   if (languageSelect) {
     languageSelect.value = lang;
+  }
+
+  // Re-render AI Wizard step if active to ensure all dynamically generated chips update
+  if (typeof renderAiWizardStep === 'function') {
+    renderAiWizardStep();
   }
 }
 
@@ -609,6 +630,16 @@ function renderVisualAnalysisCard(data) {
 }
 
 const chatSendBtn = document.getElementById('chatSendBtn');
+const chatInputEl = document.getElementById('chatInput');
+if (chatInputEl && chatSendBtn) {
+  chatInputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      chatSendBtn.click();
+    }
+  });
+}
+
 if (chatSendBtn) {
   chatSendBtn.addEventListener('click', async () => {
     const input = document.getElementById('chatInput');
@@ -783,106 +814,373 @@ function t(key) {
 
 // Map Logic
 let mapInstance = null;
+let userLocationMarker = null;
 let facilityMarkers = [];
 let allFetchedFacilities = [];
+let currentUserCoords = { lat: 19.0330, lon: 73.0297 }; // Regional default (Panvel / Navi Mumbai)
+
+function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Radius of Earth in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return parseFloat((R * c).toFixed(1));
+}
 
 async function initMap() {
-  if (mapInstance) return;
   const mapContainer = document.getElementById('map');
+  const gpsStatusEl = document.getElementById('facilitiesGpsStatus');
   if (!mapContainer) return;
 
-  const lat = 21.1458;
-  const lon = 79.0882;
-  mapInstance = L.map('map').setView([lat, lon], 12);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(mapInstance);
+  // Setup Event Listeners for Filters and Manual Search
+  const radiusSelect = document.getElementById('facRadiusSelect');
+  const typeFilter = document.getElementById('specialtyFilter');
+  const manualBtn = document.getElementById('facManualBtn');
+  const manualInput = document.getElementById('facManualInput');
 
-  L.marker([lat, lon]).addTo(mapInstance)
-    .bindPopup('<b>Current Location</b><br>Rural area, near Nagpur.')
-    .openPopup();
-
-  document.getElementById('specialtyFilter')?.addEventListener('change', renderFacilities);
-
-  const loadingEl = document.createElement('div');
-  loadingEl.id = 'mapLoading';
-  loadingEl.innerHTML = `<div style="padding: 10px; background: rgba(255,255,255,0.9); position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; border-radius: 8px; font-weight: 500; font-size: 14px;">${t('i18n_fetchingrealnea_159')}</div>`;
-  mapContainer.appendChild(loadingEl);
-
-  try {
-    const query = `
-      [out:json][timeout:25];
-      (
-        node["amenity"="hospital"](around:25000,${lat},${lon});
-        node["amenity"="clinic"](around:25000,${lat},${lon});
-        way["amenity"="hospital"](around:25000,${lat},${lon});
-        way["amenity"="clinic"](around:25000,${lat},${lon});
-      );
-      out center;
-    `;
-    const response = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      body: query
+  if (radiusSelect) {
+    radiusSelect.replaceWith(radiusSelect.cloneNode(true));
+    document.getElementById('facRadiusSelect')?.addEventListener('change', () => {
+      const radiusKm = parseInt(document.getElementById('facRadiusSelect').value) || 25;
+      fetchFacilitiesData(currentUserCoords.lat, currentUserCoords.lon, radiusKm);
     });
-    const data = await response.json();
+  }
 
-    const specializations = ["General", "Emergency", "Pediatrics", "Cardiology", "Maternity / Gynecology", "Neurology", "Orthopedics", "Oncology", "Dermatology", "Psychiatry", "Ophthalmology"];
-    
-    allFetchedFacilities = data.elements.map((el, index) => {
-      let fLat = el.lat || el.center.lat;
-      let fLon = el.lon || el.center.lon;
-      return {
-        id: el.id,
-        name: el.tags.name || `Healthcare Facility #${index+1}`,
-        lat: fLat,
-        lon: fLon,
-        specialty: specializations[index % specializations.length],
-        distance: (Math.random() * 20 + 1).toFixed(1) + ' km',
-        status: (Math.random() > 0.3) ? t('js_open') : t('js_referral')
-      };
-    });
-    
-    if (document.getElementById('mapLoading')) {
-      document.getElementById('mapLoading').remove();
-    }
-    
-    renderFacilities();
-  } catch (error) {
-    console.error("Failed to load map data", error);
-    if (document.getElementById('mapLoading')) {
-      document.getElementById('mapLoading').innerHTML = t('Failed to load facilities.');
+  if (typeFilter) {
+    typeFilter.replaceWith(typeFilter.cloneNode(true));
+    document.getElementById('specialtyFilter')?.addEventListener('change', renderFacilities);
+  }
+
+  if (manualBtn && manualInput) {
+    manualBtn.onclick = () => {
+      const query = manualInput.value.trim();
+      if (query) geocodeManualLocation(query);
+    };
+    manualInput.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        const query = manualInput.value.trim();
+        if (query) geocodeManualLocation(query);
+      }
+    };
+  }
+
+  // Immediately render initial map and facilities for zero latency
+  setupLeafletMap(currentUserCoords.lat, currentUserCoords.lon);
+  fetchFacilitiesData(currentUserCoords.lat, currentUserCoords.lon, getSelectedRadius());
+
+  // Determine User GPS Location in background
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        currentUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        if (gpsStatusEl) {
+          gpsStatusEl.innerHTML = `<span class="chip success" style="background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:6px; font-weight:600;">📍 GPS Active (${currentUserCoords.lat.toFixed(3)}, ${currentUserCoords.lon.toFixed(3)})</span>`;
+        }
+        setupLeafletMap(currentUserCoords.lat, currentUserCoords.lon);
+        fetchFacilitiesData(currentUserCoords.lat, currentUserCoords.lon, getSelectedRadius());
+      },
+      (err) => {
+        console.warn("Facilities geolocation denied or failed:", err);
+        if (gpsStatusEl) {
+          gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:6px; font-weight:600;">⚠️ GPS permission denied / unavailable — showing regional facilities or search manually</span>`;
+        }
+      },
+      { timeout: 7000, enableHighAccuracy: true }
+    );
+  } else {
+    if (gpsStatusEl) {
+      gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:6px; font-weight:600;">⚠️ Browser GPS unsupported — enter location manually below</span>`;
     }
   }
 }
 
+function getSelectedRadius() {
+  const radiusSelect = document.getElementById('facRadiusSelect');
+  return radiusSelect ? parseInt(radiusSelect.value) || 25 : 25;
+}
+
+function setupLeafletMap(lat, lon) {
+  const mapContainer = document.getElementById('map');
+  if (!mapContainer) return;
+
+  if (!mapInstance) {
+    mapInstance = L.map('map').setView([lat, lon], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(mapInstance);
+  } else {
+    mapInstance.setView([lat, lon], 12);
+  }
+
+  if (userLocationMarker) mapInstance.removeLayer(userLocationMarker);
+
+  userLocationMarker = L.circleMarker([lat, lon], {
+    radius: 9,
+    fillColor: '#2563eb',
+    color: '#ffffff',
+    weight: 3,
+    opacity: 1,
+    fillOpacity: 0.9
+  }).addTo(mapInstance).bindPopup(`<b>📍 Your Location</b><br>Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`).openPopup();
+}
+
+async function geocodeManualLocation(query) {
+  const gpsStatusEl = document.getElementById('facilitiesGpsStatus');
+  if (gpsStatusEl) {
+    gpsStatusEl.innerHTML = `<span class="chip info" style="background:#dbeafe; color:#1e40af; padding:3px 8px; border-radius:6px; font-weight:600;">🔍 Searching location: "${query}"...</span>`;
+  }
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+    const data = await res.json();
+
+    if (data && data.length > 0) {
+      const lat = parseFloat(data[0].lat);
+      const lon = parseFloat(data[0].lon);
+      currentUserCoords = { lat, lon };
+
+      if (gpsStatusEl) {
+        gpsStatusEl.innerHTML = `<span class="chip success" style="background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:6px; font-weight:600;">📍 Showing location for "${data[0].display_name.split(',')[0]}"</span>`;
+      }
+      setupLeafletMap(lat, lon);
+      fetchFacilitiesData(lat, lon, getSelectedRadius());
+    } else {
+      if (gpsStatusEl) {
+        gpsStatusEl.innerHTML = `<span class="chip danger" style="background:#fee2e2; color:#991b1b; padding:3px 8px; border-radius:6px; font-weight:600;">❌ Could not find location "${query}". Please check spelling.</span>`;
+      }
+    }
+  } catch (err) {
+    console.error("Geocoding error:", err);
+    if (gpsStatusEl) {
+      gpsStatusEl.innerHTML = `<span class="chip danger" style="background:#fee2e2; color:#991b1b; padding:3px 8px; border-radius:6px; font-weight:600;">❌ Location search failed. Check connection.</span>`;
+    }
+  }
+}
+
+async function fetchFacilitiesData(lat, lon, radiusKm = 25) {
+  const listEl = document.getElementById('facilityList');
+  if (listEl) {
+    listEl.innerHTML = `
+      <div class="facility-card loading-card" style="padding: 24px; text-align: center; color: #94a3b8; background: #1e293b; border-radius: 16px; border: 1px solid #334155;">
+        <div style="font-size: 1.6rem; margin-bottom: 8px;">🔍</div>
+        <h4 style="color: #f8fafc; margin: 0 0 4px 0;">Searching nearby hospitals & clinics...</h4>
+        <p style="margin: 0; font-size: 0.88rem;">Querying healthcare facilities within ${radiusKm} km radius...</p>
+      </div>
+    `;
+  }
+
+  // 1. Google Places API check (if configured in environment)
+  const googleApiKey = window.GOOGLE_PLACES_API_KEY || (typeof config !== 'undefined' && config.GOOGLE_PLACES_API_KEY);
+  if (googleApiKey && googleApiKey !== 'YOUR_GOOGLE_PLACES_API_KEY') {
+    try {
+      const gRes = await fetch(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lon}&radius=${radiusKm * 1000}&type=hospital&key=${googleApiKey}`);
+      const gData = await gRes.json();
+      if (gData && gData.results && gData.results.length > 0) {
+        allFetchedFacilities = gData.results.map((place, idx) => {
+          const pLat = place.geometry.location.lat;
+          const pLon = place.geometry.location.lng;
+          const dist = calculateHaversineDistance(lat, lon, pLat, pLon);
+          return {
+            id: place.place_id || `g_${idx}`,
+            name: place.name,
+            type: place.types.includes('hospital') ? 'Hospital' : 'Clinic',
+            lat: pLat,
+            lon: pLon,
+            address: place.vicinity || 'Address not listed',
+            phone: '+91 108',
+            distanceKm: dist
+          };
+        }).sort((a, b) => a.distanceKm - b.distanceKm);
+
+        renderFacilities();
+        return;
+      }
+    } catch (gErr) {
+      console.warn("Google Places API error, falling back to Overpass API:", gErr);
+    }
+  }
+
+  // 2. OpenStreetMap Overpass API Query
+  const radiusMeters = radiusKm * 1000;
+  const overpassQuery = `
+    [out:json][timeout:25];
+    (
+      node["amenity"="hospital"](around:${radiusMeters},${lat},${lon});
+      node["amenity"="clinic"](around:${radiusMeters},${lat},${lon});
+      way["amenity"="hospital"](around:${radiusMeters},${lat},${lon});
+      way["amenity"="clinic"](around:${radiusMeters},${lat},${lon});
+    );
+    out center;
+  `;
+
+  try {
+    const res = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      body: overpassQuery
+    });
+    const data = await res.json();
+
+    if (data && data.elements && data.elements.length > 0) {
+      allFetchedFacilities = data.elements.map((el, idx) => {
+        const fLat = el.lat || (el.center && el.center.lat);
+        const fLon = el.lon || (el.center && el.center.lon);
+        const tags = el.tags || {};
+        const name = tags.name || tags['name:en'] || `Healthcare Facility #${idx + 1}`;
+        
+        let type = 'Clinic';
+        if (tags.amenity === 'hospital' || name.toLowerCase().includes('hospital') || name.toLowerCase().includes('hosp')) {
+          type = 'Hospital';
+        }
+        if (name.toLowerCase().includes('phc') || name.toLowerCase().includes('primary health')) {
+          type = 'PHC';
+        } else if (name.toLowerCase().includes('chc') || name.toLowerCase().includes('community health')) {
+          type = 'CHC';
+        }
+
+        const address = [tags['addr:full'], tags['addr:street'], tags['addr:suburb'], tags['addr:city'], tags['addr:district']].filter(Boolean).join(', ') || tags.address || 'Local Region, Maharashtra';
+        const phone = tags.phone || tags['contact:phone'] || tags['phone:mobile'] || '+91 108';
+        const dist = calculateHaversineDistance(lat, lon, fLat, fLon);
+
+        return {
+          id: el.id || idx,
+          name,
+          type,
+          lat: fLat,
+          lon: fLon,
+          address,
+          phone,
+          distanceKm: dist
+        };
+      }).filter(f => f.lat && f.lon).sort((a, b) => a.distanceKm - b.distanceKm);
+
+      renderFacilities();
+      return;
+    }
+  } catch (err) {
+    console.warn("Overpass API error, falling back to local database API:", err);
+  }
+
+  // 3. Fallback to Local Backend API Database (/api/emergency/nearby-facilities)
+  try {
+    const dbRes = await fetch(`${apiBase}/api/emergency/nearby-facilities?latitude=${lat}&longitude=${lon}&radius_km=${radiusKm}`);
+    const dbData = await dbRes.json();
+    if (dbData && dbData.facilities && dbData.facilities.length > 0) {
+      allFetchedFacilities = dbData.facilities.map((f) => {
+        const dist = calculateHaversineDistance(lat, lon, f.latitude, f.longitude);
+        let type = f.facility_level ? f.facility_level.toUpperCase() : 'Hospital';
+        if (type.includes('PHC')) type = 'PHC';
+        else if (type.includes('RURAL') || type.includes('CHC')) type = 'CHC';
+        else if (type.includes('DISTRICT')) type = 'Hospital';
+
+        return {
+          id: f.id,
+          name: f.name,
+          type,
+          lat: f.latitude,
+          lon: f.longitude,
+          address: f.address || 'Maharashtra Region',
+          phone: f.contact_phone || f.phone || '108',
+          distanceKm: dist
+        };
+      }).sort((a, b) => a.distanceKm - b.distanceKm);
+
+      renderFacilities();
+      return;
+    }
+  } catch (dbErr) {
+    console.error("Local database facilities fetch error:", dbErr);
+  }
+
+  // Empty State if no facilities found
+  allFetchedFacilities = [];
+  renderFacilities();
+}
+
 function renderFacilities() {
   const filter = document.getElementById('specialtyFilter')?.value || 'All';
-  const list = document.getElementById('facilityList');
-  
+  const listEl = document.getElementById('facilityList');
+  const radiusKm = getSelectedRadius();
+
   if (facilityMarkers && mapInstance) {
     facilityMarkers.forEach(m => mapInstance.removeLayer(m));
   }
   facilityMarkers = [];
-  
-  const filtered = allFetchedFacilities.filter(f => filter === 'All' || f.specialty === filter);
-  
-  if (list) {
-    list.innerHTML = filtered.map(f => `
-      <div class="facility-card">
-        <div>
-          <h4>${f.name}</h4>
-          <p>${f.specialty} · ${f.distance} ${t('js_km_away')}</p>
-        </div>
-        <span class="badge ${f.status === t('js_referral') ? 'alt' : ''}">${f.status}</span>
+
+  const filtered = allFetchedFacilities.filter(f => {
+    if (filter === 'All') return true;
+    return f.type.toLowerCase() === filter.toLowerCase();
+  });
+
+  if (!listEl) return;
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = `
+      <div class="facility-card empty-card" style="padding: 24px; text-align: center; color: #94a3b8; background: #1e293b; border-radius: 16px; border: 1px solid #334155;">
+        <div style="font-size: 1.8rem; margin-bottom: 8px;">🏥</div>
+        <h4 style="color: #f8fafc; margin: 0 0 6px 0;">No healthcare facilities found</h4>
+        <p style="margin: 0; font-size: 0.88rem;">No ${filter !== 'All' ? filter : 'facilities'} found within ${radiusKm} km radius. Try increasing the search radius or enter a city in the location search box above.</p>
       </div>
-    `).join('');
+    `;
+    return;
   }
-  
+
+  listEl.innerHTML = filtered.map(f => {
+    const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${f.lat},${f.lon}`;
+    let badgeClass = 'hospital-badge';
+    if (f.type === 'Clinic') badgeClass = 'clinic-badge';
+    else if (f.type === 'PHC') badgeClass = 'phc-badge';
+    else if (f.type === 'CHC') badgeClass = 'chc-badge';
+
+    return `
+      <div class="facility-card" data-lat="${f.lat}" data-lon="${f.lon}" style="background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 18px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: transform 0.2s, border-color 0.2s;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+          <div>
+            <h4 style="margin: 0 0 4px 0; color: #f8fafc; font-size: 1.05rem; font-weight: 700;">${f.name}</h4>
+            <p style="margin: 0; color: #94a3b8; font-size: 0.85rem;">📍 ${f.address}</p>
+          </div>
+          <span class="badge ${badgeClass}" style="background: #0f172a; color: #38bdf8; border: 1px solid #0284c7; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; whitespace: nowrap;">${f.type}</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #334155; padding-top: 10px; margin-top: 4px;">
+          <span style="font-size: 0.88rem; color: #22c55e; font-weight: 700;">📏 ${f.distanceKm} km away</span>
+          <div style="display: flex; gap: 8px;">
+            <a href="tel:${f.phone}" onclick="event.stopPropagation();" class="secondary" style="padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: #334155; color: #f8fafc;">📞 Call</a>
+            <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" class="primary" style="padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff;">🗺️ Directions</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Add Click-to-Fly event handler to facility cards
+  listEl.querySelectorAll('.facility-card[data-lat]').forEach(card => {
+    card.onclick = () => {
+      const cLat = parseFloat(card.dataset.lat);
+      const cLon = parseFloat(card.dataset.lon);
+      if (mapInstance && !isNaN(cLat) && !isNaN(cLon)) {
+        mapInstance.flyTo([cLat, cLon], 15, { duration: 1.2 });
+      }
+    };
+  });
+
+  // Plot Facility Markers on Leaflet Map
   if (mapInstance) {
     filtered.forEach(f => {
       const marker = L.marker([f.lat, f.lon]).addTo(mapInstance)
-        .bindPopup(`<b>${f.name}</b><br>${f.specialty}<br>${f.distance} away`);
+        .bindPopup(`
+          <div style="font-family: inherit; padding: 4px;">
+            <b style="font-size: 0.95rem;">${f.name}</b><br>
+            <span style="color: #2563eb; font-weight: 600;">${f.type}</span> · <b>${f.distanceKm} km away</b><br>
+            <small style="color: #64748b;">${f.address}</small><br>
+            <div style="margin-top: 6px;">
+              <a href="https://www.google.com/maps/dir/?api=1&destination=${f.lat},${f.lon}" target="_blank" style="color: #2563eb; font-weight: 700; text-decoration: none;">🗺️ Open Directions</a>
+            </div>
+          </div>
+        `);
       facilityMarkers.push(marker);
     });
   }
@@ -1368,101 +1666,223 @@ function initEmergencySos() {
     const gpsStatusEl = document.getElementById('emergGpsStatus');
     if (!listEl) return;
 
+    // Immediately render initial facilities synchronously (zero latency)
+    const initialLat = (currentUserCoords && currentUserCoords.lat) || 19.0330;
+    const initialLon = (currentUserCoords && currentUserCoords.lon) || 73.0297;
+    useEmergencyOfflineFallback(initialLat, initialLon);
+
+    // Then fetch real local backend or Overpass facilities
+    fetchFacilities(initialLat, initialLon);
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
+          currentUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
           if (gpsStatusEl) {
-            gpsStatusEl.innerHTML = `<span class="chip success">📍 GPS Active (${lat.toFixed(3)}, ${lon.toFixed(3)})</span>`;
+            gpsStatusEl.innerHTML = `<span class="chip success">📍 GPS Active (${currentUserCoords.lat.toFixed(3)}, ${currentUserCoords.lon.toFixed(3)})</span>`;
           }
-          fetchFacilities(lat, lon);
+          fetchFacilities(currentUserCoords.lat, currentUserCoords.lon);
         },
         (err) => {
           console.warn("Geolocation permission denied or error:", err);
           if (gpsStatusEl) {
             gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:6px; font-weight:600;">⚠️ Location permission denied or GPS unavailable. Showing regional facilities.</span>`;
           }
-          // Regional default coordinates (Panvel / Navi Mumbai HQ)
-          fetchFacilities(19.0330, 73.0297);
         },
-        { timeout: 10000, enableHighAccuracy: true }
+        { timeout: 5000, enableHighAccuracy: true }
       );
     } else {
       if (gpsStatusEl) {
         gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:6px; font-weight:600;">⚠️ GPS unsupported in browser. Showing regional facilities.</span>`;
       }
-      fetchFacilities(19.0330, 73.0297);
     }
   }
 
   async function fetchFacilities(lat, lon) {
-    try {
-      const res = await fetch(`${apiBase}/api/emergency/nearby-facilities?latitude=${lat}&longitude=${lon}&radius_km=25`);
-      const data = await res.json();
+    let facilities = [];
 
-      if (data && data.facilities && data.facilities.length > 0) {
-        localStorage.setItem('healthsphere_emergency_facilities', JSON.stringify(data.facilities));
-        renderEmergencyFacilities(data.facilities);
-      } else {
-        useEmergencyOfflineFallback();
+    // 1. Query local backend API first for sub-50ms instant response
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+      const res = await fetch(`${apiBase}/api/emergency/nearby-facilities?latitude=${lat}&longitude=${lon}&radius_km=25`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.facilities && data.facilities.length > 0) {
+          facilities = data.facilities.map(f => {
+            const fLat = f.latitude || lat;
+            const fLon = f.longitude || lon;
+            const dist = calculateHaversineDistance(lat, lon, fLat, fLon);
+            return {
+              id: f.id,
+              name: f.name,
+              address: f.address || 'Maharashtra Region',
+              distance_km: dist,
+              contact_phone: f.contact_phone || '108',
+              latitude: fLat,
+              longitude: fLon
+            };
+          }).sort((a, b) => a.distance_km - b.distance_km);
+        }
       }
     } catch (err) {
-      console.warn("Emergency facilities fetch error, using offline fallback:", err);
-      useEmergencyOfflineFallback();
+      console.warn("Backend emergency facilities fetch fallback:", err);
+    }
+
+    // 2. Query OpenStreetMap Overpass API if backend yielded no results
+    if (facilities.length === 0) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const radiusMeters = 25000;
+        const query = `
+          [out:json][timeout:10];
+          (
+            node["amenity"="hospital"](around:${radiusMeters},${lat},${lon});
+            way["amenity"="hospital"](around:${radiusMeters},${lat},${lon});
+          );
+          out center 10;
+        `;
+        const overpassRes = await fetch('https://overpass-api.de/api/interpreter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'data=' + encodeURIComponent(query),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (overpassRes.ok) {
+          const data = await overpassRes.json();
+          if (data.elements && data.elements.length > 0) {
+            facilities = data.elements.map((el, index) => {
+              const fLat = el.lat || (el.center && el.center.lat) || lat;
+              const fLon = el.lon || (el.center && el.center.lon) || lon;
+              const dist = calculateHaversineDistance(lat, lon, fLat, fLon);
+              const tags = el.tags || {};
+              const name = tags.name || tags['name:en'] || `Emergency Hospital #${index + 1}`;
+              const address = [tags['addr:street'], tags['addr:suburb'], tags['addr:city'] || tags['addr:district']].filter(Boolean).join(', ') || tags['addr:full'] || 'Emergency Medical Ward';
+              const phone = tags.phone || tags['contact:phone'] || tags['phone:emergency'] || '108';
+
+              return {
+                id: el.id || index + 1,
+                name: name,
+                address: address,
+                distance_km: dist,
+                contact_phone: phone,
+                latitude: fLat,
+                longitude: fLon
+              };
+            }).sort((a, b) => a.distance_km - b.distance_km);
+          }
+        }
+      } catch (oErr) {
+        console.warn("Overpass API fetch error:", oErr);
+      }
+    }
+
+    if (facilities.length > 0) {
+      localStorage.setItem('healthsphere_emergency_facilities', JSON.stringify(facilities));
+      renderEmergencyFacilities(facilities);
+    } else {
+      useEmergencyOfflineFallback(lat, lon);
     }
   }
 
-  function useEmergencyOfflineFallback() {
-    let cached = [];
-    try {
-      cached = JSON.parse(localStorage.getItem('healthsphere_emergency_facilities')) || [];
-    } catch (e) {}
+  function useEmergencyOfflineFallback(lat = 19.0330, lon = 73.0297) {
+    const regionalHospitals = [
+      {
+        id: 1,
+        name: "Navi Mumbai Municipal General Hospital Vashi",
+        address: "Sector 10, Vashi, Navi Mumbai",
+        contact_phone: "022-27899999",
+        latitude: 19.0760,
+        longitude: 72.9980
+      },
+      {
+        id: 2,
+        name: "MGM Hospital & Medical College Kamothe",
+        address: "Sector 1, Kamothe, Navi Mumbai",
+        contact_phone: "022-27437900",
+        latitude: 19.0200,
+        longitude: 73.0900
+      },
+      {
+        id: 3,
+        name: "Panvel Sub-District Hospital & Trauma Care",
+        address: "Line Ali, Old Panvel, Raigad",
+        contact_phone: "022-27452333",
+        latitude: 18.9890,
+        longitude: 73.1170
+      },
+      {
+        id: 4,
+        name: "KEM Hospital & Emergency Center Mumbai",
+        address: "Acharya Donde Marg, Parel, Mumbai",
+        contact_phone: "022-24107000",
+        latitude: 19.0020,
+        longitude: 72.8430
+      },
+      {
+        id: 5,
+        name: "District Civil Hospital & ICU Alibag",
+        address: "Hospital Road, Alibag, Raigad",
+        contact_phone: "02141-222076",
+        latitude: 18.6410,
+        longitude: 72.8720
+      }
+    ];
 
-    if (cached.length === 0) {
-      cached = [
-        {
-          id: 1,
-          name: "District Hospital Emergency & Trauma Center",
-          facility_level: "district_hospital",
-          distance_km: 3.2,
-          contact_phone: "108",
-          address: "Station Road, District HQ",
-          emergency_services: true,
-          is_24x7: true
-        },
-        {
-          id: 2,
-          name: "Community Health Centre (CHC) Emergency Ward",
-          facility_level: "rural_hospital",
-          distance_km: 6.8,
-          contact_phone: "+91 98765 11111",
-          address: "Main Highway, Block HQ",
-          emergency_services: true,
-          is_24x7: true
-        }
-      ];
-    }
-    renderEmergencyFacilities(cached);
+    const facilities = regionalHospitals.map(f => {
+      const dist = calculateHaversineDistance(lat, lon, f.latitude, f.longitude);
+      return { ...f, distance_km: dist };
+    }).sort((a, b) => a.distance_km - b.distance_km);
+
+    renderEmergencyFacilities(facilities);
   }
 
   function renderEmergencyFacilities(facilities) {
     const listEl = document.getElementById('emergFacilityList');
     if (!listEl) return;
 
-    listEl.innerHTML = facilities.map(f => `
-      <div class="facility-card emergency-facility-card">
-        <div>
-          <h4>${f.name} <span class="badge-24x7">${t('i18n_24x7_badge')}</span></h4>
-          <p>${f.address || 'Emergency Unit'} · <strong>${f.distance_km || '4.5'} km away</strong></p>
-          <p style="margin-top: 0.4rem;">🚑 Emergency Ambulance · 24x7 Triage Care</p>
+    if (!facilities || facilities.length === 0) {
+      listEl.innerHTML = `
+        <div class="facility-card emergency-facility-card" style="padding:20px; text-align:center; color:#94a3b8;">
+          <p>No emergency medical facilities found nearby.</p>
         </div>
-        <div class="cta-row" style="margin-top: 0.75rem;">
-          <a href="tel:${f.contact_phone || '108'}" class="btn-emergency-call">${t('i18n_call_facility')} (${f.contact_phone || '108'})</a>
-          <a href="https://maps.google.com/?q=${f.latitude || 19.0760},${f.longitude || 72.8777}" target="_blank" class="btn-emergency-dir">${t('i18n_get_directions')}</a>
+      `;
+      return;
+    }
+
+    const badgeText = typeof t === 'function' ? t('i18n_24x7_badge') : '24x7 EMERGENCY';
+    const callText = typeof t === 'function' ? t('i18n_call_facility') : '📞 Call Facility';
+    const dirText = typeof t === 'function' ? t('i18n_get_directions') : '🗺️ Get Directions';
+
+    listEl.innerHTML = facilities.map(f => {
+      const distVal = typeof f.distance_km === 'number' ? f.distance_km.toFixed(1) : (f.distance_km || '3.2');
+      const phone = f.contact_phone || '108';
+      const address = f.address || 'Emergency Trauma Center';
+      const lat = f.latitude || 19.0760;
+      const lon = f.longitude || 72.9980;
+
+      return `
+        <div class="facility-card emergency-facility-card" style="margin-bottom:12px; border-left:4px solid #ef4444;">
+          <div>
+            <h4 style="margin:0 0 6px 0; color:var(--text); font-size:1.05rem;">${f.name} <span class="badge-24x7" style="background:#fee2e2; color:#dc2626; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; margin-left:6px;">${badgeText}</span></h4>
+            <p style="margin:0 0 4px 0; color:var(--muted); font-size:0.9rem;">📍 ${address} · <strong style="color:var(--text);">${distVal} km away</strong></p>
+            <p style="margin:4px 0 0 0; color:#15803d; font-weight:600; font-size:0.85rem;">🚑 Emergency Ambulance · ICU · 24x7 Triage Care</p>
+          </div>
+          <div class="cta-row" style="margin-top: 10px; display:flex; gap:10px;">
+            <a href="tel:${phone}" class="btn-emergency-call" style="background:#dc2626; color:#fff; padding:6px 14px; border-radius:8px; font-weight:600; font-size:0.88rem; text-decoration:none;">${callText} (${phone})</a>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}" target="_blank" class="btn-emergency-dir" style="background:#2563eb; color:#fff; padding:6px 14px; border-radius:8px; font-weight:600; font-size:0.88rem; text-decoration:none;">${dirText}</a>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   function updateEmergencyContactCard() {
