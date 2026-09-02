@@ -1,5 +1,7 @@
 # HealthSphere AI Backend
 
+FastHub Repository: https://github.com/amanansari202020-ai/Anamaya-AI
+
 FastAPI-based backend for HealthSphere AI - an AI-powered rural healthcare navigation platform.
 
 ## 🚀 Features

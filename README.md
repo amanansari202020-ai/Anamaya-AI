@@ -4,6 +4,8 @@
 
 ### An AI-powered Rural Healthcare Navigation and Continuity Platform
 
+GitHub Repository: https://github.com/amanansari202020-ai/Anamaya-AI
+
 ---
 
 ## 🎯 Project Overview
@@ -57,9 +59,9 @@ HealthSphere AI/
 
 ## 🌐 Demo & Access
 
-### Project Demo
-- Local website: http://localhost:8003
-- GitHub Repository: https://github.com/amanansari202020-ai/HealthSphere-AI
+### Project Demo and Repository
+- Local website: http://localhost:8001
+- GitHub Repository: https://github.com/amanansari202020-ai/Anamaya-AI
 - Project purpose: Anamaya AI helps rural communities find the right care, track referrals, understand symptoms, and access scheme support in multilingual and voice-friendly ways.
 
 ### How to Open the App
