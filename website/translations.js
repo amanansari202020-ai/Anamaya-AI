@@ -411,7 +411,18 @@ window.siteTranslations = {
     "i18n_listening": "🎙 Listening...",
     "i18n_24x7_badge": "24x7 EMERGENCY",
     "i18n_call_facility": "📞 Call Facility",
-    "i18n_get_directions": "🗺️ Get Directions"
+    "i18n_get_directions": "🗺️ Get Directions",
+    "i18n_emergency_sos": "🆘 Emergency SOS",
+    "i18n_howitworks_eyebrow": "How it works",
+    "i18n_howitworks_title": "Simple care access in 4 steps",
+    "i18n_howitworks_step1_title": "Tell us your symptoms",
+    "i18n_howitworks_step1_desc": "Tap icons or speak — no typing needed",
+    "i18n_howitworks_step2_title": "Get matched to a facility",
+    "i18n_howitworks_step2_desc": "Nearest PHC, CHC or hospital, found by GPS",
+    "i18n_howitworks_step3_title": "Check scheme eligibility",
+    "i18n_howitworks_step3_desc": "PM-JAY and other support, matched automatically",
+    "i18n_howitworks_step4_title": "Emergency? One tap SOS",
+    "i18n_howitworks_step4_desc": "Nearest 24×7 facility and emergency contact alert, instantly"
   },
   "hi": {
     "i18n_anamayaai_1": "अनामया ऐ",
@@ -825,7 +836,18 @@ window.siteTranslations = {
     "i18n_listening": "🎙 सुन रहा है...",
     "i18n_24x7_badge": "24x7 आपातकालीन",
     "i18n_call_facility": "📞 अस्पताल को कॉल करें",
-    "i18n_get_directions": "🗺️ दिशा-निर्देश प्राप्त करें"
+    "i18n_get_directions": "🗺️ दिशा-निर्देश प्राप्त करें",
+    "i18n_emergency_sos": "🆘 आपातकालीन एसओएस",
+    "i18n_howitworks_eyebrow": "यह कैसे काम करता है",
+    "i18n_howitworks_title": "4 आसान चरणों में स्वास्थ्य सेवा पहुँच",
+    "i18n_howitworks_step1_title": "अपने लक्षण बताएं",
+    "i18n_howitworks_step1_desc": "आइकन पर टैप करें या बोलें — टाइप करने की आवश्यकता नहीं",
+    "i18n_howitworks_step2_title": "निकटतम स्वास्थ्य केंद्र पाएं",
+    "i18n_howitworks_step2_desc": "जीपीएस द्वारा निकटतम पीएचसी, सीएचसी या अस्पताल खोजें",
+    "i18n_howitworks_step3_title": "सरकारी योजना पात्रता जांचें",
+    "i18n_howitworks_step3_desc": "पीएम-जय और अन्य सहायता, स्वचालित रूप से मिलाएं",
+    "i18n_howitworks_step4_title": "आपातकाल? एक टैप एसओएस",
+    "i18n_howitworks_step4_desc": "निकटतम 24×7 अस्पताल और आपातकालीन संपर्क अलर्ट, तुरंत"
   },
   "mr": {
     "i18n_anamayaai_1": "अनामया ए.आय",
@@ -1235,6 +1257,17 @@ window.siteTranslations = {
     "i18n_listening": "🎙 ऐकत आहे...",
     "i18n_24x7_badge": "24x7 आणीबाणी",
     "i18n_call_facility": "📞 सुविधा केंद्राला कॉल करा",
-    "i18n_get_directions": "🗺️ रस्ता शोधा"
+    "i18n_get_directions": "🗺️ रस्ता शोधा",
+    "i18n_emergency_sos": "🆘 आपत्कालीन एसओएस",
+    "i18n_howitworks_eyebrow": "हे कसे कार्य करते",
+    "i18n_howitworks_title": "४ सोप्या टप्प्यांत आरोग्य सेवा प्रवेश",
+    "i18n_howitworks_step1_title": "तुमची लक्षणे सांगा",
+    "i18n_howitworks_step1_desc": "चिन्हांवर टॅप करा किंवा बोला — टाइप करण्याची गरज नाही",
+    "i18n_howitworks_step2_title": "जवळचे आरोग्य केंद्र शोधा",
+    "i18n_howitworks_step2_desc": "जीपीएसद्वारे जवळचे पीएचसी, सीएचसी किंवा रुग्णालय शोधा",
+    "i18n_howitworks_step3_title": "शासकीय योजना पात्रता तपासा",
+    "i18n_howitworks_step3_desc": "पीएम-जय आणि इतर मदत, आपोआप जुळवा",
+    "i18n_howitworks_step4_title": "आपत्कालीन स्थिती? एक टॅप एसओएस",
+    "i18n_howitworks_step4_desc": "जवळचे २४×७ रुग्णालय आणि आपत्कालीन संपर्क अलर्ट, त्वरित"
   }
 };

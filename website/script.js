@@ -409,7 +409,7 @@ function showAuthMessage(message, isError = false) {
   const authMessage = document.getElementById('authMessage');
   if (!authMessage) return;
   authMessage.textContent = message;
-  authMessage.style.color = isError ? '#d9485f' : '#0a7b67';
+  authMessage.style.color = isError ? '#D33A3A' : '#2E8B57';
 }
 
 function handleRegister(event) {
@@ -878,7 +878,7 @@ async function initMap() {
       (pos) => {
         currentUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
         if (gpsStatusEl) {
-          gpsStatusEl.innerHTML = `<span class="chip success" style="background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:6px; font-weight:600;">📍 GPS Active (${currentUserCoords.lat.toFixed(3)}, ${currentUserCoords.lon.toFixed(3)})</span>`;
+          gpsStatusEl.innerHTML = `<span class="chip success" style="background:#EAF6EE; color:#2E8B57; padding:3px 8px; border-radius:6px; font-weight:600;">📍 GPS Active (${currentUserCoords.lat.toFixed(3)}, ${currentUserCoords.lon.toFixed(3)})</span>`;
         }
         setupLeafletMap(currentUserCoords.lat, currentUserCoords.lon);
         fetchFacilitiesData(currentUserCoords.lat, currentUserCoords.lon, getSelectedRadius());
@@ -886,14 +886,14 @@ async function initMap() {
       (err) => {
         console.warn("Facilities geolocation denied or failed:", err);
         if (gpsStatusEl) {
-          gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:6px; font-weight:600;">⚠️ GPS permission denied / unavailable — showing regional facilities or search manually</span>`;
+          gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#FDEEDF; color:#E67A1A; padding:3px 8px; border-radius:6px; font-weight:600;">⚠️ GPS permission denied / unavailable — showing regional facilities or search manually</span>`;
         }
       },
       { timeout: 7000, enableHighAccuracy: true }
     );
   } else {
     if (gpsStatusEl) {
-      gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:6px; font-weight:600;">⚠️ Browser GPS unsupported — enter location manually below</span>`;
+      gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#FDEEDF; color:#E67A1A; padding:3px 8px; border-radius:6px; font-weight:600;">⚠️ Browser GPS unsupported — enter location manually below</span>`;
     }
   }
 }
@@ -921,7 +921,7 @@ function setupLeafletMap(lat, lon) {
 
   userLocationMarker = L.circleMarker([lat, lon], {
     radius: 9,
-    fillColor: '#2563eb',
+    fillColor: '#154A8C',
     color: '#ffffff',
     weight: 3,
     opacity: 1,
@@ -932,7 +932,7 @@ function setupLeafletMap(lat, lon) {
 async function geocodeManualLocation(query) {
   const gpsStatusEl = document.getElementById('facilitiesGpsStatus');
   if (gpsStatusEl) {
-    gpsStatusEl.innerHTML = `<span class="chip info" style="background:#dbeafe; color:#1e40af; padding:3px 8px; border-radius:6px; font-weight:600;">🔍 Searching location: "${query}"...</span>`;
+    gpsStatusEl.innerHTML = `<span class="chip info" style="background:#EAF1FB; color:#154A8C; padding:3px 8px; border-radius:6px; font-weight:600;">🔍 Searching location: "${query}"...</span>`;
   }
   try {
     const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
@@ -944,19 +944,19 @@ async function geocodeManualLocation(query) {
       currentUserCoords = { lat, lon };
 
       if (gpsStatusEl) {
-        gpsStatusEl.innerHTML = `<span class="chip success" style="background:#dcfce7; color:#15803d; padding:3px 8px; border-radius:6px; font-weight:600;">📍 Showing location for "${data[0].display_name.split(',')[0]}"</span>`;
+        gpsStatusEl.innerHTML = `<span class="chip success" style="background:#EAF6EE; color:#2E8B57; padding:3px 8px; border-radius:6px; font-weight:600;">📍 Showing location for "${data[0].display_name.split(',')[0]}"</span>`;
       }
       setupLeafletMap(lat, lon);
       fetchFacilitiesData(lat, lon, getSelectedRadius());
     } else {
       if (gpsStatusEl) {
-        gpsStatusEl.innerHTML = `<span class="chip danger" style="background:#fee2e2; color:#991b1b; padding:3px 8px; border-radius:6px; font-weight:600;">❌ Could not find location "${query}". Please check spelling.</span>`;
+        gpsStatusEl.innerHTML = `<span class="chip danger" style="background:#FDF1F1; color:#D33A3A; padding:3px 8px; border-radius:6px; font-weight:600;">❌ Could not find location "${query}". Please check spelling.</span>`;
       }
     }
   } catch (err) {
     console.error("Geocoding error:", err);
     if (gpsStatusEl) {
-      gpsStatusEl.innerHTML = `<span class="chip danger" style="background:#fee2e2; color:#991b1b; padding:3px 8px; border-radius:6px; font-weight:600;">❌ Location search failed. Check connection.</span>`;
+      gpsStatusEl.innerHTML = `<span class="chip danger" style="background:#FDF1F1; color:#D33A3A; padding:3px 8px; border-radius:6px; font-weight:600;">❌ Location search failed. Check connection.</span>`;
     }
   }
 }
@@ -965,9 +965,9 @@ async function fetchFacilitiesData(lat, lon, radiusKm = 25) {
   const listEl = document.getElementById('facilityList');
   if (listEl) {
     listEl.innerHTML = `
-      <div class="facility-card loading-card" style="padding: 24px; text-align: center; color: #94a3b8; background: #1e293b; border-radius: 16px; border: 1px solid #334155;">
+      <div class="facility-card loading-card" style="padding: 24px; text-align: center; color: var(--color-text-muted); background: var(--color-bg-alt); border-radius: 16px; border: 1px solid var(--color-border);">
         <div style="font-size: 1.6rem; margin-bottom: 8px;">🔍</div>
-        <h4 style="color: #f8fafc; margin: 0 0 4px 0;">Searching nearby hospitals & clinics...</h4>
+        <h4 style="color: var(--color-navy); margin: 0 0 4px 0;">Searching nearby hospitals & clinics...</h4>
         <p style="margin: 0; font-size: 0.88rem;">Querying healthcare facilities within ${radiusKm} km radius...</p>
       </div>
     `;
@@ -1119,9 +1119,9 @@ function renderFacilities() {
 
   if (filtered.length === 0) {
     listEl.innerHTML = `
-      <div class="facility-card empty-card" style="padding: 24px; text-align: center; color: #94a3b8; background: #1e293b; border-radius: 16px; border: 1px solid #334155;">
+      <div class="facility-card empty-card" style="padding: 24px; text-align: center; color: var(--color-text-muted); background: var(--color-bg-alt); border-radius: 16px; border: 1px solid var(--color-border);">
         <div style="font-size: 1.8rem; margin-bottom: 8px;">🏥</div>
-        <h4 style="color: #f8fafc; margin: 0 0 6px 0;">No healthcare facilities found</h4>
+        <h4 style="color: var(--color-navy); margin: 0 0 6px 0;">No healthcare facilities found</h4>
         <p style="margin: 0; font-size: 0.88rem;">No ${filter !== 'All' ? filter : 'facilities'} found within ${radiusKm} km radius. Try increasing the search radius or enter a city in the location search box above.</p>
       </div>
     `;
@@ -1136,20 +1136,20 @@ function renderFacilities() {
     else if (f.type === 'CHC') badgeClass = 'chc-badge';
 
     return `
-      <div class="facility-card" data-lat="${f.lat}" data-lon="${f.lon}" style="background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 18px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: transform 0.2s, border-color 0.2s;">
+      <div class="facility-card" data-lat="${f.lat}" data-lon="${f.lon}" style="background: var(--panel-solid); border: 1px solid var(--color-border); border-left: 4px solid var(--color-orange); border-radius: 16px; padding: 18px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: transform 0.2s, border-color 0.2s;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
           <div>
-            <h4 style="margin: 0 0 4px 0; color: #f8fafc; font-size: 1.05rem; font-weight: 700;">${f.name}</h4>
-            <p style="margin: 0; color: #94a3b8; font-size: 0.85rem;">📍 ${f.address}</p>
+            <h4 style="margin: 0 0 4px 0; color: var(--color-navy); font-size: 1.05rem; font-weight: 700;">${f.name}</h4>
+            <p style="margin: 0; color: var(--color-text-muted); font-size: 0.85rem;">📍 ${f.address}</p>
           </div>
-          <span class="badge ${badgeClass}" style="background: #0f172a; color: #38bdf8; border: 1px solid #0284c7; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; whitespace: nowrap;">${f.type}</span>
+          <span class="badge ${badgeClass}" style="background: var(--color-orange-light); color: var(--color-orange); border: 1px solid var(--color-orange); padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; white-space: nowrap;">${f.type}</span>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #334155; padding-top: 10px; margin-top: 4px;">
-          <span style="font-size: 0.88rem; color: #22c55e; font-weight: 700;">📏 ${f.distanceKm} km away</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border); padding-top: 10px; margin-top: 4px;">
+          <span style="font-size: 0.88rem; color: var(--color-green); font-weight: 700;">📏 ${f.distanceKm} km away</span>
           <div style="display: flex; gap: 8px;">
-            <a href="tel:${f.phone}" onclick="event.stopPropagation();" class="secondary" style="padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: #334155; color: #f8fafc;">📞 Call</a>
-            <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" class="primary" style="padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff;">🗺️ Directions</a>
+            <a href="tel:${f.phone}" onclick="event.stopPropagation();" class="secondary" style="padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: var(--color-bg-alt); color: var(--color-navy); border: 1px solid var(--color-border);">📞 Call</a>
+            <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" class="primary" style="padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: var(--color-orange); color: #ffffff;">🗺️ Directions</a>
           </div>
         </div>
       </div>
@@ -1174,10 +1174,10 @@ function renderFacilities() {
         .bindPopup(`
           <div style="font-family: inherit; padding: 4px;">
             <b style="font-size: 0.95rem;">${f.name}</b><br>
-            <span style="color: #2563eb; font-weight: 600;">${f.type}</span> · <b>${f.distanceKm} km away</b><br>
-            <small style="color: #64748b;">${f.address}</small><br>
+            <span style="color: #154A8C; font-weight: 600;">${f.type}</span> · <b>${f.distanceKm} km away</b><br>
+            <small style="color: #8A94A6;">${f.address}</small><br>
             <div style="margin-top: 6px;">
-              <a href="https://www.google.com/maps/dir/?api=1&destination=${f.lat},${f.lon}" target="_blank" style="color: #2563eb; font-weight: 700; text-decoration: none;">🗺️ Open Directions</a>
+              <a href="https://www.google.com/maps/dir/?api=1&destination=${f.lat},${f.lon}" target="_blank" style="color: #154A8C; font-weight: 700; text-decoration: none;">🗺️ Open Directions</a>
             </div>
           </div>
         `);
@@ -1215,10 +1215,10 @@ if (donationForm) {
     
     donationForm.style.display = 'none';
     donationMessage.classList.remove('hidden');
-    donationMessage.innerHTML = `<span style=\"color:#e67e22;\">${t('Redirecting to Razorpay secure gateway for ₹')}${amount}...</span>`;
+    donationMessage.innerHTML = `<span style=\"color:#E67A1A;\">${t('Redirecting to Razorpay secure gateway for ₹')}${amount}...</span>`;
     
     setTimeout(() => {
-      donationMessage.innerHTML = `<span style=\"color:#2ecc71;\">${t('Payment of ₹')}${amount}${t(' successful! Thank you for your support.')}</span>`;
+      donationMessage.innerHTML = `<span style=\"color:#2E8B57;\">${t('Payment of ₹')}${amount}${t(' successful! Thank you for your support.')}</span>`;
       setTimeout(() => {
         donationModal.classList.add('hidden');
       }, 3000);
@@ -1483,7 +1483,7 @@ function loginUser(email, pass, name, healthInfo) {
 
   navigateToWorkspace('dashboard');
   const msgEl = document.getElementById('authMessage');
-  if (msgEl) msgEl.innerHTML = `<span style="color:#059669;">Welcome ${name}! Health profile saved.</span>`;
+  if (msgEl) msgEl.innerHTML = `<span style="color:#2E8B57;">Welcome ${name}! Health profile saved.</span>`;
 }
 
 // 4. Conversational AI Assessment Wizard Logic (Steps 1-5)
@@ -1686,14 +1686,14 @@ function initEmergencySos() {
         (err) => {
           console.warn("Geolocation permission denied or error:", err);
           if (gpsStatusEl) {
-            gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:6px; font-weight:600;">⚠️ Location permission denied or GPS unavailable. Showing regional facilities.</span>`;
+            gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#FDEEDF; color:#E67A1A; padding:4px 10px; border-radius:6px; font-weight:600;">⚠️ Location permission denied or GPS unavailable. Showing regional facilities.</span>`;
           }
         },
         { timeout: 5000, enableHighAccuracy: true }
       );
     } else {
       if (gpsStatusEl) {
-        gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:6px; font-weight:600;">⚠️ GPS unsupported in browser. Showing regional facilities.</span>`;
+        gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#FDEEDF; color:#E67A1A; padding:4px 10px; border-radius:6px; font-weight:600;">⚠️ GPS unsupported in browser. Showing regional facilities.</span>`;
       }
     }
   }
@@ -1870,15 +1870,15 @@ function initEmergencySos() {
       const lon = f.longitude || 72.9980;
 
       return `
-        <div class="facility-card emergency-facility-card" style="margin-bottom:12px; border-left:4px solid #ef4444;">
+        <div class="facility-card emergency-facility-card" style="margin-bottom:12px; border-left:4px solid #D33A3A;">
           <div>
-            <h4 style="margin:0 0 6px 0; color:var(--text); font-size:1.05rem;">${f.name} <span class="badge-24x7" style="background:#fee2e2; color:#dc2626; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; margin-left:6px;">${badgeText}</span></h4>
+            <h4 style="margin:0 0 6px 0; color:var(--text); font-size:1.05rem;">${f.name} <span class="badge-24x7" style="background:#FDF1F1; color:#D33A3A; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:700; margin-left:6px;">${badgeText}</span></h4>
             <p style="margin:0 0 4px 0; color:var(--muted); font-size:0.9rem;">📍 ${address} · <strong style="color:var(--text);">${distVal} km away</strong></p>
-            <p style="margin:4px 0 0 0; color:#15803d; font-weight:600; font-size:0.85rem;">🚑 Emergency Ambulance · ICU · 24x7 Triage Care</p>
+            <p style="margin:4px 0 0 0; color:#2E8B57; font-weight:600; font-size:0.85rem;">🚑 Emergency Ambulance · ICU · 24x7 Triage Care</p>
           </div>
           <div class="cta-row" style="margin-top: 10px; display:flex; gap:10px;">
-            <a href="tel:${phone}" class="btn-emergency-call" style="background:#dc2626; color:#fff; padding:6px 14px; border-radius:8px; font-weight:600; font-size:0.88rem; text-decoration:none;">${callText} (${phone})</a>
-            <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}" target="_blank" class="btn-emergency-dir" style="background:#2563eb; color:#fff; padding:6px 14px; border-radius:8px; font-weight:600; font-size:0.88rem; text-decoration:none;">${dirText}</a>
+            <a href="tel:${phone}" class="btn-emergency-call" style="background:#D33A3A; color:#fff; padding:6px 14px; border-radius:8px; font-weight:600; font-size:0.88rem; text-decoration:none;">${callText} (${phone})</a>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}" target="_blank" class="btn-emergency-dir" style="background:#154A8C; color:#fff; padding:6px 14px; border-radius:8px; font-weight:600; font-size:0.88rem; text-decoration:none;">${dirText}</a>
           </div>
         </div>
       `;
