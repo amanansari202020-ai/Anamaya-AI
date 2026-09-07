@@ -292,6 +292,47 @@ async def find_nearby_facilities(
     }
 
 
+@app.get("/api/facilities/nearby-with-doctors", tags=["Healthcare Facilities"])
+async def find_nearby_facilities_with_doctors(
+    latitude: float,
+    longitude: float,
+    radius_km: float = 25,
+    db: Session = Depends(get_db)
+):
+    """Find nearby healthcare facilities grouped by ownership with nested doctor listings"""
+    result = await facility_service.find_nearby_facilities_with_doctors(
+        db, latitude, longitude, radius_km
+    )
+    return result
+
+
+@app.post("/api/appointments/request", tags=["Appointments & Doctors"])
+async def create_appointment_request(
+    payload: dict,
+    db: Session = Depends(get_db)
+):
+    """Request a doctor appointment (works for guest or logged-in patient)"""
+    if not payload.get("doctor_id") or not payload.get("facility_id") or not payload.get("requested_date"):
+        raise HTTPException(status_code=400, detail="doctor_id, facility_id, and requested_date are required")
+
+    result = await facility_service.create_appointment_request(db, payload)
+    return {"success": True, "appointment": result}
+
+
+@app.get("/api/appointments/{patient_id}", tags=["Appointments & Doctors"])
+async def get_patient_appointments(
+    patient_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get appointment request history for a patient"""
+    appointments = await facility_service.get_patient_appointments(db, patient_id)
+    return {
+        "success": True,
+        "count": len(appointments),
+        "appointments": appointments
+    }
+
+
 @app.get("/api/facilities/{facility_id}", tags=["Healthcare Facilities"])
 async def get_facility_details(
     facility_id: int,

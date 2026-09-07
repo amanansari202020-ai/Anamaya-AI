@@ -21,6 +21,17 @@ class HealthcareLevelEnum(str, enum.Enum):
     DISTRICT_HOSPITAL = "district_hospital"
 
 
+class FacilityOwnershipType(str, enum.Enum):
+    GOVERNMENT = "government"
+    PRIVATE = "private"
+
+
+class AppointmentStatus(str, enum.Enum):
+    PENDING = "pending"
+    CONFIRMED = "confirmed"
+    CANCELLED = "cancelled"
+
+
 class ReferralStatus(str, enum.Enum):
     PENDING = "pending"
     ACCEPTED = "accepted"
@@ -127,6 +138,7 @@ class HealthcareFacility(Base):
     email = Column(String(255), nullable=True)
     opening_hours = Column(String(255), nullable=True)
     is_government = Column(Boolean, default=True)
+    ownership_type = Column(SQLEnum(FacilityOwnershipType), default=FacilityOwnershipType.GOVERNMENT)
     available_services = Column(JSON)  # List of available services
     available_specialists = Column(JSON)  # List of available specialists
     emergency_available = Column(Boolean, default=False)
@@ -138,6 +150,49 @@ class HealthcareFacility(Base):
 
     # Relationships
     referrals = relationship("Referral", foreign_keys="Referral.to_facility_id", back_populates="facility")
+    doctors = relationship("Doctor", back_populates="facility", cascade="all, delete-orphan")
+
+
+# Doctors Directory
+class Doctor(Base):
+    __tablename__ = "doctors"
+
+    id = Column(Integer, primary_key=True, index=True)
+    facility_id = Column(Integer, ForeignKey("healthcare_facilities.id"), index=True)
+    name = Column(String(255), nullable=False)
+    degree = Column(String(255), nullable=False)
+    specialization = Column(String(255), nullable=False)
+    years_experience = Column(Integer, default=5)
+    available_days = Column(JSON)  # e.g. ["Mon", "Wed", "Fri"]
+    available_hours = Column(String(255))  # e.g. "10:00 AM - 2:00 PM"
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    facility = relationship("HealthcareFacility", back_populates="doctors")
+    appointment_requests = relationship("AppointmentRequest", back_populates="doctor", cascade="all, delete-orphan")
+
+
+# Appointment Requests
+class AppointmentRequest(Base):
+    __tablename__ = "appointment_requests"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=False)
+    facility_id = Column(Integer, ForeignKey("healthcare_facilities.id"), nullable=False)
+    guest_name = Column(String(255), nullable=True)
+    guest_phone = Column(String(50), nullable=True)
+    requested_date = Column(String(50), nullable=False)
+    requested_time_slot = Column(String(100), nullable=False)
+    status = Column(SQLEnum(AppointmentStatus), default=AppointmentStatus.PENDING)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    patient = relationship("User", foreign_keys=[patient_id])
+    doctor = relationship("Doctor", back_populates="appointment_requests")
+    facility = relationship("HealthcareFacility", foreign_keys=[facility_id])
 
 
 # Emergency Notifications

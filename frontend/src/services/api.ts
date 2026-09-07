@@ -91,6 +91,31 @@ export const getFacilityDetails = async (facilityId: number) => {
   return response.data;
 };
 
+export const findNearbyFacilitiesWithDoctors = async (
+  latitude: number,
+  longitude: number,
+  radiusKm?: number
+) => {
+  const response = await apiClient.get("/facilities/nearby-with-doctors", {
+    params: {
+      latitude,
+      longitude,
+      radius_km: radiusKm || 25,
+    },
+  });
+  return response.data;
+};
+
+export const requestAppointment = async (data: any) => {
+  const response = await apiClient.post("/appointments/request", data);
+  return response.data;
+};
+
+export const getPatientAppointments = async (patientId: number) => {
+  const response = await apiClient.get(`/appointments/${patientId}`);
+  return response.data;
+};
+
 // Referral
 export const createReferral = async (data: any) => {
   const response = await apiClient.post("/referral/create", data);

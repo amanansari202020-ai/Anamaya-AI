@@ -691,11 +691,34 @@
 
               <div id="map" class="facilities-map" style="height: 340px; border-radius: 16px; margin: 16px 0; border: 1px solid #334155;"></div>
 
-              <div class="facility-list" id="facilityList">
-                <div class="facility-card loading-card" style="padding: 24px; text-align: center; color: #94a3b8;">
-                  <div style="font-size: 1.5rem; margin-bottom: 8px;">⏳</div>
-                  <h4 data-i18n="i18n_loadinghospital_158">Locating nearby facilities...</h4>
-                  <p data-i18n="i18n_fetchingrealnea_159">Requesting location and fetching real nearby hospitals and clinics...</p>
+              <div class="facilities-columns-container">
+                <!-- Government Facilities Column -->
+                <div class="facility-column govt-column">
+                  <div class="column-header govt-header">
+                    <h4 data-i18n="i18n_gov_facilities" style="margin:0; font-size:1.05rem; color:#1e293b;">🏛️ Government Facilities</h4>
+                    <div class="telemedicine-note" data-i18n="i18n_telemedicine_note">
+                      Designed to integrate with government telemedicine infrastructure (e.g. eSanjeevani/ABDM) — doctor listings shown here are for demonstration.
+                    </div>
+                  </div>
+                  <div class="facility-list" id="govtFacilityList">
+                    <div class="facility-card loading-card" style="padding: 20px; text-align: center; color: #94a3b8;">
+                      <div style="font-size: 1.3rem; margin-bottom: 6px;">⏳</div>
+                      <h5 data-i18n="i18n_loadinghospital_158">Locating government facilities...</h5>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Private Facilities Column -->
+                <div class="facility-column private-column">
+                  <div class="column-header private-header">
+                    <h4 data-i18n="i18n_private_facilities" style="margin:0; font-size:1.05rem; color:#1e293b;">🏥 Private Facilities & Clinics</h4>
+                  </div>
+                  <div class="facility-list" id="privateFacilityList">
+                    <div class="facility-card loading-card" style="padding: 20px; text-align: center; color: #94a3b8;">
+                      <div style="font-size: 1.3rem; margin-bottom: 6px;">⏳</div>
+                      <h5 data-i18n="i18n_loadinghospital_158">Locating private facilities...</h5>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -714,6 +737,13 @@
               </div>
 
               <div class="passport-code" id="passportCode">HS-2048</div>
+
+              <div class="passport-section" style="margin-top: 1.5rem;">
+                <h4 data-i18n="i18n_my_appointments" style="margin-bottom: 0.75rem; color: #1e293b;">My Appointment Requests</h4>
+                <div id="myAppointmentsList" class="appointments-list">
+                  <p style="color: var(--muted); font-size: 0.9rem;" data-i18n="i18n_no_appointments">No appointment requests yet.</p>
+                </div>
+              </div>
             </div>
 
             <div id="schemes" class="panel">
@@ -828,6 +858,61 @@
       </div>
     </div>
 
+    <!-- Appointment Request Modal -->
+    <div id="appointmentModal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 data-i18n="i18n_appointment_modal_title">Request Doctor Appointment</h3>
+          <button type="button" class="close-modal-btn" id="closeAppointmentModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="doctor-summary-box" id="apptModalDocSummary">
+            <strong id="apptModalDocName" style="display:block; font-size:1.1rem; color:#0f172a;">Doctor Name</strong>
+            <span id="apptModalDocSpec" style="display:block; font-size:0.9rem; color:#0284c7; margin-top:2px;">Specialization</span>
+            <span id="apptModalFacName" style="display:block; font-size:0.83rem; color:#64748b; margin-top:2px;">Facility Name</span>
+          </div>
+
+          <form id="appointmentForm" style="display:flex; flex-direction:column; gap:12px; margin-top:14px;">
+            <input type="hidden" id="apptDoctorId" value="">
+            <input type="hidden" id="apptFacilityId" value="">
+
+            <label style="display:flex; flex-direction:column; gap:4px; font-size:0.88rem; font-weight:600; color:#334155;">
+              <span data-i18n="i18n_select_date">Select Preferred Date</span>
+              <input type="date" id="apptDate" required style="padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem;">
+            </label>
+
+            <label style="display:flex; flex-direction:column; gap:4px; font-size:0.88rem; font-weight:600; color:#334155;">
+              <span data-i18n="i18n_select_timeslot">Select Time Slot</span>
+              <select id="apptTimeSlot" required style="padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem;">
+                <option value="">Choose time slot...</option>
+              </select>
+            </label>
+
+            <div id="apptGuestFields" style="display:flex; flex-direction:column; gap:12px;">
+              <label style="display:flex; flex-direction:column; gap:4px; font-size:0.88rem; font-weight:600; color:#334155;">
+                <span data-i18n="i18n_patient_name">Patient Name</span>
+                <input type="text" id="apptGuestName" placeholder="Enter patient name" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem;">
+              </label>
+              <label style="display:flex; flex-direction:column; gap:4px; font-size:0.88rem; font-weight:600; color:#334155;">
+                <span data-i18n="i18n_patient_phone">Patient Phone Number</span>
+                <input type="tel" id="apptGuestPhone" placeholder="+91 98765 43210" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem;">
+              </label>
+            </div>
+
+            <button type="submit" class="primary full-width" id="submitApptBtn" style="margin-top: 8px; padding: 12px;" data-i18n="i18n_submit_appointment">
+              Confirm Appointment Request
+            </button>
+          </form>
+
+          <div id="apptSuccessState" class="hidden appointment-success-box" style="text-align:center; padding: 16px 8px;">
+            <div style="font-size: 2.2rem; margin-bottom: 8px;">✅</div>
+            <h4 data-i18n="i18n_appointment_success" style="color:#059669; font-size:1.05rem; margin-bottom:8px;">Appointment request sent — you'll be contacted to confirm.</h4>
+            <p id="apptSuccessDetails" style="font-size: 0.88rem; color: #475569; margin-bottom:14px; background:#f0fdf4; padding:10px; border-radius:8px; border:1px solid #bbf7d0;"></p>
+            <button type="button" class="secondary full-width" id="closeApptSuccessBtn" style="padding:10px;">Done</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="config.js"></script>
     <script src="translations.js"></script>
