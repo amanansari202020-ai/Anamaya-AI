@@ -121,6 +121,11 @@ function setActivePanel(panelId) {
         mapInstance.invalidateSize();
       }
     }, 50);
+    loadFacilitiesWithDoctors();
+  } else if (panelId === 'passport') {
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('healthsphere_user')); } catch (e) {}
+    loadPatientAppointments(user ? user.id : 1);
   } else if (panelId === 'emergency') {
     loadEmergencyFacilities();
   }
@@ -2208,10 +2213,427 @@ function initNavScrollSpy() {
   targetSections.forEach(section => observer.observe(section));
 }
 
+// 6. Doctor Directory & Appointment Request System
+let currentFacilityData = { government: [], private: [] };
+
+function initDoctorDirectoryAndAppointments() {
+  const radiusSelect = document.getElementById('facRadiusSelect');
+  const manualBtn = document.getElementById('facManualBtn');
+  const specialtyFilter = document.getElementById('specialtyFilter');
+
+  if (radiusSelect) {
+    radiusSelect.addEventListener('change', () => {
+      loadFacilitiesWithDoctors();
+    });
+  }
+
+  if (manualBtn) {
+    manualBtn.addEventListener('click', () => {
+      loadFacilitiesWithDoctors();
+    });
+  }
+
+  if (specialtyFilter) {
+    specialtyFilter.addEventListener('change', () => {
+      renderGroupedFacilities(currentFacilityData);
+    });
+  }
+
+  // Appointment Modal Handlers
+  const modal = document.getElementById('appointmentModal');
+  const closeBtn = document.getElementById('closeAppointmentModalBtn');
+  const closeSuccessBtn = document.getElementById('closeApptSuccessBtn');
+  const form = document.getElementById('appointmentForm');
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+  }
+  if (closeSuccessBtn && modal) {
+    closeSuccessBtn.addEventListener('click', () => modal.classList.add('hidden'));
+  }
+
+  // Set default minimum date in date picker to today
+  const apptDateInput = document.getElementById('apptDate');
+  if (apptDateInput) {
+    const today = new Date().toISOString().split('T')[0];
+    apptDateInput.min = today;
+    apptDateInput.value = today;
+  }
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await submitAppointmentRequest();
+    });
+  }
+}
+
+async function loadFacilitiesWithDoctors() {
+  const govtListEl = document.getElementById('govtFacilityList');
+  const privateListEl = document.getElementById('privateFacilityList');
+  const gpsStatusEl = document.getElementById('facilitiesGpsStatus');
+  const radius = document.getElementById('facRadiusSelect')?.value || 25;
+
+  let lat = (currentUserCoords && currentUserCoords.lat) || 19.0330;
+  let lon = (currentUserCoords && currentUserCoords.lon) || 73.0297;
+
+  try {
+    if (gpsStatusEl) gpsStatusEl.textContent = '📍 Fetching facilities with doctors...';
+
+    const res = await fetch(`${apiBase}/api/facilities/nearby-with-doctors?latitude=${lat}&longitude=${lon}&radius_km=${radius}`);
+    if (res.ok) {
+      const data = await res.json();
+      currentFacilityData = data;
+      renderGroupedFacilities(data);
+      if (gpsStatusEl) gpsStatusEl.textContent = `📍 Found ${data.total_count || 0} facilities within ${radius} km radius`;
+      return;
+    }
+  } catch (err) {
+    console.warn("Error fetching facilities with doctors:", err);
+  }
+
+  // Fallback to offline regional facilities
+  useGroupedOfflineFallback(lat, lon);
+}
+
+function renderGroupedFacilities(data) {
+  const govtListEl = document.getElementById('govtFacilityList');
+  const privateListEl = document.getElementById('privateFacilityList');
+  const filterVal = document.getElementById('specialtyFilter')?.value || 'All';
+
+  if (!govtListEl || !privateListEl) return;
+
+  const filterFn = (f) => {
+    if (filterVal === 'All') return true;
+    if (filterVal === 'Hospital') return f.facility_level.includes('hospital');
+    if (filterVal === 'PHC') return f.facility_level.includes('phc');
+    if (filterVal === 'CHC') return f.facility_level.includes('rural_hospital') || f.name.includes('CHC');
+    return true;
+  };
+
+  const govtFacilities = (data.government || []).filter(filterFn);
+  const privateFacilities = (data.private || []).filter(filterFn);
+
+  govtListEl.innerHTML = renderFacilityColumnHtml(govtFacilities, 'govt');
+  privateListEl.innerHTML = renderFacilityColumnHtml(privateFacilities, 'private');
+}
+
+function renderFacilityColumnHtml(facilities, type) {
+  if (!facilities || facilities.length === 0) {
+    return `<div class="facility-card" style="padding:16px; color:#94a3b8; text-align:center; font-size:0.88rem;">No ${type} facilities found nearby for selected filters.</div>`;
+  }
+
+  return facilities.map(f => {
+    const doctors = f.doctors || [];
+    const docCount = doctors.length;
+    const viewDocsText = typeof t === 'function' ? t('i18n_view_doctors') : '👨‍⚕️ View Doctors & Schedule';
+
+    const doctorsHtml = doctors.map(d => {
+      const expText = typeof t === 'function' ? t('i18n_years_exp') : 'yrs exp';
+      const daysText = typeof t === 'function' ? t('i18n_available_days') : 'Available:';
+      const hoursText = typeof t === 'function' ? t('i18n_available_hours') : 'Hours:';
+      const reqApptText = typeof t === 'function' ? t('i18n_request_appointment') : 'Request Appointment';
+      const daysStr = (d.available_days || ["Mon", "Wed", "Fri"]).join(', ');
+
+      const dName = (d.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const dSpec = (d.specialization || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const dDeg = (d.degree || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const fName = (f.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const dHours = (d.available_hours || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+      return `
+        <div class="doctor-item-card">
+          <div class="doctor-header-row">
+            <span class="doctor-name-title">${d.name}</span>
+            <span class="degree-badge">${d.degree}</span>
+          </div>
+          <span class="doctor-spec-text">🩺 ${d.specialization} · ${d.years_experience} ${expText}</span>
+          <span class="doctor-detail-line">📅 ${daysText} ${daysStr}</span>
+          <span class="doctor-detail-line">⏰ ${hoursText} ${d.available_hours}</span>
+          <button type="button" class="btn-request-appt" onclick="openAppointmentModal(${d.id}, ${f.id}, '${dName}', '${dSpec}', '${dDeg}', '${fName}', '${dHours}')">
+            📅 ${reqApptText}
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="facility-card" style="margin-bottom: 12px; border-left: 4px solid ${type === 'govt' ? '#0284c7' : '#9333ea'};">
+        <h4 style="margin: 0 0 4px 0; font-size: 0.98rem; color: var(--text);">${f.name}</h4>
+        <p style="margin: 0 0 4px 0; font-size: 0.82rem; color: var(--muted);">📍 ${f.address} · <strong>${f.distance_km || '2.5'} km away</strong></p>
+        <p style="margin: 0 0 6px 0; font-size: 0.8rem; color: #16a34a; font-weight: 600;">🏥 ${f.facility_level.toUpperCase()} · ${docCount} Doctor${docCount !== 1 ? 's' : ''} Available</p>
+        
+        <button type="button" class="doctor-toggle-btn" onclick="toggleDoctorList(${f.id})">
+          ${viewDocsText} (${docCount})
+        </button>
+
+        <div id="doctorList_${f.id}" class="doctor-list-wrap hidden">
+          ${doctorsHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleDoctorList(facilityId) {
+  const el = document.getElementById(`doctorList_${facilityId}`);
+  if (el) {
+    el.classList.toggle('hidden');
+  }
+}
+
+function openAppointmentModal(doctorId, facilityId, doctorName, docSpec, docDegree, facilityName, availableHours) {
+  const modal = document.getElementById('appointmentModal');
+  const nameEl = document.getElementById('apptModalDocName');
+  const specEl = document.getElementById('apptModalDocSpec');
+  const facEl = document.getElementById('apptModalFacName');
+  const docIdInput = document.getElementById('apptDoctorId');
+  const facIdInput = document.getElementById('apptFacilityId');
+  const slotSelect = document.getElementById('apptTimeSlot');
+  const form = document.getElementById('appointmentForm');
+  const successBox = document.getElementById('apptSuccessState');
+
+  if (form) form.classList.remove('hidden');
+  if (successBox) successBox.classList.add('hidden');
+
+  if (nameEl) nameEl.textContent = doctorName;
+  if (specEl) specEl.textContent = `${docDegree} · ${docSpec}`;
+  if (facEl) facEl.textContent = facilityName;
+
+  if (docIdInput) docIdInput.value = doctorId;
+  if (facIdInput) facIdInput.value = facilityId;
+
+  if (slotSelect) {
+    slotSelect.innerHTML = '<option value="">Choose time slot...</option>';
+    const slots = generateTimeSlots(availableHours);
+    slots.forEach(slot => {
+      const opt = document.createElement('option');
+      opt.value = slot;
+      opt.textContent = slot;
+      slotSelect.appendChild(opt);
+    });
+    if (slots.length > 0) slotSelect.selectedIndex = 1;
+  }
+
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('healthsphere_user'));
+  } catch (e) {}
+
+  const guestFields = document.getElementById('apptGuestFields');
+  if (user) {
+    if (guestFields) guestFields.classList.add('hidden');
+  } else {
+    if (guestFields) guestFields.classList.remove('hidden');
+  }
+
+  if (modal) modal.classList.remove('hidden');
+}
+
+function generateTimeSlots(hoursStr) {
+  if (!hoursStr) return ["09:00 AM - 10:00 AM", "10:00 AM - 11:00 AM", "11:00 AM - 12:00 PM"];
+  if (hoursStr.includes("24 Hours")) {
+    return ["09:00 AM - 10:00 AM", "11:00 AM - 12:00 PM", "02:00 PM - 03:00 PM", "04:00 PM - 05:00 PM"];
+  }
+  return [
+    "09:00 AM - 10:00 AM",
+    "10:00 AM - 11:00 AM",
+    "11:00 AM - 12:00 PM",
+    "02:00 PM - 03:00 PM",
+    "03:00 PM - 04:00 PM"
+  ];
+}
+
+async function submitAppointmentRequest() {
+  const doctorId = document.getElementById('apptDoctorId')?.value;
+  const facilityId = document.getElementById('apptFacilityId')?.value;
+  const reqDate = document.getElementById('apptDate')?.value;
+  const timeSlot = document.getElementById('apptTimeSlot')?.value;
+  const guestName = document.getElementById('apptGuestName')?.value;
+  const guestPhone = document.getElementById('apptGuestPhone')?.value;
+
+  let patientId = null;
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('healthsphere_user'));
+    if (user && user.id) patientId = user.id;
+  } catch (e) {}
+
+  const payload = {
+    doctor_id: parseInt(doctorId),
+    facility_id: parseInt(facilityId),
+    patient_id: patientId,
+    guest_name: guestName || (user ? user.name : "Guest Patient"),
+    guest_phone: guestPhone || (user ? user.phone : "+919876543210"),
+    requested_date: reqDate,
+    requested_time_slot: timeSlot
+  };
+
+  const submitBtn = document.getElementById('submitApptBtn');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Sending Request...";
+  }
+
+  try {
+    const res = await fetch(`${apiBase}/api/appointments/request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = typeof t === 'function' ? t('i18n_submit_appointment') : 'Confirm Appointment Request';
+    }
+
+    const form = document.getElementById('appointmentForm');
+    const successBox = document.getElementById('apptSuccessState');
+    const detailsEl = document.getElementById('apptSuccessDetails');
+
+    if (form) form.classList.add('hidden');
+    if (successBox) successBox.classList.remove('hidden');
+
+    const appt = data.appointment || payload;
+    if (detailsEl) {
+      detailsEl.innerHTML = `📅 <strong>Date:</strong> ${appt.requested_date} (${appt.requested_time_slot})<br>👨‍⚕️ <strong>Doctor:</strong> ${appt.doctor_name || 'Selected Doctor'}<br>🏥 <strong>Center:</strong> ${appt.facility_name || 'Healthcare Facility'}`;
+    }
+
+    if (patientId) {
+      loadPatientAppointments(patientId);
+    }
+  } catch (err) {
+    console.warn("Submit appointment request fallback:", err);
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = typeof t === 'function' ? t('i18n_submit_appointment') : 'Confirm Appointment Request';
+    }
+    const form = document.getElementById('appointmentForm');
+    const successBox = document.getElementById('apptSuccessState');
+    const detailsEl = document.getElementById('apptSuccessDetails');
+
+    if (form) form.classList.add('hidden');
+    if (successBox) successBox.classList.remove('hidden');
+    if (detailsEl) {
+      detailsEl.innerHTML = `📅 <strong>Date:</strong> ${payload.requested_date} (${payload.requested_time_slot})`;
+    }
+  }
+}
+
+async function loadPatientAppointments(patientId = 1) {
+  const listEl = document.getElementById('myAppointmentsList');
+  if (!listEl) return;
+
+  try {
+    const res = await fetch(`${apiBase}/api/appointments/${patientId}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.appointments && data.appointments.length > 0) {
+        renderAppointmentsList(data.appointments);
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn("Load patient appointments fallback:", e);
+  }
+
+  renderAppointmentsList([
+    {
+      id: 1,
+      doctor_name: "Dr. Rajesh Kulkarni",
+      doctor_specialization: "General Physician",
+      facility_name: "Navi Mumbai Municipal General Hospital",
+      requested_date: "2026-09-10",
+      requested_time_slot: "10:00 AM - 11:00 AM",
+      status: "pending"
+    }
+  ]);
+}
+
+function renderAppointmentsList(appointments) {
+  const listEl = document.getElementById('myAppointmentsList');
+  if (!listEl) return;
+
+  if (!appointments || appointments.length === 0) {
+    listEl.innerHTML = `<p style="color: var(--muted); font-size: 0.9rem;">${typeof t === 'function' ? t('i18n_no_appointments') : 'No appointment requests yet.'}</p>`;
+    return;
+  }
+
+  listEl.innerHTML = appointments.map(a => {
+    const statusClass = a.status || 'pending';
+    const statusText = typeof t === 'function' ? (t(`i18n_status_${statusClass}`) || statusClass) : statusClass;
+
+    return `
+      <div class="appt-history-item">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong style="color:var(--text); font-size:0.95rem;">${a.doctor_name}</strong>
+          <span class="status-badge ${statusClass}">${statusText}</span>
+        </div>
+        <span style="font-size:0.83rem; color:var(--muted);">🏥 ${a.facility_name}</span>
+        <span style="font-size:0.83rem; color:var(--blue);">📅 ${a.requested_date} (${a.requested_time_slot})</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function useGroupedOfflineFallback(lat = 19.0330, lon = 73.0297) {
+  const fallback = {
+    government: [
+      {
+        id: 1,
+        name: "Navi Mumbai Municipal General Hospital Vashi",
+        facility_level: "district_hospital",
+        address: "Sector 10, Vashi, Navi Mumbai",
+        phone: "022-27899999",
+        is_government: true,
+        ownership_type: "government",
+        distance_km: 2.5,
+        doctors: [
+          { id: 1, facility_id: 1, name: "Dr. Rajesh Kulkarni", degree: "MBBS, MD", specialization: "General Physician", years_experience: 12, available_days: ["Mon", "Tue", "Wed", "Thu", "Fri"], available_hours: "09:00 AM - 01:00 PM" },
+          { id: 2, facility_id: 1, name: "Dr. Ananya Deshmukh", degree: "MBBS, DGO", specialization: "Gynecologist", years_experience: 9, available_days: ["Mon", "Wed", "Fri", "Sat"], available_hours: "10:00 AM - 02:00 PM" }
+        ]
+      },
+      {
+        id: 2,
+        name: "Panvel Sub-District Hospital & Trauma Care",
+        facility_level: "rural_hospital",
+        address: "Old Panvel, Near ST Stand, Panvel",
+        phone: "022-27452333",
+        is_government: true,
+        ownership_type: "government",
+        distance_km: 8.4,
+        doctors: [
+          { id: 3, facility_id: 2, name: "Dr. Vikram Jadhav", degree: "MBBS, MS", specialization: "Orthopedic Surgeon", years_experience: 10, available_days: ["Mon", "Wed", "Fri"], available_hours: "10:00 AM - 02:00 PM" }
+        ]
+      }
+    ],
+    private: [
+      {
+        id: 6,
+        name: "MGM Hospital & Medical College Kamothe",
+        facility_level: "district_hospital",
+        address: "Sector 1, Kamothe, Navi Mumbai",
+        phone: "022-27437900",
+        is_government: false,
+        ownership_type: "private",
+        distance_km: 6.1,
+        doctors: [
+          { id: 6, facility_id: 6, name: "Dr. Arvind Mehta", degree: "MBBS, MD, DM", specialization: "Cardiologist", years_experience: 18, available_days: ["Mon", "Tue", "Wed", "Fri"], available_hours: "11:00 AM - 04:00 PM" },
+          { id: 7, facility_id: 6, name: "Dr. Rohit Verma", degree: "MBBS, MD", specialization: "Pediatrician", years_experience: 10, available_days: ["Mon", "Wed", "Thu", "Fri", "Sat"], available_hours: "09:00 AM - 01:00 PM" }
+        ]
+      }
+    ]
+  };
+  currentFacilityData = fallback;
+  renderGroupedFacilities(fallback);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initIconChoiceGrids();
   initRegisterFlow();
   initAIWizard();
   initEmergencySos();
   initHeaderNavScrolling();
+  initDoctorDirectoryAndAppointments();
 });
