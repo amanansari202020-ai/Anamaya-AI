@@ -58,13 +58,18 @@ button { font: inherit; cursor: pointer; }
 .nav { display: flex; gap: 26px; color: var(--muted); font-weight: 500; }
 .header-actions { display: flex; align-items: center; gap: 12px; }
 .lang-picker {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 8px 12px; border: 1px solid var(--border); border-radius: 999px;
-  background: var(--panel-solid); color: var(--text); box-shadow: 0 8px 20px rgba(12, 108, 242, 0.08);
+  display: inline-flex; align-items: center; gap: 4px;
+  border: 1px solid var(--border); border-radius: 999px; padding: 12px 22px; font-weight: 700; transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: linear-gradient(135deg, rgba(46, 196, 166, 0.16), rgba(12, 108, 242, 0.14));
+  color: var(--text);
+  cursor: pointer;
+}
+.lang-picker:hover {
+  transform: translateY(-1px);
 }
 .lang-picker select {
-  border: none; background: transparent; color: var(--text); font: inherit;
-  outline: none;
+  border: none; background: transparent; color: inherit; font: inherit; font-weight: inherit;
+  outline: none; cursor: pointer; padding: 0;
 }
 .voice-toggle, .theme-toggle, .nav-button, .primary, .secondary, .ghost-button {
   border: none; border-radius: 999px; padding: 12px 22px; font-weight: 700; transition: transform 0.2s ease, box-shadow 0.2s ease;
