@@ -127,19 +127,19 @@
               <div id="regStep1">
                 <label>
                   <span data-i18n="i18n_fullname_27">Full name</span>
-                  <input type="text" id="registerName" placeholder="Enter your name" required="" data-i18n-placeholder="i18n_ph_enteryourname_28">
+                  <input type="text" id="registerName" placeholder="Enter your name" data-i18n-placeholder="i18n_ph_enteryourname_28">
                 </label>
                 <label>
                   <span data-i18n="i18n_email_29">Email</span>
-                  <input type="email" id="registerEmail" placeholder="you@example.com" required="" data-i18n-placeholder="i18n_ph_youexamplecom_30">
+                  <input type="email" id="registerEmail" placeholder="you@example.com" data-i18n-placeholder="i18n_ph_youexamplecom_30">
                 </label>
                 <label>
                   <span data-i18n="i18n_phonenumber_31">Phone number</span>
-                  <input type="tel" id="registerPhone" placeholder="+91 98765 43210" required="" data-i18n-placeholder="i18n_ph_919876543210_32">
+                  <input type="tel" id="registerPhone" placeholder="+91 98765 43210" data-i18n-placeholder="i18n_ph_919876543210_32">
                 </label>
                 <label>
                   <span data-i18n="i18n_addresslocation_33">Address / location</span>
-                  <textarea id="registerAddress" rows="2" placeholder="Village, block, district" required="" data-i18n-placeholder="i18n_ph_villageblockdis_34"></textarea>
+                  <textarea id="registerAddress" rows="2" placeholder="Village, block, district" data-i18n-placeholder="i18n_ph_villageblockdis_34"></textarea>
                 </label>
                 <label>
                   <span>Preferred language</span>
@@ -217,6 +217,7 @@
                 </div>
               </div>
             </form>
+            <div id="regAuthMessage" class="auth-message" aria-live="polite"></div>
           </div>
 
           <div class="auth-card login-card">
@@ -227,11 +228,11 @@
             <form id="loginForm" class="auth-form">
               <label>
                 <span data-i18n="i18n_email_38">Email</span>
-                <input type="email" id="loginEmail" placeholder="Enter registered email" required="" data-i18n-placeholder="i18n_ph_enterregistered_39">
+                <input type="email" id="loginEmail" placeholder="Enter registered email" data-i18n-placeholder="i18n_ph_enterregistered_39">
               </label>
               <label>
                 <span data-i18n="i18n_phonenumber_40">Phone number</span>
-                <input type="tel" id="loginPhone" placeholder="Enter registered phone" required="" data-i18n-placeholder="i18n_ph_enterregistered_41">
+                <input type="tel" id="loginPhone" placeholder="Enter registered phone" data-i18n-placeholder="i18n_ph_enterregistered_41">
               </label>
               <button type="submit" class="secondary full-width" data-i18n="i18n_login_42">Login</button>
             </form>

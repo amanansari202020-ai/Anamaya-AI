@@ -517,14 +517,32 @@ function showAuthState() {
     if (userName) userName.textContent = currentUser.name || 'Patient';
     if (passportPatient) passportPatient.textContent = currentUser.name || 'Priya Sharma';
     localStorage.setItem('anamaya-user-name', currentUser.name || 'Patient');
+    
+    // Display active logged in user message across auth messages
+    const authMessage = document.getElementById('authMessage');
+    const regAuthMessage = document.getElementById('regAuthMessage');
+    const activeText = `✅ Logged in as: ${currentUser.name} (${currentUser.email || currentUser.phone || ''})`;
+    if (authMessage && !authMessage.textContent) {
+      authMessage.textContent = activeText;
+      authMessage.style.color = '#16a34a';
+    }
+    if (regAuthMessage && !regAuthMessage.textContent) {
+      regAuthMessage.textContent = activeText;
+      regAuthMessage.style.color = '#16a34a';
+    }
   }
 }
 
 function showAuthMessage(message, isError = false) {
   const authMessage = document.getElementById('authMessage');
-  if (!authMessage) return;
-  authMessage.textContent = message;
-  authMessage.style.color = isError ? '#D33A3A' : '#2E8B57';
+  const regAuthMessage = document.getElementById('regAuthMessage');
+  [authMessage, regAuthMessage].forEach(el => {
+    if (el) {
+      el.textContent = message;
+      el.style.color = isError ? '#D33A3A' : '#16a34a';
+      el.style.fontWeight = '600';
+    }
+  });
 }
 
 function setButtonLoading(button, text, loading) {
@@ -543,16 +561,24 @@ function setButtonLoading(button, text, loading) {
 function handleRegister(event) {
   event.preventDefault();
   const submitBtn = document.getElementById('regSubmitBtn');
-  const name = document.getElementById('registerName').value.trim();
-  const email = document.getElementById('registerEmail').value.trim();
-  const phone = document.getElementById('registerPhone').value.trim();
-  const address = document.getElementById('registerAddress').value.trim();
+  const name = (document.getElementById('registerName')?.value || '').trim();
+  const email = (document.getElementById('registerEmail')?.value || '').trim();
+  const phone = (document.getElementById('registerPhone')?.value || '').trim();
+  const address = (document.getElementById('registerAddress')?.value || '').trim();
   const preferredLanguage = document.getElementById('registerPreferredLanguage')?.value || 'en';
   const selectedConditions = Array.from(document.querySelectorAll('#regCondGrid .icon-card.selected')).map((card) => card.dataset.value);
   const allergiesValue = document.getElementById('regAllergyText')?.value.trim() || (document.querySelector('#regAllergyGrid .icon-card.selected')?.dataset.value === 'yes' ? 'Yes' : 'No');
 
-  if (!name || !email || !phone || !address) {
-    showAuthMessage('Please fill in all registration details.', true);
+  if (!name || (!email && !phone)) {
+    showAuthMessage('Please fill in your name and at least an email or phone number.', true);
+    const regStep1 = document.getElementById('regStep1');
+    const regStep2 = document.getElementById('regStep2');
+    if (regStep1 && regStep2 && regStep1.classList.contains('hidden')) {
+      regStep2.classList.add('hidden');
+      regStep1.classList.remove('hidden');
+      document.getElementById('regDot2')?.classList.remove('active');
+      document.getElementById('regDot1')?.classList.add('active');
+    }
     return;
   }
 
@@ -560,12 +586,33 @@ function handleRegister(event) {
   showAuthMessage('Creating your account and saving your health profile...', false);
 
   const users = getStoredUsers();
-  const existingUser = users.find((entry) => entry.email.toLowerCase() === email.toLowerCase() || entry.phone === phone);
+  const cleanDigits = (s) => (s || '').replace(/\D/g, '');
+  const inputDigits = cleanDigits(phone);
+
+  const existingUser = users.find((entry) => {
+    const emailMatch = email && entry.email && entry.email.toLowerCase() === email.toLowerCase();
+    const phoneMatch = phone && entry.phone && (
+      entry.phone.trim() === phone ||
+      (inputDigits.length >= 7 && cleanDigits(entry.phone) === inputDigits)
+    );
+    return emailMatch || phoneMatch;
+  });
 
   if (existingUser) {
+    existingUser.name = name || existingUser.name;
+    existingUser.address = address || existingUser.address;
+    if (email) existingUser.email = email;
+    if (phone) existingUser.phone = phone;
+    setStoredUsers(users);
     setCurrentUser(existingUser);
-    showAuthMessage('Welcome back. Your account is already saved.', false);
+    
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPhone = document.getElementById('loginPhone');
+    if (loginEmail) loginEmail.value = existingUser.email || '';
+    if (loginPhone) loginPhone.value = existingUser.phone || '';
+
     setButtonLoading(submitBtn, 'Registering...', false);
+    showAuthMessage(`Welcome back ${existingUser.name}. Account updated & logged in!`, false);
     showAuthState();
     return;
   }
@@ -585,20 +632,40 @@ function handleRegister(event) {
     emergency_contact_relation: document.getElementById('regEmergRelation')?.value || ''
   }));
   localStorage.setItem('healthsphere_user', JSON.stringify({ name, email, phone }));
+
+  // Auto pre-fill login inputs for smooth user experience
+  const loginEmail = document.getElementById('loginEmail');
+  const loginPhone = document.getElementById('loginPhone');
+  if (loginEmail) loginEmail.value = email;
+  if (loginPhone) loginPhone.value = phone;
+
+  // Reset registration step back to step 1
+  const regStep1 = document.getElementById('regStep1');
+  const regStep2 = document.getElementById('regStep2');
+  if (regStep1 && regStep2) {
+    regStep2.classList.add('hidden');
+    regStep1.classList.remove('hidden');
+    document.getElementById('regDot2')?.classList.remove('active');
+    document.getElementById('regDot1')?.classList.remove('completed');
+    document.getElementById('regDot1')?.classList.add('active');
+  }
+
   setButtonLoading(submitBtn, 'Registering...', false);
-  showAuthMessage('Registration successful. Welcome to Anamaya AI.', false);
+  showAuthMessage(`Registration successful! Logged in as ${name}.`, false);
   showAuthState();
-  speakAssistant(`Welcome ${name}. Please choose a language, then open the app. Anamaya AI will guide you step by step.`);
+  if (typeof speakAssistant === 'function') {
+    speakAssistant(`Welcome ${name}. Registration complete. You can now use all Anamaya AI features.`);
+  }
 }
 
 function handleLogin(event) {
   event.preventDefault();
   const button = document.querySelector('#loginForm button[type="submit"]');
-  const email = document.getElementById('loginEmail').value.trim();
-  const phone = document.getElementById('loginPhone').value.trim();
+  const email = (document.getElementById('loginEmail')?.value || '').trim();
+  const phone = (document.getElementById('loginPhone')?.value || '').trim();
 
-  if (!email || !phone) {
-    showAuthMessage('Please enter your email and phone to login.', true);
+  if (!email && !phone) {
+    showAuthMessage('Please enter your registered email or phone number to login.', true);
     return;
   }
 
@@ -606,7 +673,17 @@ function handleLogin(event) {
   showAuthMessage('Checking your account details...', false);
 
   const users = getStoredUsers();
-  const matchedUser = users.find((entry) => entry.email.toLowerCase() === email.toLowerCase() && entry.phone === phone);
+  const cleanDigits = (s) => (s || '').replace(/\D/g, '');
+  const inputDigits = cleanDigits(phone);
+
+  const matchedUser = users.find((entry) => {
+    const emailMatch = email && entry.email && entry.email.toLowerCase() === email.toLowerCase();
+    const phoneMatch = phone && entry.phone && (
+      entry.phone.trim() === phone ||
+      (inputDigits.length >= 7 && cleanDigits(entry.phone) === inputDigits)
+    );
+    return emailMatch || phoneMatch;
+  });
 
   if (!matchedUser) {
     setButtonLoading(button, 'Logging in...', false);
@@ -616,9 +693,11 @@ function handleLogin(event) {
 
   setCurrentUser(matchedUser);
   setButtonLoading(button, 'Logging in...', false);
-  showAuthMessage(`Logged in as ${matchedUser.name}.`, false);
+  showAuthMessage(`Logged in successfully as ${matchedUser.name}!`, false);
   showAuthState();
-  speakAssistant(`Welcome back ${matchedUser.name}. You can use the app now. Select a language and tap Launch demo for guided support.`);
+  if (typeof speakAssistant === 'function') {
+    speakAssistant(`Welcome back ${matchedUser.name}. You are logged in.`);
+  }
 }
 
 const registerForm = document.getElementById('registerForm');
