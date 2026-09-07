@@ -10,22 +10,30 @@
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <header class="topbar">
+    <header class="topbar" id="top">
       <div class="brand-wrap">
-        <div class="brand-mark">H</div>
+        <div class="brand-mark" aria-hidden="true">A</div>
         <div>
           <div class="brand-name" data-i18n="i18n_anamayaai_1">Anamaya AI</div>
           <div class="brand-subtitle" data-i18n="i18n_smartruralcarea_2">Smart rural care access</div>
         </div>
       </div>
-      <nav class="nav">
-        <a href="#features" data-i18n="i18n_features_3" data-scroll-target="features">Features</a>
-        <a href="#how-it-works" data-i18n="i18n_howitworks_eyebrow" data-scroll-target="how-it-works">How it works</a>
-        <a href="#journey" data-i18n="i18n_journey_4" data-scroll-target="journey">Journey</a>
-        <a href="#impact" data-i18n="i18n_impact_5" data-scroll-target="impact">Impact</a>
+      <button class="mobile-menu-toggle" id="mobileMenuToggle" type="button" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="nav" aria-label="Main navigation">
+        <a href="#top" data-i18n="navHome">Home</a>
+        <a href="#features" data-i18n="navAiHealth">AI Health</a>
+        <a href="#features" data-i18n="navFindCare">Find Care</a>
+        <a href="#passport" data-i18n="navHealthPassport">Health Passport</a>
+        <a href="#journey" data-i18n="navAbout">About</a>
       </nav>
+
       <div class="header-actions">
+        <div id="offlineIndicator" class="offline-indicator hidden" aria-live="polite">Offline mode active</div>
         <label class="lang-picker" aria-label="Select language">
+          <span aria-hidden="true">🌐</span>
           <select id="languageSelect">
             <option value="en" data-i18n="i18n_english_6">English</option>
             <option value="hi">हिन्दी</option>
@@ -34,8 +42,9 @@
         </label>
         <button class="voice-toggle" id="voiceAssistantBtn" aria-label="Voice assistant" data-i18n="i18n_assistant_7">🔊 Assistant</button>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" data-i18n="i18n_dark_8">🌙 Dark</button>
+        <button class="nav-signin" id="signInBtn" type="button" data-i18n="navSignIn">Sign In</button>
         <button class="nav-sos-btn" id="navSosBtn" data-i18n="i18n_emergency_sos">🆘 Emergency SOS</button>
-        <button class="nav-button" id="launchDemoBtn" data-i18n="i18n_launchdemo_9">Launch demo</button>
+        <button class="nav-button" id="launchDemoBtn" data-i18n="navGetStarted">Get Started</button>
       </div>
     </header>
 
@@ -50,8 +59,8 @@
           </p>
           <div class="cta-row">
             <button class="btn-sos" id="heroSosBtn" data-i18n="i18n_emergency_sos">🆘 Emergency SOS</button>
-            <button class="primary" id="tryPlatformBtn" data-i18n="ctaPrimary">Try the platform</button>
-            <button class="secondary" id="journeyBtn" data-i18n="ctaSecondary">View patient journey</button>
+            <button class="primary" id="tryPlatformBtn" data-i18n="ctaPrimary">Start Your Health Journey</button>
+            <button class="secondary" id="journeyBtn" data-i18n="ctaSecondary">Explore Healthcare</button>
           </div>
           <div class="status-card" id="backendStatus">
             <div class="status-dot"></div>
@@ -60,30 +69,43 @@
         </div>
 
         <div class="hero-media-wrap">
-          <div class="hero-photo-card">
-            <img src="assets/images/hero-health-worker.jpg" alt="Community health worker visiting a rural home in India" class="hero-photo" width="600" height="400">
-            <div class="hero-photo-badge">
-              <span>🩺 Care at Every Doorstep</span>
+          <div class="hero-visual-card" aria-label="AI healthcare overview">
+            <div class="signal-pill"><span class="signal-dot"></span> AI care concierge</div>
+            <div class="map-preview" aria-hidden="true">
+              <div class="map-line map-line-one"></div>
+              <div class="map-line map-line-two"></div>
+              <div class="map-line map-line-three"></div>
+              <div class="location-orb"></div>
             </div>
-          </div>
 
-          <div class="hero-panel">
-            <div class="mini-card large">
-              <div class="mini-header">
-                <span data-i18n="i18n_aihealthcheck_10">AI Health Check</span>
-                <span class="chip success" data-i18n="i18n_lowrisk_11">Low risk</span>
+            <div class="floating-card health-card">
+              <div class="floating-header">
+                <span>AI Health Check</span>
+                <span class="chip success">Low risk</span>
               </div>
               <div class="symptom-list">
-                <span data-i18n="i18n_fever_12">Fever</span>
-                <span data-i18n="i18n_weakness_13">Weakness</span>
-                <span data-i18n="i18n_cough_14">Cough</span>
+                <span>Fever</span>
+                <span>Weakness</span>
+                <span>Cough</span>
               </div>
               <div class="advice-box">
-                <strong data-i18n="i18n_suggestednextst_15">Suggested next step:</strong>
-                <p data-i18n="i18n_visitanearbypri_16">Visit a nearby primary health centre for vitals and assessment.</p>
+                <strong>Suggested next step:</strong>
+                <p>Visit a nearby primary health centre for vitals and assessment.</p>
               </div>
             </div>
 
+            <div class="floating-card mini-card top-card">
+              <label>Referral</label>
+              <strong>HS-2048</strong>
+            </div>
+            <div class="floating-card mini-card bottom-card">
+              <label>Distance</label>
+              <strong>4.8 km</strong>
+            </div>
+            <div class="floating-card mini-card left-card">
+              <label>Scheme</label>
+              <strong>PM-JAY</strong>
+            </div>
           </div>
         </div>
       </section>
@@ -119,6 +141,17 @@
                   <span data-i18n="i18n_addresslocation_33">Address / location</span>
                   <textarea id="registerAddress" rows="2" placeholder="Village, block, district" required="" data-i18n-placeholder="i18n_ph_villageblockdis_34"></textarea>
                 </label>
+                <label>
+                  <span>Preferred language</span>
+                  <select id="registerPreferredLanguage">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="mr">मराठी</option>
+                  </select>
+                </label>
+                <div class="privacy-notice" role="note">
+                  <strong>Privacy notice:</strong> We collect name, phone, address, health profile, allergies, and emergency contact details to provide triage, referral, and scheme support. This data is stored securely and protected under India’s Digital Personal Data Protection Act (DPDP Act) and healthcare privacy standards.
+                </div>
                 <button type="button" class="primary full-width" id="regNextBtn" data-i18n="i18n_next_step">Next: Health Info ➔</button>
               </div>
 
@@ -239,32 +272,32 @@
         </div>
 
         <div class="feature-grid">
-          <article class="feature-card border-blue">
+          <article class="feature-card border-blue reveal">
             <div class="icon">🩺</div>
             <h3 data-i18n="i18n_aisymptomguidan_58">AI symptom guidance</h3>
             <p data-i18n="i18n_structuredpatie_59">Structured patient triage that helps communities identify urgency and choose the right level of care.</p>
           </article>
-          <article class="feature-card border-orange">
+          <article class="feature-card border-orange reveal">
             <div class="icon">📍</div>
             <h3 data-i18n="i18n_facilitymatchin_60">Facility matching</h3>
             <p data-i18n="i18n_locationawarere_61">Location-aware recommendations for PHCs, CHCs, district hospitals, and emergency pathways.</p>
           </article>
-          <article class="feature-card border-purple">
+          <article class="feature-card border-purple reveal">
             <div class="icon">🔗</div>
             <h3 data-i18n="i18n_smartreferrals_62">Smart referrals</h3>
             <p data-i18n="i18n_digitalreferral_63">Digital referral flow with QR access, consent-aware sharing, and continuity of patient history.</p>
           </article>
-          <article class="feature-card border-purple">
+          <article class="feature-card border-purple reveal">
             <div class="icon">🧾</div>
             <h3 data-i18n="i18n_healthpassport_64">Health passport</h3>
             <p data-i18n="i18n_recordsandtreat_65">Records and treatments stay connected across facilities for safer, more continuous care.</p>
           </article>
-          <article class="feature-card border-green">
+          <article class="feature-card border-green reveal">
             <div class="icon">💸</div>
             <h3 data-i18n="i18n_budgetsupport_66">Budget support</h3>
             <p data-i18n="i18n_transparentcost_67">Transparent cost estimation and scheme guidance to reduce financial barriers to care.</p>
           </article>
-          <article class="feature-card border-navy">
+          <article class="feature-card border-navy reveal">
             <div class="icon">📶</div>
             <h3 data-i18n="i18n_offlineready_68">Offline-ready</h3>
             <p data-i18n="i18n_designedforweak_69">Designed for weak connectivity environments with local continuity and sync-ready workflows.</p>
@@ -279,7 +312,7 @@
         </div>
 
         <div class="steps-stack">
-          <div class="step-card step-blue">
+          <div class="step-card step-blue reveal">
             <div class="step-img-wrap">
               <img src="assets/images/step1-ai-assessment.jpg" alt="AI Health Assessment on mobile device" width="160" height="120" loading="lazy" class="step-img">
             </div>
@@ -290,7 +323,7 @@
             </div>
           </div>
 
-          <div class="step-card step-orange">
+          <div class="step-card step-orange reveal">
             <div class="step-img-wrap">
               <img src="assets/images/step2-facilities.jpg" alt="Primary health centre clinic building" width="160" height="120" loading="lazy" class="step-img">
             </div>
@@ -301,7 +334,7 @@
             </div>
           </div>
 
-          <div class="step-card step-green">
+          <div class="step-card step-green reveal">
             <div class="step-img-wrap">
               <img src="assets/images/step3-schemes.jpg" alt="Indian rural family receiving healthcare scheme guidance" width="160" height="120" loading="lazy" class="step-img">
             </div>
@@ -312,7 +345,7 @@
             </div>
           </div>
 
-          <div class="step-card step-red">
+          <div class="step-card step-red reveal">
             <div class="step-img-wrap">
               <img src="assets/images/step4-emergency.jpg" alt="Emergency medical response ambulance" width="160" height="120" loading="lazy" class="step-img">
             </div>
@@ -382,27 +415,27 @@
 
       <section id="impact" class="section metrics">
         <div class="metric-card">
-          <strong data-i18n="i18n_3x_80">3x</strong>
-          <span data-i18n="i18n_fasterreferrald_81">faster referral decisions</span>
+          <strong>4.8 km</strong>
+          <span>Median distance to nearest care</span>
         </div>
         <div class="metric-card">
           <strong>50+</strong>
-          <span data-i18n="i18n_schemematches_82">scheme matches</span>
+          <span>Facility profiles tracked locally</span>
         </div>
         <div class="metric-card">
           <strong>24/7</strong>
-          <span data-i18n="i18n_digitalcontinui_83">digital continuity</span>
+          <span>Emergency support workflow</span>
         </div>
         <div class="metric-card">
-          <strong>0</strong>
-          <span data-i18n="i18n_frictioninpatie_84">friction in patient handoff</span>
+          <strong>3</strong>
+          <span>Languages available: English, Hindi, Marathi</span>
         </div>
       </section>
 
       <section id="demoApp" class="demo-shell hidden">
         <div class="demo-header">
           <div>
-            <span class="eyebrow" data-i18n="i18n_demoportal_85">Demo portal</span>
+            <span class="eyebrow" data-i18n="i18n_demoportal_85">Care workspace</span>
             <h2 data-i18n="i18n_anamayaaiworksp_86">Anamaya AI workspace</h2>
           </div>
           <button class="ghost-button" id="logoutBtn" data-i18n="i18n_logout_87">Log out</button>
@@ -566,6 +599,10 @@
               </div>
 
               <!-- Results display -->
+              <div class="disclaimer-box" role="note">
+                <strong>Important:</strong> This AI symptom check is not a medical diagnosis. Seek emergency care immediately for chest pain, severe breathing problems, heavy bleeding, or loss of consciousness.
+              </div>
+
               <div class="result-box hidden" id="assessmentResult" style="margin-top: 1.5rem;">
                 <h4 data-i18n="i18n_assessmentresul_132">Assessment result</h4>
                 <p id="assessmentResultText">Symptoms suggest a moderate-risk case. Recommend a PHC or CHC review within 24 hours.</p>
@@ -600,6 +637,13 @@
                     <button id="removeImageBtn" type="button" class="remove-image-btn" title="Remove photo">×</button>
                   </div>
                   <span class="preview-note" data-i18n="i18n_photoattachedfo_142">Photo attached for analysis</span>
+                </div>
+                <div class="sms-fallback-card">
+                  <strong>SMS / IVR fallback</strong>
+                  <div class="sms-fallback-row">
+                    <input id="smsFallbackPhone" type="tel" placeholder="Enter phone number for SMS check-in" />
+                    <button id="smsFallbackBtn" type="button" class="secondary">Send SMS prompt</button>
+                  </div>
                 </div>
                 <div class="chat-input-row">
                   <input type="file" id="chatImageInput" accept="image/*" class="hidden-file-input">
@@ -793,28 +837,27 @@
         <a href="#features" data-i18n="i18n_features_263">Features</a>
         <a href="#journey" data-i18n="i18n_journey_264">Journey</a>
         <a href="#impact" data-i18n="i18n_impact_265">Impact</a>
+        <button id="donationBtn" class="footer-donation" type="button">
+          <span class="donation-icon">Donate</span>
+        </button>
       </div>
     </footer>
 
     <!-- Donation Modal -->
-    <div id="donationModal" class="donation-modal hidden">
+    <div id="donationModal" class="donation-modal hidden" role="dialog" aria-modal="true" aria-labelledby="donationTitle">
       <div class="donation-modal-content">
-        <span class="donation-close">×</span>
-        <h2 data-i18n="i18n_supportanamayaa_266">Support Anamaya AI</h2>
+        <button class="donation-close" type="button" aria-label="Close donation dialog">×</button>
+        <h2 id="donationTitle" data-i18n="i18n_supportanamayaa_266">Support Anamaya AI</h2>
         <p data-i18n="i18n_yourcontributio_267">Your contribution helps provide free digital health access to remote rural areas.</p>
         <form id="donationForm" style="display:flex; flex-direction:column; gap:12px; margin-top:20px;">
-          <input type="number" placeholder="Amount (₹)" min="10" required="" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text);" data-i18n-placeholder="i18n_ph_amount_268">
+          <input id="donationAmount" type="number" placeholder="Amount (₹)" min="10" required="" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text);" data-i18n-placeholder="i18n_ph_amount_268">
           <button type="submit" class="primary" data-i18n="i18n_proceedtopaymen_269">Proceed to Payment</button>
         </form>
-        <p style="font-size: 0.75rem; color: var(--muted); margin-top: 12px; text-align: center;" data-i18n="i18n_thisdemopayment_270">*This demo payment system will be replaced by Razorpay later.</p>
+        <p style="font-size: 0.75rem; color: var(--muted); margin-top: 12px; text-align: center;">Secure payment processing will be enabled when the payment provider is connected.</p>
         <div id="donationMessage" class="hidden" style="margin-top:20px; font-weight:600; text-align: center;"></div>
       </div>
     </div>
 
-    <button id="donationBtn" class="floating-donation">
-      <span class="donation-icon">🐷</span>
-      <span data-i18n="i18n_donate_271">Donate</span>
-    </button>
     <!-- Appointment Request Modal -->
     <div id="appointmentModal" class="modal-backdrop hidden">
       <div class="modal-card">
@@ -870,7 +913,6 @@
         </div>
       </div>
     </div>
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="config.js"></script>
     <script src="translations.js"></script>

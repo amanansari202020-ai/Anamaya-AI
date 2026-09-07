@@ -96,7 +96,7 @@ venv\Scripts\activate
 source venv/bin/activate
 
 pip install -r requirements.txt
-python app/main.py
+python -m app.main
 ```
 > Backend runs at: `http://localhost:8000` (Swagger docs: `http://localhost:8000/docs`)
 
@@ -106,6 +106,13 @@ cd website
 python -m http.server 8001
 ```
 > Web Application runs at: `http://localhost:8001`
+
+### Local Configuration Notes
+
+- The website calls the backend at `http://localhost:8000` when opened from port `8001`.
+- Keep `http://localhost:8001` and `http://127.0.0.1:8001` in `backend/.env` under `CORS_ORIGINS`.
+- The backend uses SQLite by default through `backend/healthsphere.db`; PostgreSQL can be configured with `DATABASE_URL`.
+- The Windows launcher uses portable paths relative to the repository, starts both services, and prints the available URLs.
 
 ---
 
@@ -167,13 +174,36 @@ python -m http.server 8001
 | :--- | :--- | :--- |
 | `POST` | `/auth/register` | Register new patient account |
 | `POST` | `/auth/login` | Authenticate user & get JWT token |
+| `GET` | `/api/patient/profile` | Retrieve the current patient profile |
+| `PUT` | `/api/patient-profile/health-info` | Save the 2-step health profile |
+| `POST` | `/api/health/assess` | Run symptom assessment and care guidance |
 | `GET` | `/api/emergency/nearby-facilities` | Fetch nearby emergency hospitals by lat, lon & radius |
 | `POST` | `/api/emergency/notify-contact` | Send emergency SOS location via SMS & WhatsApp |
 | `POST` | `/api/health/chat` | Grounded AI Care Assistant chat (Kaggle + DDXPlus + MedlinePlus NIH) |
 | `POST` | `/api/health/analyze-image` | AI visual analysis for symptom photos |
 | `POST` | `/api/health/assess` | AI symptom assessment & risk triage |
+| `GET` | `/api/facilities/nearby` | Find nearby healthcare facilities |
+| `POST` | `/api/referral/create` | Create a smart referral |
+| `GET` | `/api/referral/{referral_id}` | Retrieve referral status and details |
 | `GET` | `/api/health-passport` | Retrieve digital health passport data |
+| `POST` | `/api/health-passport/record` | Add a health passport record |
+| `GET` | `/api/health-passport/export-qr` | Export the passport QR payload |
 | `POST` | `/api/schemes/match` | Assessment of government health scheme eligibility |
+| `POST` | `/api/budget/estimate` | Estimate consultation, diagnostics, and medicine costs |
+| `POST` | `/api/sync/pending` | Submit offline actions for synchronization |
+
+## 🔄 Keeping Everyone in Sync
+
+Pull the latest team changes before starting work:
+
+```bash
+git switch main
+git pull --ff-only origin main
+```
+
+After pulling, restart both local services so changed HTML, JavaScript, CSS, and backend code are loaded. Do not commit local secrets from `backend/.env`; use `.env.example` as the shared configuration template.
+
+Latest documented platform additions include Emergency SOS, the rural health profile wizard, complete English/Hindi/Marathi localization, real facility mapping, AI photo analysis, the Digital Health Passport theme card, and the AI assessment chatbox.
 
 ---
 
