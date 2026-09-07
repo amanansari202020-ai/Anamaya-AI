@@ -1,4 +1,4 @@
-# HealthSphere AI Backend
+# Anamaya AI Backend
 
 FastHub Repository: https://github.com/amanansari202020-ai/Anamaya-AI
 
@@ -69,8 +69,8 @@ alembic upgrade head
 ### 5. Run Development Server
 
 ```bash
-# Using Python directly
-python app/main.py
+# Run as a module so the app package imports resolve correctly
+python -m app.main
 
 # Or using Uvicorn
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -79,6 +79,8 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 Server will be available at: `http://localhost:8000`
 
 API Documentation: `http://localhost:8000/docs` (Swagger UI)
+
+The web application runs separately at `http://localhost:8001`. For local browser access, make sure `backend/.env` includes both `http://localhost:8001` and `http://127.0.0.1:8001` in `CORS_ORIGINS`.
 
 ## 📁 Project Structure
 
@@ -155,11 +157,18 @@ Authorization: Bearer <access_token>
 ### Authentication
 - `POST /auth/register` - Register new user
 - `POST /auth/login` - Login user
-- `GET /auth/profile` - Get current user profile
+- `GET /api/patient/profile` - Get current patient profile
+- `PUT /api/patient/profile` - Update current patient profile
+- `PUT /api/patient-profile/health-info` - Save health profile wizard data
 
 ### AI Health Guidance
 - `POST /api/health/assess` - Assess symptoms
+- `POST /api/health/analyze-image` - Analyze a symptom image
 - `GET /api/health/assessment/{id}` - Get assessment details
+
+### Emergency SOS
+- `GET /api/emergency/nearby-facilities` - Find nearby emergency facilities
+- `POST /api/emergency/notify-contact` - Notify an emergency contact
 
 ### Healthcare Facilities
 - `GET /api/facilities/nearby` - Find nearby facilities
@@ -178,6 +187,12 @@ Authorization: Bearer <access_token>
 - `GET /api/health-passport` - Get patient's health passport
 - `POST /api/health-passport/record` - Add health record
 - `GET /api/health-passport/export-qr` - Export as QR code
+
+### Other Platform Services
+- `GET /api/journey/{assessment_id}` - Get the recommended care journey
+- `POST /api/schemes/match` - Match government schemes
+- `POST /api/budget/estimate` - Estimate care costs
+- `POST /api/sync/pending` - Synchronize pending offline actions
 
 ### Government Schemes
 - `POST /api/schemes/match` - Match eligible schemes

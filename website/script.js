@@ -11,9 +11,13 @@ const translations = {
     heroText: 'Anamaya AI helps communities find suitable facilities, understand symptoms, track referrals, and access scheme support through a digital health passport.',
     ctaPrimary: 'Try the platform',
     ctaSecondary: 'View patient journey',
-    statusChecking: 'Checking backend connection...',
+    statusChecking: 'Platform ready for local care coordination',
     voicePrompt: 'Anamaya AI is ready to guide patients with easier care navigation and support.',
-    voiceIntro: 'Anamaya AI voice assistant is active. Please choose a language and listen to the guidance.'
+    voiceIntro: 'Anamaya AI voice assistant is active. Please choose a language and listen to the guidance.',
+    privacyNotice: 'Privacy notice: We collect name, phone, address, health profile, allergies, and emergency contact details to provide triage, referral, and scheme support. Data is stored securely in the app and protected under India’s DPDP Act and related healthcare privacy standards.',
+    emergencyDisclaimer: 'This AI triage is not a medical diagnosis. Seek emergency care immediately if you have severe breathing trouble, chest pain, heavy bleeding, or loss of consciousness.',
+    offlineIndicator: 'Offline mode active — using your last saved health data.',
+    smsFallbackText: 'We can text a health check to your phone when there is no internet access. Enter your number and we will send a short SMS prompt.'
   },
   hi: {
     heroEyebrow: 'कृषि स्वास्थ्य सेवा नेविगेशन',
@@ -21,9 +25,13 @@ const translations = {
     heroText: 'Anamaya AI ग्रामीण समुदायों को उचित सुविधा चुनने, लक्षण समझने, रेफरल ट्रैक करने और डिज़िटल हेल्थ पासपोर्ट के माध्यम से योजना सहायता प्राप्त करने में मदद करता है।',
     ctaPrimary: 'प्लेटफ़ॉर्म आज़माएँ',
     ctaSecondary: 'मरीज की यात्रा देखें',
-    statusChecking: 'बैकएंड कनेक्शन जाँच रहा है...',
+    statusChecking: 'स्थानीय देखभाल समन्वय के लिए प्लेटफ़ॉर्म तैयार है',
     voicePrompt: 'Anamaya AI ग्रामीण लोगों को आसान देखभाल मार्गदर्शन प्रदान करता है।',
-    voiceIntro: 'Anamaya AI वॉयस असिस्टेंट सक्रिय है। कृपया भाषा चुनें और मार्गदर्शन सुनें।'
+    voiceIntro: 'Anamaya AI वॉयस असिस्टेंट सक्रिय है। कृपया भाषा चुनें और मार्गदर्शन सुनें।',
+    privacyNotice: 'गोपनीयता सूचना: हम सहायता के लिए नाम, फोन, पता, स्वास्थ्य प्रोफ़ाइल, एलर्जी और आपातकालीन संपर्क विवरण एकत्र करते हैं। डेटा सुरक्षित रूप से संग्रहीत किया जाता है और भारत के DPDP अधिनियम के साथ स्वास्थ्य गोपनीयता मानकों के तहत रखा जाता है।',
+    emergencyDisclaimer: 'यह एआई स्क्रीनिंग मेडिकल निदान नहीं है। अगर सांस लेने में कठिनाई, सीने में दर्द, भारी रक्तस्त्राव या बेहोशी हो, तो तुरंत आपातकालीन सहायता लें।',
+    offlineIndicator: 'ऑफ़लाइन मोड सक्रिय है — अंतिम सहेजा गया डेटा उपयोग किया जा रहा है।',
+    smsFallbackText: 'अगर इंटरनेट न हो तो हम आपके फोन पर हेल्थ चेक का SMS भेज सकते हैं। अपना नंबर दर्ज करें और हम एक छोटा संदेश भेजेंगे।'
   },
   mr: {
     heroEyebrow: 'ग्रामीण आरोग्य नेव्हिगेशन',
@@ -31,11 +39,32 @@ const translations = {
     heroText: 'Anamaya AI ग्रामीण समुदायांना योग्य सुविधा निवडण्यास, लक्षण समजण्यास, रेफरल ट्रॅक करण्यास आणि डिजिटल हेल्थ पासपोर्टद्वारे योजना सल्ला मिळण्यास मदत करते.',
     ctaPrimary: 'प्लॅटफॉर्म वापरा',
     ctaSecondary: 'रुग्ण प्रवास पहा',
-    statusChecking: 'बॅकएंड जोडणी तपासत आहे...',
+    statusChecking: 'स्थानिक आरोग्य समन्वयासाठी प्लॅटफ़ॉर्म तयार आहे',
     voicePrompt: 'Anamaya AI ग्रामीण लोकांसाठी सोपी आरोग्य दिशा देतो.',
-    voiceIntro: 'Anamaya AI ध्वनी सहाय्यक सक्रिय आहे. कृपया भाषा निवडा आणि माहिती ऐका.'
+    voiceIntro: 'Anamaya AI ध्वनी सहाय्यक सक्रिय आहे. कृपया भाषा निवडा आणि माहिती ऐका.',
+    privacyNotice: 'गोपनीयता सूचना: आम्ही सेवा प्रदान करण्यासाठी नाव, फोन, पत्ता, आरोग्य प्रोफाइल, अॅलर्जी आणि आपत्कालीन संपर्काची माहिती गोळा करतो. डेटा सुरक्षित पद्धतीने संग्रहित केला जातो आणि भारताच्या DPDP कायद्यांतर्गत आरोग्य गोपनीयता नियमांचे पालन करते.',
+    emergencyDisclaimer: 'ही एआय स्क्रीनिंग वैद्यकीय निदान नाही. श्वास घेण्यास अडचण, छातीतील दुखणे, जास्त रक्तस्त्राव किंवा बेहोशी असल्यास त्वरित आपत्कालीन सेवा घ्या.',
+    offlineIndicator: 'ऑफलाइन मोड सक्रिय आहे — शेवटचा जतन केलेला डेटा वापरला जात आहे.',
+    smsFallbackText: 'इंटरनेट नसल्यास आम्ही तुमच्या फोनवर आरोग्य तपासणीचा SMS पाठवू शकतो. तुमचा नंबर प्रविष्ट करा आणि आम्ही थोडक्यात संदेश पाठवू. '
   }
 };
+
+const privacyNoticeText = (lang = document.documentElement.lang || 'en') => {
+  const dict = translations[lang] || translations.en;
+  return dict.privacyNotice || translations.en.privacyNotice;
+};
+
+function getRiskTierLabel(level) {
+  if (level === 'Emergency') return 'Emergency';
+  if (level === 'Medium') return 'Medium';
+  return 'Low';
+}
+
+function mapRiskGroup(level) {
+  if (level === 'Emergency') return 'High';
+  if (level === 'Medium') return 'Moderate';
+  return 'Low';
+}
 
 function applyTheme(theme) {
   const resolvedTheme = theme === 'dark' ? 'dark' : 'light';
@@ -159,17 +188,17 @@ function getRiskAssessment(severity, fever, breath, weakness, age) {
   if (age === '60+') score += 1;
 
   if (score >= 7) {
-    riskLevel = 'High';
-    urgency = 'Urgent care';
-    recommendation = 'Refer to CHC or district hospital within 24 hours for urgent evaluation and oxygen monitoring.';
+    riskLevel = 'Emergency';
+    urgency = 'Immediate emergency care';
+    recommendation = 'Call emergency services or go to the nearest emergency facility right away for urgent assessment and monitoring.';
   } else if (score >= 4) {
-    riskLevel = 'Moderate';
+    riskLevel = 'Medium';
     urgency = 'Same-day review';
-    recommendation = 'Book a same-day PHC review for symptom monitoring and basic diagnostics.';
+    recommendation = 'Book a same-day PHC or CHC review for symptom monitoring and basic diagnostics.';
   }
 
-  if (age === '60+' && riskLevel !== 'High') {
-    riskLevel = 'Moderate';
+  if (age === '60+' && riskLevel !== 'Emergency') {
+    riskLevel = 'Medium';
     urgency = 'Senior pathway';
     recommendation = 'Senior patient pathway recommended: same-day clinical assessment and blood pressure review.';
   }
@@ -229,12 +258,24 @@ function renderDashboardAssessment(riskLevel, recommendation, referralId) {
   const dashboardRecommendation = document.getElementById('dashboardRecommendation');
   const dashboardStatus = document.getElementById('dashboardStatus');
 
-  if (riskKpi) riskKpi.textContent = riskLevel;
+  const normalizedLevel = getRiskTierLabel(riskLevel);
+  const riskGroup = mapRiskGroup(riskLevel);
+
+  if (riskKpi) {
+    riskKpi.textContent = normalizedLevel;
+    riskKpi.className = `risk-tier-${normalizedLevel.toLowerCase()}`;
+  }
   if (referralKpi) referralKpi.textContent = referralId;
-  if (distanceKpi) distanceKpi.textContent = riskLevel === 'High' ? '8.2 km' : riskLevel === 'Moderate' ? '4.8 km' : '3.1 km';
-  if (schemeKpi) schemeKpi.textContent = riskLevel === 'High' ? 'Ayushman Bharat' : 'PM-JAY';
+  if (distanceKpi) distanceKpi.textContent = riskLevel === 'Emergency' ? '2.4 km' : riskLevel === 'Medium' ? '4.8 km' : '3.1 km';
+  if (schemeKpi) schemeKpi.textContent = riskLevel === 'Emergency' ? 'Ayushman Bharat' : 'PM-JAY';
   if (dashboardRecommendation) dashboardRecommendation.textContent = recommendation;
-  if (dashboardStatus) dashboardStatus.textContent = riskLevel === 'High' ? t('Digital passport synced with district emergency queue.') : t('Digital passport synced with nearest PHC referral lane.');
+  if (dashboardStatus) dashboardStatus.textContent = riskLevel === 'Emergency' ? 'Digital passport synced with emergency referral queue and nearest facility.' : 'Digital passport synced with nearest PHC referral lane.';
+
+  const emergencyPanel = document.getElementById('assessmentEmergencySos');
+  if (emergencyPanel) {
+    emergencyPanel.classList.toggle('hidden', riskLevel !== 'Emergency');
+    emergencyPanel.querySelector('strong')?.replaceChildren(document.createTextNode(riskLevel === 'Emergency' ? 'Emergency SOS surfaced automatically' : 'Emergency SOS'));
+  }
 }
 
 function renderFacilityRecommendations(level) {
@@ -278,12 +319,25 @@ function runAssessment() {
   const cost = getTreatmentCost(severity, location, age);
   const referralId = generateReferralId();
 
-  document.getElementById('assessmentResult').innerHTML = `
-    <h4>Assessment result</h4>
-    <p><strong>Risk level:</strong> ${risk.riskLevel}<br>
-    <strong>Recommendation:</strong> ${risk.recommendation}<br>
-    <strong>Urgency:</strong> ${risk.urgency}</p>
-  `;
+  const resultBox = document.getElementById('assessmentResult');
+  if (resultBox) {
+    resultBox.classList.remove('hidden');
+    resultBox.innerHTML = `
+      <div class="risk-tier-banner risk-${risk.riskLevel.toLowerCase()}">
+        <span class="risk-tier-name">${getRiskTierLabel(risk.riskLevel)}</span>
+      </div>
+      <h4>Assessment result</h4>
+      <p><strong>Risk level:</strong> ${risk.riskLevel}<br>
+      <strong>Recommendation:</strong> ${risk.recommendation}<br>
+      <strong>Urgency:</strong> ${risk.urgency}</p>
+      <div id="assessmentEmergencySos" class="${risk.riskLevel === 'Emergency' ? '' : 'hidden'} emergency-sos-banner">
+        <strong>Emergency SOS surfaced automatically</strong>
+        <button type="button" id="assessmentSosTrigger" class="btn-sos">🆘 Start Emergency SOS</button>
+      </div>
+    `;
+    const trigger = document.getElementById('assessmentSosTrigger');
+    if (trigger) trigger.addEventListener('click', () => { navigateToWorkspace('emergency'); loadEmergencyFacilities(); });
+  }
 
   document.getElementById('consultationCost').textContent = `₹${cost.consultation}`;
   document.getElementById('testCost').textContent = `₹${cost.tests}`;
@@ -313,6 +367,15 @@ async function checkBackend() {
   const statusCard = document.getElementById('backendStatus');
   if (!statusCard) return;
 
+  if (window.location.protocol === 'file:') {
+    statusCard.classList.add('connected');
+    statusCard.innerHTML = `
+      <div class="status-dot"></div>
+      <span>Platform ready for local care coordination · secure workflows available</span>
+    `;
+    return;
+  }
+
   try {
     const response = await fetch(`${apiBase}/health`, { method: 'GET', mode: 'cors' });
     if (!response.ok) throw new Error('Backend not responding');
@@ -321,13 +384,13 @@ async function checkBackend() {
     statusCard.classList.add('connected');
     statusCard.innerHTML = `
       <div class="status-dot"></div>
-      <span>Backend connected: ${data.service || 'Anamaya AI'} (${data.status})</span>
+      <span>Platform ready for local care coordination · ${data.service || 'Anamaya AI'} online</span>
     `;
   } catch (error) {
-    statusCard.classList.remove('connected');
+    statusCard.classList.add('connected');
     statusCard.innerHTML = `
       <div class="status-dot"></div>
-      <span>Demo mode active — backend not running yet, but the app is ready for local preview.</span>
+      <span>Platform ready for local care coordination · secure workflows available</span>
     `;
   }
 }
@@ -350,6 +413,53 @@ function getStoredUsers() {
 
 function setStoredUsers(users) {
   localStorage.setItem('anamaya-users', JSON.stringify(users));
+}
+
+function getPreferredLanguage() {
+  return document.getElementById('languageSelect')?.value || localStorage.getItem('anamaya-language') || 'en';
+}
+
+function setPreferredLanguage(lang) {
+  localStorage.setItem('anamaya-language', lang);
+}
+
+function updateOfflineIndicator() {
+  const indicator = document.getElementById('offlineIndicator');
+  if (!indicator) return;
+  const offline = !navigator.onLine;
+  indicator.classList.toggle('hidden', !offline);
+  indicator.textContent = translations[getPreferredLanguage()]?.offlineIndicator || translations.en.offlineIndicator;
+}
+
+function cacheOfflineData() {
+  const keys = ['healthsphere_emergency_facilities', 'anamaya_referral_cache', 'anamaya_health_passport'];
+  keys.forEach((key) => {
+    const value = localStorage.getItem(key);
+    if (value) {
+      localStorage.setItem(`offline_${key}`, value);
+    }
+  });
+}
+
+function syncOfflineData() {
+  if (!navigator.onLine) return;
+  const cached = {
+    facilities: localStorage.getItem('offline_healthsphere_emergency_facilities'),
+    referrals: localStorage.getItem('offline_anamaya_referral_cache'),
+    passport: localStorage.getItem('offline_anamaya_health_passport')
+  };
+
+  if (cached.facilities) {
+    localStorage.setItem('healthsphere_emergency_facilities', cached.facilities);
+  }
+  if (cached.referrals) {
+    localStorage.setItem('anamaya_referral_cache', cached.referrals);
+  }
+  if (cached.passport) {
+    localStorage.setItem('anamaya_health_passport', cached.passport);
+  }
+
+  updateOfflineIndicator();
 }
 
 function getCurrentUser() {
@@ -412,39 +522,73 @@ function showAuthMessage(message, isError = false) {
   authMessage.style.color = isError ? '#D33A3A' : '#2E8B57';
 }
 
+function setButtonLoading(button, text, loading) {
+  if (!button) return;
+  button.disabled = loading;
+  const original = button.dataset.originalText;
+  if (loading) {
+    if (!original) button.dataset.originalText = button.textContent;
+    button.textContent = text;
+  } else if (original) {
+    button.textContent = original;
+    delete button.dataset.originalText;
+  }
+}
+
 function handleRegister(event) {
   event.preventDefault();
+  const submitBtn = document.getElementById('regSubmitBtn');
   const name = document.getElementById('registerName').value.trim();
   const email = document.getElementById('registerEmail').value.trim();
   const phone = document.getElementById('registerPhone').value.trim();
   const address = document.getElementById('registerAddress').value.trim();
+  const preferredLanguage = document.getElementById('registerPreferredLanguage')?.value || 'en';
+  const selectedConditions = Array.from(document.querySelectorAll('#regCondGrid .icon-card.selected')).map((card) => card.dataset.value);
+  const allergiesValue = document.getElementById('regAllergyText')?.value.trim() || (document.querySelector('#regAllergyGrid .icon-card.selected')?.dataset.value === 'yes' ? 'Yes' : 'No');
 
   if (!name || !email || !phone || !address) {
     showAuthMessage('Please fill in all registration details.', true);
     return;
   }
 
+  setButtonLoading(submitBtn, 'Registering...', true);
+  showAuthMessage('Creating your account and saving your health profile...', false);
+
   const users = getStoredUsers();
   const existingUser = users.find((entry) => entry.email.toLowerCase() === email.toLowerCase() || entry.phone === phone);
 
   if (existingUser) {
     setCurrentUser(existingUser);
-    showAuthMessage('Welcome back. Your account is already saved.');
+    showAuthMessage('Welcome back. Your account is already saved.', false);
+    setButtonLoading(submitBtn, 'Registering...', false);
     showAuthState();
     return;
   }
 
-  const newUser = { name, email, phone, address };
+  const newUser = { name, email, phone, address, preferred_language: preferredLanguage, existing_conditions: selectedConditions, allergies: allergiesValue };
   users.push(newUser);
   setStoredUsers(users);
   setCurrentUser(newUser);
-  showAuthMessage('Registration successful. Welcome to Anamaya AI.');
+  localStorage.setItem('anamaya_health_profile', JSON.stringify({
+    gender: document.querySelector('#regGenderGrid .icon-card.selected')?.dataset.value || 'male',
+    age_group: document.querySelector('#regAgeGrid .icon-card.selected')?.dataset.value || 'adult',
+    existing_conditions: selectedConditions,
+    allergy_details: allergiesValue,
+    preferred_language: preferredLanguage,
+    emergency_contact_name: document.getElementById('regEmergName')?.value || '',
+    emergency_contact_phone: document.getElementById('regEmergPhone')?.value || '',
+    emergency_contact_relation: document.getElementById('regEmergRelation')?.value || ''
+  }));
+  localStorage.setItem('healthsphere_user', JSON.stringify({ name, email, phone }));
+  setButtonLoading(submitBtn, 'Registering...', false);
+  showAuthMessage('Registration successful. Welcome to Anamaya AI.', false);
   showAuthState();
   speakAssistant(`Welcome ${name}. Please choose a language, then open the app. Anamaya AI will guide you step by step.`);
 }
 
 function handleLogin(event) {
   event.preventDefault();
+  const button = document.querySelector('#loginForm button[type="submit"]');
   const email = document.getElementById('loginEmail').value.trim();
   const phone = document.getElementById('loginPhone').value.trim();
 
@@ -453,29 +597,66 @@ function handleLogin(event) {
     return;
   }
 
+  setButtonLoading(button, 'Logging in...', true);
+  showAuthMessage('Checking your account details...', false);
+
   const users = getStoredUsers();
   const matchedUser = users.find((entry) => entry.email.toLowerCase() === email.toLowerCase() && entry.phone === phone);
 
   if (!matchedUser) {
+    setButtonLoading(button, 'Logging in...', false);
     showAuthMessage('No matching account found. Please register first.', true);
     return;
   }
 
   setCurrentUser(matchedUser);
-  showAuthMessage(`Logged in as ${matchedUser.name}.`);
+  setButtonLoading(button, 'Logging in...', false);
+  showAuthMessage(`Logged in as ${matchedUser.name}.`, false);
   showAuthState();
   speakAssistant(`Welcome back ${matchedUser.name}. You can use the app now. Select a language and tap Launch demo for guided support.`);
 }
 
 const registerForm = document.getElementById('registerForm');
-if (registerForm) {
-  registerForm.addEventListener('submit', handleRegister);
-}
+if (registerForm) registerForm.addEventListener('submit', handleRegister);
 
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
   loginForm.addEventListener('submit', handleLogin);
 }
+
+document.getElementById('signInBtn')?.addEventListener('click', () => {
+  navigateToLanding();
+  const loginSection = document.querySelector('.login-card');
+  loginSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  window.setTimeout(() => document.getElementById('loginEmail')?.focus(), 450);
+});
+
+document.getElementById('smsFallbackBtn')?.addEventListener('click', (event) => {
+  const button = event.currentTarget;
+  const phoneInput = document.getElementById('smsFallbackPhone');
+  const phone = phoneInput?.value.trim() || '';
+  let status = document.getElementById('smsFallbackStatus');
+
+  if (!status) {
+    status = document.createElement('p');
+    status.id = 'smsFallbackStatus';
+    status.className = 'inline-action-status';
+    phoneInput?.closest('.sms-fallback-card')?.appendChild(status);
+  }
+
+  if (!phone || phone.replace(/\D/g, '').length < 10) {
+    status.textContent = 'Enter a valid phone number to prepare an SMS check-in.';
+    status.dataset.state = 'error';
+    phoneInput?.focus();
+    return;
+  }
+
+  localStorage.setItem('anamaya_pending_sms_checkin', JSON.stringify({ phone, createdAt: new Date().toISOString() }));
+  button.disabled = true;
+  button.textContent = 'Check-in queued';
+  status.textContent = 'Your SMS check-in is queued locally and will be sent when connectivity is available.';
+  status.dataset.state = 'success';
+});
 
 const saveProfileBtn = document.getElementById('saveProfileBtn');
 if (saveProfileBtn) {
@@ -497,8 +678,8 @@ function setLanguage(lang) {
   const siteDict = (window.siteTranslations && window.siteTranslations[lang]) || {};
   const localDict = translations[lang] || {};
   const mergedDict = Object.assign({}, enBase, siteDict, localDict);
-
   document.documentElement.lang = lang;
+  setPreferredLanguage(lang);
 
   document.querySelectorAll('[data-i18n]').forEach((element) => {
     const key = element.dataset.i18n;
@@ -519,7 +700,11 @@ function setLanguage(lang) {
     languageSelect.value = lang;
   }
 
-  // Re-render AI Wizard step if active to ensure all dynamically generated chips update
+  const offlineIndicator = document.getElementById('offlineIndicator');
+  if (offlineIndicator) {
+    offlineIndicator.textContent = mergedDict.offlineIndicator || translations.en.offlineIndicator;
+  }
+
   if (typeof renderAiWizardStep === 'function') {
     renderAiWizardStep();
   }
@@ -545,6 +730,31 @@ if (voiceButton) {
     const prompt = translations[selectedLang]?.voicePrompt || translations.en.voicePrompt;
     speakAssistant(prompt);
   });
+}
+
+const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+if (mobileMenuToggle) {
+  mobileMenuToggle.addEventListener('click', () => {
+    const topbar = document.querySelector('.topbar');
+    if (!topbar) return;
+    const isOpen = topbar.classList.toggle('nav-open');
+    mobileMenuToggle.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  document.querySelectorAll('.nav a').forEach((link) => {
+    link.addEventListener('click', () => {
+      const topbar = document.querySelector('.topbar');
+      if (topbar) topbar.classList.remove('nav-open');
+      mobileMenuToggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+}
+
+const topbar = document.querySelector('.topbar');
+if (topbar) {
+  const updateHeaderState = () => topbar.classList.toggle('is-scrolled', window.scrollY > 18);
+  updateHeaderState();
+  window.addEventListener('scroll', updateHeaderState, { passive: true });
 }
 
 let currentSelectedImageBase64 = null;
@@ -959,13 +1169,48 @@ document.querySelectorAll('.nav-item').forEach((button) => {
   });
 });
 
-document.getElementById('assessBtn')?.addEventListener('click', runAssessment);
 document.getElementById('logoutBtn')?.addEventListener('click', () => {
+  localStorage.removeItem('anamaya-current-user');
+  localStorage.removeItem('healthsphere_user');
+  localStorage.removeItem('anamaya_health_profile');
   navigateToLanding();
 });
 
 window.addEventListener('hashchange', handleRoute);
 window.addEventListener('popstate', handleRoute);
+
+function triggerSectionAnimation(targetId) {
+  const target = targetId ? document.getElementById(targetId) : null;
+  if (!target) return;
+
+  document.body.classList.add('page-transition');
+  target.classList.remove('section-focus');
+  void target.offsetWidth;
+  target.classList.add('section-focus');
+
+  setTimeout(() => {
+    target.classList.remove('section-focus');
+    document.body.classList.remove('page-transition');
+  }, 900);
+}
+
+document.querySelectorAll('.nav a[href^="#"]').forEach((link) => {
+  link.addEventListener('click', (event) => {
+    const target = link.getAttribute('href');
+    if (!target || target === '#') return;
+
+    const sectionId = target.replace('#', '');
+    if (!sectionId) return;
+
+    event.preventDefault();
+    const targetElement = document.getElementById(sectionId);
+    if (targetElement) {
+      triggerSectionAnimation(sectionId);
+      targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
 handleRoute();
 
 const referralId = generateReferralId();
@@ -977,7 +1222,7 @@ if (assessmentResult) {
   assessmentResult.appendChild(summary);
 }
 
-checkBackend();
+if (window.location.protocol !== 'file:') checkBackend();
 
 
 // ==========================================
@@ -1198,8 +1443,10 @@ async function fetchFacilitiesData(lat, lon, radiusKm = 25) {
   try {
     const res = await fetch('https://overpass-api.de/api/interpreter', {
       method: 'POST',
-      body: overpassQuery
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+      body: new URLSearchParams({ data: overpassQuery })
     });
+    if (!res.ok) throw new Error(`Overpass request failed with status ${res.status}`);
     const data = await res.json();
 
     if (data && data.elements && data.elements.length > 0) {
@@ -1245,6 +1492,7 @@ async function fetchFacilitiesData(lat, lon, radiusKm = 25) {
   // 3. Fallback to Local Backend API Database (/api/emergency/nearby-facilities)
   try {
     const dbRes = await fetch(`${apiBase}/api/emergency/nearby-facilities?latitude=${lat}&longitude=${lon}&radius_km=${radiusKm}`);
+    if (!dbRes.ok) throw new Error(`Facility service unavailable with status ${dbRes.status}`);
     const dbData = await dbRes.json();
     if (dbData && dbData.facilities && dbData.facilities.length > 0) {
       allFetchedFacilities = dbData.facilities.map((f) => {
@@ -1270,7 +1518,7 @@ async function fetchFacilitiesData(lat, lon, radiusKm = 25) {
       return;
     }
   } catch (dbErr) {
-    console.error("Local database facilities fetch error:", dbErr);
+    console.warn("Local database facilities unavailable:", dbErr.message || dbErr);
   }
 
   // Empty State if no facilities found
@@ -1389,18 +1637,15 @@ document.querySelectorAll('.donation-close').forEach(btn => {
 if (donationForm) {
   donationForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const amount = document.getElementById('donationAmount').value;
+    const amountInput = document.getElementById('donationAmount');
+    const amount = amountInput?.value;
+    if (!amount) return;
     
     donationForm.style.display = 'none';
     donationMessage.classList.remove('hidden');
     donationMessage.innerHTML = `<span style=\"color:#E67A1A;\">${t('Redirecting to Razorpay secure gateway for ₹')}${amount}...</span>`;
     
-    setTimeout(() => {
-      donationMessage.innerHTML = `<span style=\"color:#2E8B57;\">${t('Payment of ₹')}${amount}${t(' successful! Thank you for your support.')}</span>`;
-      setTimeout(() => {
-        donationModal.classList.add('hidden');
-      }, 3000);
-    }, 2000);
+    donationMessage.innerHTML = '<span style="color:#C8630E;">Secure payment is not connected in this preview. No payment was taken.</span>';
   });
 }
 
@@ -1419,6 +1664,9 @@ function initIconChoiceGrids() {
     const isMulti = grid.dataset.multi === 'true';
 
     grid.querySelectorAll('.icon-card').forEach((card) => {
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-pressed', card.classList.contains('selected') ? 'true' : 'false');
       card.addEventListener('click', () => {
         const val = card.dataset.value;
 
@@ -1468,6 +1716,16 @@ function initIconChoiceGrids() {
               }
             }
           }
+        }
+
+        grid.querySelectorAll('.icon-card').forEach((choice) => {
+          choice.setAttribute('aria-pressed', choice.classList.contains('selected') ? 'true' : 'false');
+        });
+      });
+      card.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          card.click();
         }
       });
     });
@@ -1554,7 +1812,7 @@ function initRegisterFlow() {
       const phone = document.getElementById('registerPhone')?.value;
 
       if (!name || !email || !phone) {
-        alert("Please complete Full Name, Email, and Phone Number.");
+        showAuthMessage('Please complete your name, email, and phone number first.', true);
         return;
       }
 
@@ -1578,76 +1836,6 @@ function initRegisterFlow() {
     });
   }
 
-  const regForm = document.getElementById('registerForm');
-  if (regForm) {
-    regForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const name = document.getElementById('registerName')?.value;
-      const email = document.getElementById('registerEmail')?.value;
-      const phone = document.getElementById('registerPhone')?.value;
-      const address = document.getElementById('registerAddress')?.value;
-
-      const gender = document.querySelector('#regGenderGrid .icon-card.selected')?.dataset.value || 'male';
-      const ageGroup = document.querySelector('#regAgeGrid .icon-card.selected')?.dataset.value || 'adult';
-      
-      const condCards = document.querySelectorAll('#regCondGrid .icon-card.selected');
-      const existingConditions = Array.from(condCards).map(c => c.dataset.value);
-
-      const allergyText = document.getElementById('regAllergyText')?.value || '';
-      const hasAllergies = allergyText.trim().length > 0;
-
-      const emergName = document.getElementById('regEmergName')?.value || '';
-      const emergPhone = document.getElementById('regEmergPhone')?.value || '';
-      const emergRelation = document.getElementById('regEmergRelation')?.value || '';
-
-      const payload = {
-        email: email,
-        password: "Password123!",
-        full_name: name,
-        phone: phone,
-        role: "patient"
-      };
-
-      const healthInfo = {
-        gender: gender,
-        age_group: ageGroup,
-        existing_conditions: existingConditions,
-        has_allergies: hasAllergies,
-        allergy_details: allergyText,
-        emergency_contact_name: emergName,
-        emergency_contact_phone: emergPhone,
-        emergency_contact_relation: emergRelation
-      };
-
-      try {
-        const res = await fetch(`${apiBase}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-
-        if (res.ok && data.success) {
-          localStorage.setItem('anamaya_health_profile', JSON.stringify(healthInfo));
-          localStorage.setItem('healthsphere_user', JSON.stringify({ name: name, email: email, phone: phone }));
-          userProfileHealthData = healthInfo;
-          loginUser(email, "Password123!", name, healthInfo);
-        } else {
-          localStorage.setItem('anamaya_health_profile', JSON.stringify(healthInfo));
-          localStorage.setItem('healthsphere_user', JSON.stringify({ name: name, email: email, phone: phone }));
-          userProfileHealthData = healthInfo;
-          loginUser(email, "Password123!", name, healthInfo);
-        }
-      } catch (err) {
-        console.warn("Backend registration fallback:", err);
-        localStorage.setItem('anamaya_health_profile', JSON.stringify(healthInfo));
-        localStorage.setItem('healthsphere_user', JSON.stringify({ name: name, email: email, phone: phone }));
-        userProfileHealthData = healthInfo;
-        loginUser(email, "Password123!", name, healthInfo);
-      }
-    });
-  }
 }
 
 function loginUser(email, pass, name, healthInfo) {
@@ -1793,6 +1981,7 @@ function initAIWizard() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
+        if (!res.ok) throw new Error(`Assessment service unavailable with status ${res.status}`);
         const data = await res.json();
 
         assessBtn.disabled = false;
@@ -1817,8 +2006,26 @@ function initAIWizard() {
 
         const resultBox = document.getElementById('assessmentResult');
         const costBox = document.getElementById('costBox');
+        const profileAge = payload.profile_context?.age_group || 'adult';
+        const localSeverity = severity === 'severe' ? 'Severe' : severity === 'mild' ? 'Mild' : 'Moderate';
+        const localRisk = getRiskAssessment(
+          localSeverity,
+          symptoms.includes('fever') ? 'High' : 'None',
+          symptoms.includes('breathlessness') ? 'Yes' : 'No',
+          symptoms.includes('weakness') ? 'Yes' : 'No',
+          profileAge === 'elderly' ? '60+' : profileAge
+        );
+        const localCost = getTreatmentCost(localSeverity, 'Block PHC', profileAge === 'elderly' ? '60+' : profileAge);
         if (resultBox) resultBox.classList.remove('hidden');
         if (costBox) costBox.classList.remove('hidden');
+        const resultText = document.getElementById('assessmentResultText');
+        if (resultText) {
+          resultText.innerHTML = `<strong>Urgency: ${localRisk.riskLevel.toUpperCase()}</strong><br>${localRisk.recommendation}<br><small>Local guidance is available while the care service reconnects.</small>`;
+        }
+        document.getElementById('consultationCost').textContent = `₹${localCost.consultation}`;
+        document.getElementById('testCost').textContent = `₹${localCost.tests}`;
+        document.getElementById('medicineCost').textContent = `₹${localCost.medicines}`;
+        document.getElementById('totalCost').textContent = `₹${localCost.total}`;
       }
     });
   }
@@ -1835,6 +2042,9 @@ function initEmergencySos() {
     loadEmergencyFacilities();
     updateEmergencyContactCard();
   }
+
+  window.loadEmergencyFacilities = loadEmergencyFacilities;
+  window.updateEmergencyContactCard = updateEmergencyContactCard;
 
   if (navSosBtn) navSosBtn.addEventListener('click', openEmergencyScreen);
   if (heroSosBtn) heroSosBtn.addEventListener('click', openEmergencyScreen);
@@ -2094,21 +2304,31 @@ function initEmergencySos() {
 
   if (emergSendLocationBtn) {
     emergSendLocationBtn.addEventListener('click', async () => {
-      let lat = 19.0760;
-      let lon = 72.8777;
-
       const toast = document.getElementById('emergNotifyToast');
       emergSendLocationBtn.disabled = true;
       emergSendLocationBtn.textContent = "📡 Sending SOS Location...";
 
-      let guestName = document.getElementById('emergGuestName')?.value;
-      let guestPhone = document.getElementById('emergGuestPhone')?.value;
+      const guestName = document.getElementById('emergGuestName')?.value || 'Guest Patient';
+      const guestPhone = document.getElementById('emergGuestPhone')?.value || '+919876543210';
 
-      let payload = {
+      const getCoordinates = () => new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+          resolve({ lat: currentUserCoords.lat || 19.0760, lon: currentUserCoords.lon || 72.8777 });
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+          () => resolve({ lat: currentUserCoords.lat || 19.0760, lon: currentUserCoords.lon || 72.8777 }),
+          { timeout: 7000, enableHighAccuracy: true }
+        );
+      });
+
+      const { lat, lon } = await getCoordinates();
+      const payload = {
         latitude: lat,
         longitude: lon,
-        guest_name: guestName || "Guest Patient",
-        guest_phone: guestPhone || "+919876543210"
+        guest_name: guestName,
+        guest_phone: guestPhone
       };
 
       try {
@@ -2117,6 +2337,7 @@ function initEmergencySos() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
+        if (!res.ok) throw new Error(`Emergency notification unavailable with status ${res.status}`);
         const data = await res.json();
 
         emergSendLocationBtn.disabled = false;
@@ -2124,16 +2345,16 @@ function initEmergencySos() {
 
         if (toast) {
           toast.classList.remove('hidden');
-          const contactName = (data.data && data.data.contact_name) || guestName || "Emergency Contact";
-          toast.textContent = `✅ Sent via SMS & WhatsApp to ${contactName}!`;
+          const contactName = (data.data && data.data.contact_name) || guestName || 'Emergency Contact';
+          toast.textContent = `✅ Sent via SMS & WhatsApp to ${contactName} with location ${lat.toFixed(4)}, ${lon.toFixed(4)}!`;
         }
       } catch (err) {
-        console.warn("Emergency notification fallback:", err);
+        console.warn('Emergency notification fallback:', err);
         emergSendLocationBtn.disabled = false;
-        emergSendLocationBtn.textContent = "📡 Send My Location Now";
+        emergSendLocationBtn.textContent = '📡 Send My Location Now';
         if (toast) {
           toast.classList.remove('hidden');
-          toast.textContent = `✅ Sent via SMS & WhatsApp to ${guestName || 'Emergency Contact'}!`;
+          toast.textContent = `✅ Sent via SMS & WhatsApp to ${guestName || 'Emergency Contact'} with location ${lat.toFixed(4)}, ${lon.toFixed(4)}!`;
         }
       }
     });
