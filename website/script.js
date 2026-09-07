@@ -506,20 +506,27 @@ function updateUserProfile() {
 function showAuthState() {
   const currentUser = getCurrentUser();
   const authSection = document.getElementById('authSection');
+  const signInBtn = document.getElementById('signInBtn');
+  const avatar = document.querySelector('.avatar');
 
   if (currentUser) {
     const patientInput = document.getElementById('patientNameInput');
     const userName = document.getElementById('userName');
     const passportPatient = document.getElementById('passportPatientName');
-    if (patientInput) patientInput.value = currentUser.name || '';
-    if (userName) userName.textContent = currentUser.name || 'Patient';
-    if (passportPatient) passportPatient.textContent = currentUser.name || 'Patient';
-    localStorage.setItem('anamaya-user-name', currentUser.name || 'Patient');
+    const name = currentUser.name || 'Patient';
+    
+    if (patientInput) patientInput.value = name;
+    if (userName) userName.textContent = name;
+    if (passportPatient) passportPatient.textContent = name;
+    if (avatar) avatar.textContent = name[0].toUpperCase();
+    if (signInBtn) signInBtn.textContent = `👤 ${name}`;
+
+    localStorage.setItem('anamaya-user-name', name);
     
     // Display active logged in user message across auth messages
     const authMessage = document.getElementById('authMessage');
     const regAuthMessage = document.getElementById('regAuthMessage');
-    const activeText = `✅ Logged in as: ${currentUser.name} (${currentUser.email || currentUser.phone || ''})`;
+    const activeText = `✅ Logged in as: ${name} (${currentUser.email || currentUser.phone || ''})`;
     if (authMessage) {
       authMessage.textContent = activeText;
       authMessage.style.color = '#16a34a';
@@ -528,6 +535,9 @@ function showAuthState() {
       regAuthMessage.textContent = activeText;
       regAuthMessage.style.color = '#16a34a';
     }
+  } else {
+    if (signInBtn) signInBtn.textContent = typeof t === 'function' ? t('navSignIn') : 'Sign In';
+    if (avatar) avatar.textContent = 'P';
   }
 }
 
@@ -723,10 +733,15 @@ if (loginForm) {
 }
 
 document.getElementById('signInBtn')?.addEventListener('click', () => {
-  navigateToLanding();
-  const loginSection = document.querySelector('.login-card');
-  loginSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  window.setTimeout(() => document.getElementById('loginEmail')?.focus(), 450);
+  const currentUser = getCurrentUser();
+  if (currentUser) {
+    navigateToWorkspace('dashboard');
+  } else {
+    navigateToLanding();
+    const loginSection = document.querySelector('.login-card');
+    loginSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    window.setTimeout(() => document.getElementById('loginEmail')?.focus(), 450);
+  }
 });
 
 document.getElementById('smsFallbackBtn')?.addEventListener('click', (event) => {
