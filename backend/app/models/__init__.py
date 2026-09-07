@@ -138,7 +138,7 @@ class HealthcareFacility(Base):
     email = Column(String(255), nullable=True)
     opening_hours = Column(String(255), nullable=True)
     is_government = Column(Boolean, default=True)
-    ownership_type = Column(SQLEnum(FacilityOwnershipType), default=FacilityOwnershipType.GOVERNMENT)
+    ownership_type = Column(String(20), default="government")
     available_services = Column(JSON)  # List of available services
     available_specialists = Column(JSON)  # List of available specialists
     emergency_available = Column(Boolean, default=False)
@@ -185,7 +185,7 @@ class AppointmentRequest(Base):
     guest_phone = Column(String(50), nullable=True)
     requested_date = Column(String(50), nullable=False)
     requested_time_slot = Column(String(100), nullable=False)
-    status = Column(SQLEnum(AppointmentStatus), default=AppointmentStatus.PENDING)
+    status = Column(String(20), default="pending")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
