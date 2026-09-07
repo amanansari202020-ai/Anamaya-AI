@@ -50,7 +50,7 @@ const AuthStack = () => (
   <Stack.Navigator
     screenOptions={{
       headerShown: false,
-      animationEnabled: true,
+      animation: "default",
     }}
   >
     <Stack.Screen name="Login" component={LoginScreen} />
@@ -144,7 +144,7 @@ const RootStack = ({ t }: { t: TranslationSet }) => (
   <Stack.Navigator
     screenOptions={{
       headerShown: false,
-      animationEnabled: true,
+      animation: "default",
     }}
   >
     <Stack.Screen name="Main" component={() => <MainTabs t={t} />} />

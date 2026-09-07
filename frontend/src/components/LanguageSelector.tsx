@@ -17,7 +17,7 @@ export default function LanguageSelector() {
           value: option.value,
           label: option.label,
         }))}
-        density="compact"
+        density="small"
         style={styles.segmentedButtons}
         theme={{
           roundness: 999,
