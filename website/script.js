@@ -2632,16 +2632,18 @@ function renderFacilityColumnHtml(facilities, type) {
     }).join('');
 
     return `
-      <div class="facility-card" style="margin-bottom: 12px; border-left: 4px solid ${type === 'govt' ? '#0284c7' : '#9333ea'};">
-        <h4 style="margin: 0 0 4px 0; font-size: 0.98rem; color: var(--text);">${f.name}</h4>
-        <p style="margin: 0 0 4px 0; font-size: 0.82rem; color: var(--muted);">📍 ${f.address} · <strong>${f.distance_km || '2.5'} km away</strong></p>
-        <p style="margin: 0 0 6px 0; font-size: 0.8rem; color: #16a34a; font-weight: 600;">🏥 ${f.facility_level.toUpperCase()} · ${docCount} Doctor${docCount !== 1 ? 's' : ''} Available</p>
+      <div class="facility-card facility-card-doctor" style="margin-bottom: 14px; border-left: 4px solid ${type === 'govt' ? '#0284c7' : '#9333ea'};">
+        <div class="facility-info-header">
+          <h4 style="margin: 0; font-size: 1.02rem; font-weight: 700; color: var(--text);">${f.name}</h4>
+          <p style="margin: 0; font-size: 0.84rem; color: var(--muted);">📍 ${f.address} · <strong>${f.distance_km || '2.5'} km away</strong></p>
+          <p style="margin: 0; font-size: 0.82rem; color: #16a34a; font-weight: 600;">🏥 ${f.facility_level.toUpperCase()} · ${docCount} Doctor${docCount !== 1 ? 's' : ''} Available</p>
+        </div>
         
-        <button type="button" id="docBtn_${f.id}" class="doctor-toggle-btn ${isExpanded ? 'expanded' : ''}" onclick="toggleDoctorList(${f.id}, '${type}')">
+        <button type="button" id="docBtn_${f.id}" class="doctor-toggle-btn ${isExpanded ? 'expanded' : ''}" style="width: 100%; justify-content: center; margin-top: 2px;" onclick="toggleDoctorList(${f.id}, '${type}')">
           ${buttonText}
         </button>
 
-        <div id="doctorList_${f.id}" class="doctor-list-wrap ${isExpanded ? '' : 'hidden'}">
+        <div id="doctorList_${f.id}" class="doctor-list-wrap ${isExpanded ? '' : 'hidden'}" style="width: 100%;">
           ${doctorsHtml}
         </div>
       </div>

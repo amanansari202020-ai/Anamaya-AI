@@ -1256,6 +1256,22 @@ body[data-theme="dark"] .demo-header .eyebrow {
   margin-top: 0.5rem;
   line-height: 1.35;
 }
+.facility-card-doctor {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  padding: 16px 18px !important;
+  gap: 10px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+.facility-info-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
 .doctor-toggle-btn {
   background: var(--color-bg-alt);
   border: 1px solid var(--color-border);
