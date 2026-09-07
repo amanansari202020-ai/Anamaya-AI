@@ -106,6 +106,7 @@ class HealthcareFacilityBase(BaseModel):
     email: Optional[str] = None
     opening_hours: Optional[str] = None
     is_government: bool = True
+    ownership_type: str = "government"
     available_services: List[str] = []
     available_specialists: List[str] = []
     emergency_available: bool = False
@@ -122,6 +123,66 @@ class HealthcareFacilityResponse(HealthcareFacilityBase):
     id: int
     created_at: datetime
     updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# Doctor Schemas
+class DoctorBase(BaseModel):
+    name: str
+    degree: str
+    specialization: str
+    years_experience: int = 5
+    available_days: List[str] = []
+    available_hours: str
+
+
+class DoctorResponse(DoctorBase):
+    id: int
+    facility_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class HealthcareFacilityWithDoctorsResponse(HealthcareFacilityResponse):
+    doctors: List[DoctorResponse] = []
+    distance_km: Optional[float] = None
+
+
+class NearbyFacilitiesWithDoctorsGroupedResponse(BaseModel):
+    success: bool = True
+    government: List[Dict[str, Any]] = []
+    private: List[Dict[str, Any]] = []
+    total_count: int = 0
+
+
+# Appointment Schemas
+class AppointmentRequestCreate(BaseModel):
+    doctor_id: int
+    facility_id: int
+    patient_id: Optional[int] = None
+    guest_name: Optional[str] = None
+    guest_phone: Optional[str] = None
+    requested_date: str
+    requested_time_slot: str
+
+
+class AppointmentRequestResponse(BaseModel):
+    id: int
+    patient_id: Optional[int] = None
+    doctor_id: int
+    facility_id: int
+    doctor_name: Optional[str] = None
+    facility_name: Optional[str] = None
+    guest_name: Optional[str] = None
+    guest_phone: Optional[str] = None
+    requested_date: str
+    requested_time_slot: str
+    status: str
+    created_at: datetime
 
     class Config:
         from_attributes = True
