@@ -2489,32 +2489,80 @@ function initDoctorDirectoryAndAppointments() {
   }
 }
 
+let activeGovtFacilityId = null;
+let activePrivateFacilityId = null;
+
 async function loadFacilitiesWithDoctors() {
   const govtListEl = document.getElementById('govtFacilityList');
   const privateListEl = document.getElementById('privateFacilityList');
   const gpsStatusEl = document.getElementById('facilitiesGpsStatus');
   const radius = document.getElementById('facRadiusSelect')?.value || 25;
 
-  let lat = (currentUserCoords && currentUserCoords.lat) || 19.0330;
-  let lon = (currentUserCoords && currentUserCoords.lon) || 73.0297;
+  const showLoading = () => {
+    const loadingHtml = `
+      <div class="facility-card loading-card" style="padding: 20px; text-align: center; color: #94a3b8;">
+        <div style="font-size: 1.3rem; margin-bottom: 6px;">⏳</div>
+        <h5 data-i18n="i18n_loadinghospital_158">Locating nearby facilities...</h5>
+      </div>`;
+    if (govtListEl) govtListEl.innerHTML = loadingHtml;
+    if (privateListEl) privateListEl.innerHTML = loadingHtml;
+  };
 
-  try {
-    if (gpsStatusEl) gpsStatusEl.textContent = '📍 Fetching facilities with doctors...';
+  showLoading();
 
-    const res = await fetch(`${apiBase}/api/facilities/nearby-with-doctors?latitude=${lat}&longitude=${lon}&radius_km=${radius}`);
-    if (res.ok) {
-      const data = await res.json();
-      currentFacilityData = data;
-      renderGroupedFacilities(data);
-      if (gpsStatusEl) gpsStatusEl.textContent = `📍 Found ${data.total_count || 0} facilities within ${radius} km radius`;
-      return;
+  const fetchForCoords = async (lat, lon) => {
+    try {
+      const res = await fetch(`${apiBase}/api/facilities/nearby-with-doctors?latitude=${lat}&longitude=${lon}&radius_km=${radius}`);
+      if (res.ok) {
+        const data = await res.json();
+        currentFacilityData = data;
+        renderGroupedFacilities(data);
+        if (gpsStatusEl) {
+          gpsStatusEl.innerHTML = `<span class="chip success" style="background:#e0f2fe; color:#0369a1; padding:3px 8px; border-radius:6px; font-weight:600; font-size:0.78rem;">📍 GPS Active (${lat.toFixed(3)}, ${lon.toFixed(3)}) — ${data.total_count || 0} facilities within ${radius} km</span>`;
+        }
+        return true;
+      }
+    } catch (err) {
+      console.warn("Error fetching facilities with doctors:", err);
     }
-  } catch (err) {
-    console.warn("Error fetching facilities with doctors:", err);
-  }
+    return false;
+  };
 
-  // Fallback to offline regional facilities
-  useGroupedOfflineFallback(lat, lon);
+  if (navigator.geolocation) {
+    if (gpsStatusEl) gpsStatusEl.textContent = '📍 Requesting GPS location...';
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        currentUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        const success = await fetchForCoords(currentUserCoords.lat, currentUserCoords.lon);
+        if (!success) {
+          useGroupedOfflineFallback(currentUserCoords.lat, currentUserCoords.lon);
+        }
+      },
+      async (err) => {
+        console.warn("Geolocation permission denied or error:", err);
+        if (gpsStatusEl) {
+          gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#fef3c7; color:#d97706; padding:3px 8px; border-radius:6px; font-weight:600; font-size:0.78rem;">⚠️ Location permission denied or GPS unavailable. Showing regional facilities.</span>`;
+        }
+        const defaultLat = (currentUserCoords && currentUserCoords.lat) || 19.0330;
+        const defaultLon = (currentUserCoords && currentUserCoords.lon) || 73.0297;
+        const success = await fetchForCoords(defaultLat, defaultLon);
+        if (!success) {
+          useGroupedOfflineFallback(defaultLat, defaultLon);
+        }
+      },
+      { timeout: 5000, enableHighAccuracy: true }
+    );
+  } else {
+    if (gpsStatusEl) {
+      gpsStatusEl.innerHTML = `<span class="chip warning" style="background:#fef3c7; color:#d97706; padding:3px 8px; border-radius:6px; font-weight:600; font-size:0.78rem;">⚠️ GPS not supported by browser. Showing regional facilities.</span>`;
+    }
+    const defaultLat = (currentUserCoords && currentUserCoords.lat) || 19.0330;
+    const defaultLon = (currentUserCoords && currentUserCoords.lon) || 73.0297;
+    const success = await fetchForCoords(defaultLat, defaultLon);
+    if (!success) {
+      useGroupedOfflineFallback(defaultLat, defaultLon);
+    }
+  }
 }
 
 function renderGroupedFacilities(data) {
@@ -2544,10 +2592,15 @@ function renderFacilityColumnHtml(facilities, type) {
     return `<div class="facility-card" style="padding:16px; color:#94a3b8; text-align:center; font-size:0.88rem;">No ${type} facilities found nearby for selected filters.</div>`;
   }
 
+  const activeId = type === 'govt' ? activeGovtFacilityId : activePrivateFacilityId;
+
   return facilities.map(f => {
     const doctors = f.doctors || [];
     const docCount = doctors.length;
+    const isExpanded = f.id === activeId;
     const viewDocsText = typeof t === 'function' ? t('i18n_view_doctors') : '👨‍⚕️ View Doctors & Schedule';
+    const hideDocsText = typeof t === 'function' ? t('i18n_hide_doctors') : '🔼 Hide Doctors';
+    const buttonText = isExpanded ? `${hideDocsText} (${docCount})` : `${viewDocsText} (${docCount})`;
 
     const doctorsHtml = doctors.map(d => {
       const expText = typeof t === 'function' ? t('i18n_years_exp') : 'yrs exp';
@@ -2584,11 +2637,11 @@ function renderFacilityColumnHtml(facilities, type) {
         <p style="margin: 0 0 4px 0; font-size: 0.82rem; color: var(--muted);">📍 ${f.address} · <strong>${f.distance_km || '2.5'} km away</strong></p>
         <p style="margin: 0 0 6px 0; font-size: 0.8rem; color: #16a34a; font-weight: 600;">🏥 ${f.facility_level.toUpperCase()} · ${docCount} Doctor${docCount !== 1 ? 's' : ''} Available</p>
         
-        <button type="button" class="doctor-toggle-btn" onclick="toggleDoctorList(${f.id})">
-          ${viewDocsText} (${docCount})
+        <button type="button" id="docBtn_${f.id}" class="doctor-toggle-btn ${isExpanded ? 'expanded' : ''}" onclick="toggleDoctorList(${f.id}, '${type}')">
+          ${buttonText}
         </button>
 
-        <div id="doctorList_${f.id}" class="doctor-list-wrap hidden">
+        <div id="doctorList_${f.id}" class="doctor-list-wrap ${isExpanded ? '' : 'hidden'}">
           ${doctorsHtml}
         </div>
       </div>
@@ -2596,11 +2649,13 @@ function renderFacilityColumnHtml(facilities, type) {
   }).join('');
 }
 
-function toggleDoctorList(facilityId) {
-  const el = document.getElementById(`doctorList_${facilityId}`);
-  if (el) {
-    el.classList.toggle('hidden');
+function toggleDoctorList(facilityId, type) {
+  if (type === 'govt') {
+    activeGovtFacilityId = (activeGovtFacilityId === facilityId) ? null : facilityId;
+  } else {
+    activePrivateFacilityId = (activePrivateFacilityId === facilityId) ? null : facilityId;
   }
+  renderGroupedFacilities(currentFacilityData);
 }
 
 function openAppointmentModal(doctorId, facilityId, doctorName, docSpec, docDegree, facilityName, availableHours) {
