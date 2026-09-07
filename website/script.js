@@ -507,26 +507,24 @@ function showAuthState() {
   const currentUser = getCurrentUser();
   const authSection = document.getElementById('authSection');
 
-  if (authSection) authSection.classList.remove('hidden');
-
   if (currentUser) {
     const patientInput = document.getElementById('patientNameInput');
     const userName = document.getElementById('userName');
     const passportPatient = document.getElementById('passportPatientName');
     if (patientInput) patientInput.value = currentUser.name || '';
     if (userName) userName.textContent = currentUser.name || 'Patient';
-    if (passportPatient) passportPatient.textContent = currentUser.name || 'Priya Sharma';
+    if (passportPatient) passportPatient.textContent = currentUser.name || 'Patient';
     localStorage.setItem('anamaya-user-name', currentUser.name || 'Patient');
     
     // Display active logged in user message across auth messages
     const authMessage = document.getElementById('authMessage');
     const regAuthMessage = document.getElementById('regAuthMessage');
     const activeText = `✅ Logged in as: ${currentUser.name} (${currentUser.email || currentUser.phone || ''})`;
-    if (authMessage && !authMessage.textContent) {
+    if (authMessage) {
       authMessage.textContent = activeText;
       authMessage.style.color = '#16a34a';
     }
-    if (regAuthMessage && !regAuthMessage.textContent) {
+    if (regAuthMessage) {
       regAuthMessage.textContent = activeText;
       regAuthMessage.style.color = '#16a34a';
     }
@@ -558,6 +556,30 @@ function setButtonLoading(button, text, loading) {
   }
 }
 
+function resetRegisterForm() {
+  const regStep1 = document.getElementById('regStep1');
+  const regStep2 = document.getElementById('regStep2');
+  const regDot1 = document.getElementById('regDot1');
+  const regDot2 = document.getElementById('regDot2');
+
+  if (regStep1 && regStep2) {
+    regStep2.classList.add('hidden');
+    regStep1.classList.remove('hidden');
+  }
+  if (regDot1 && regDot2) {
+    regDot1.classList.add('active');
+    regDot1.classList.remove('completed');
+    regDot2.classList.remove('active', 'completed');
+  }
+  currentRegStep = 1;
+
+  // Clear text input fields
+  ['registerName', 'registerEmail', 'registerPhone', 'registerAddress', 'regEmergName', 'regEmergPhone', 'regEmergRelation', 'regAllergyText'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
 function handleRegister(event) {
   event.preventDefault();
   const submitBtn = document.getElementById('regSubmitBtn');
@@ -571,14 +593,7 @@ function handleRegister(event) {
 
   if (!name || (!email && !phone)) {
     showAuthMessage('Please fill in your name and at least an email or phone number.', true);
-    const regStep1 = document.getElementById('regStep1');
-    const regStep2 = document.getElementById('regStep2');
-    if (regStep1 && regStep2 && regStep1.classList.contains('hidden')) {
-      regStep2.classList.add('hidden');
-      regStep1.classList.remove('hidden');
-      document.getElementById('regDot2')?.classList.remove('active');
-      document.getElementById('regDot1')?.classList.add('active');
-    }
+    resetRegisterForm();
     return;
   }
 
@@ -612,8 +627,9 @@ function handleRegister(event) {
     if (loginPhone) loginPhone.value = existingUser.phone || '';
 
     setButtonLoading(submitBtn, 'Registering...', false);
-    showAuthMessage(`Welcome back ${existingUser.name}. Account updated & logged in!`, false);
+    resetRegisterForm();
     showAuthState();
+    navigateToWorkspace('dashboard');
     return;
   }
 
@@ -640,19 +656,14 @@ function handleRegister(event) {
   if (loginPhone) loginPhone.value = phone;
 
   // Reset registration step back to step 1
-  const regStep1 = document.getElementById('regStep1');
-  const regStep2 = document.getElementById('regStep2');
-  if (regStep1 && regStep2) {
-    regStep2.classList.add('hidden');
-    regStep1.classList.remove('hidden');
-    document.getElementById('regDot2')?.classList.remove('active');
-    document.getElementById('regDot1')?.classList.remove('completed');
-    document.getElementById('regDot1')?.classList.add('active');
-  }
+  resetRegisterForm();
 
   setButtonLoading(submitBtn, 'Registering...', false);
-  showAuthMessage(`Registration successful! Logged in as ${name}.`, false);
   showAuthState();
+
+  // Navigate directly into user workspace/profile page
+  navigateToWorkspace('dashboard');
+
   if (typeof speakAssistant === 'function') {
     speakAssistant(`Welcome ${name}. Registration complete. You can now use all Anamaya AI features.`);
   }
@@ -693,8 +704,11 @@ function handleLogin(event) {
 
   setCurrentUser(matchedUser);
   setButtonLoading(button, 'Logging in...', false);
-  showAuthMessage(`Logged in successfully as ${matchedUser.name}!`, false);
   showAuthState();
+  
+  // Navigate directly into user workspace/profile page
+  navigateToWorkspace('dashboard');
+
   if (typeof speakAssistant === 'function') {
     speakAssistant(`Welcome back ${matchedUser.name}. You are logged in.`);
   }
