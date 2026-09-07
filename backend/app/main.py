@@ -205,6 +205,37 @@ async def assess_symptoms(
         raise HTTPException(status_code=500, detail="Assessment failed")
 
 
+@app.post("/api/health/chat", tags=["AI Health Guidance"])
+async def health_chat(
+    payload: dict,
+    db: Session = Depends(get_db)
+):
+    """Grounded AI Care Assistant Chat Endpoint combining Kaggle, DDXPlus, and MedlinePlus NIH data"""
+    user_message = payload.get("user_message", "")
+    if not user_message and not payload.get("symptoms"):
+        raise HTTPException(status_code=400, detail="User message or symptoms required")
+
+    language = payload.get("language", "en")
+    chat_history = payload.get("chat_history", [])
+    profile_context = payload.get("profile_context", {})
+
+    try:
+        response_data = await ai_service.get_llm_chat_response(
+            db=db,
+            user_message=user_message,
+            chat_history=chat_history,
+            language=language,
+            profile_context=profile_context
+        )
+        return {
+            "success": True,
+            "data": response_data
+        }
+    except Exception as e:
+        logger.error(f"AI Care Assistant Chat error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Chat processing error: {str(e)}")
+
+
 @app.post("/api/health/analyze-image", tags=["AI Health Guidance"])
 async def analyze_disease_image(payload: ImageAnalysisRequest):
     """Analyze photo of a disease, rash, or skin reaction"""

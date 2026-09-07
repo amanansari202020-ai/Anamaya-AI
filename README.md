@@ -150,7 +150,8 @@ python -m http.server 8001
 - **5-Step Assessment Wizard**: Symptoms selection, severity chips (`🙂 Mild`, `😟 Moderate`, `😰 Severe`), duration, location, and health check summary.
 - **Cost Estimator**: Displays estimated consultation, diagnostics, and medicine expenses (`Total estimate: ₹1,050`).
 - **Embedded AI Chatbox (`.chatbot-box`)**:
-  - Text-based health Q&A with `Enter` key submit listener.
+  - Text-based health Q&A grounded in Kaggle, DDXPlus, and MedlinePlus NIH datasets (`/api/health/chat`).
+  - Session rate-limiting (15 messages/hour) and `"Thinking through your symptoms..."` progress state.
   - Photo attachment 📷 for visual skin rash/lesion analysis (`/api/health/analyze-image`).
   - Multilingual voice output 🔊 using `speakAssistant()`.
 
@@ -167,8 +168,10 @@ python -m http.server 8001
 | `POST` | `/auth/register` | Register new patient account |
 | `POST` | `/auth/login` | Authenticate user & get JWT token |
 | `GET` | `/api/emergency/nearby-facilities` | Fetch nearby emergency hospitals by lat, lon & radius |
+| `POST` | `/api/emergency/notify-contact` | Send emergency SOS location via SMS & WhatsApp |
+| `POST` | `/api/health/chat` | Grounded AI Care Assistant chat (Kaggle + DDXPlus + MedlinePlus NIH) |
 | `POST` | `/api/health/analyze-image` | AI visual analysis for symptom photos |
-| `POST` | `/api/health/guidance` | AI conversational health guidance |
+| `POST` | `/api/health/assess` | AI symptom assessment & risk triage |
 | `GET` | `/api/health-passport` | Retrieve digital health passport data |
 | `POST` | `/api/schemes/match` | Assessment of government health scheme eligibility |
 
@@ -176,7 +179,8 @@ python -m http.server 8001
 
 ## 📄 License & Attribution
 
-Developed for hackathons and community healthcare initiatives. OpenStreetMap data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright).
+- **Medical Data Grounding**: Symptom reference data combines the **Kaggle Disease Symptom Prediction** dataset, the **DDXPlus** differential diagnosis dataset, and official condition descriptions from **MedlinePlus** (U.S. National Library of Medicine / NIH).
+- **Mapping & Geospatial**: OpenStreetMap data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright).
 
 ---
 

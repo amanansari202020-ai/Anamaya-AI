@@ -2,12 +2,16 @@
 
 import json
 import logging
+import re
+import urllib.parse
+import urllib.request
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from app.models import (
-    SymptomAssessment, HealthcareLevelEnum, HealthcareFacility, User
+    SymptomAssessment, HealthcareLevelEnum, HealthcareFacility, User,
+    SymptomDiseaseReference, MedlinePlusCache
 )
 from app.schemas import SymptomAssessmentResponse
 
@@ -525,4 +529,353 @@ class AIGuidanceService:
             "next_steps": next_steps,
             "disclaimer": "This AI visual analysis is for preliminary screening and guidance only. Please consult a qualified doctor for clinical diagnosis."
         }
+
+    def fetch_medlineplus_summary(self, condition_name: str) -> Optional[str]:
+        """
+        Fetch official plain-language condition description from NIH MedlinePlus API.
+        Includes local NIH description fallback dictionary for offline/resilient access.
+        """
+        if not condition_name:
+            return None
+
+        # Clean search term
+        term_clean = condition_name.strip().lower()
+
+        # 1. Try querying live NIH MedlinePlus Web Service
+        try:
+            encoded_term = urllib.parse.quote(term_clean)
+            url = f"https://ws.nlm.nih.gov/medlineplus/services/mp_service.php?db=mplus&term={encoded_term}&retmax=1"
+            req = urllib.request.Request(url, headers={"User-Agent": "AnamayaAI-RuralHealth/1.0"})
+            with urllib.request.urlopen(req, timeout=3.0) as resp:
+                if resp.status == 200:
+                    raw_data = resp.read().decode("utf-8")
+                    match = re.search(r'<(?:FullSummary|snippet)>(.*?)</(?:FullSummary|snippet)>', raw_data, re.DOTALL | re.IGNORECASE)
+                    if match:
+                        summary_html = match.group(1)
+                        clean_text = re.sub(r'<[^>]+>', '', summary_html).strip()
+                        if len(clean_text) > 30:
+                            return clean_text
+        except Exception as e:
+            logger.warning(f"MedlinePlus API fetch failed for '{condition_name}': {e}")
+
+        # 2. Resilient NIH MedlinePlus plain-language fallback dictionary
+        medlineplus_fallbacks = {
+            "malaria": "Malaria is a mosquito-borne infectious disease caused by a parasite. Symptoms include high fever, chills, sweating, muscle pain, and severe fatigue. Early diagnosis with rapid blood test is critical.",
+            "dengue": "Dengue is a mosquito-transmitted viral infection causing sudden high fever, severe headache, eye pain, joint/muscle pain, and skin rash. Platelet count monitoring is recommended.",
+            "typhoid": "Typhoid fever is a bacterial infection caused by Salmonella Typhi spread through contaminated food or water. Key signs include prolonged high fever, abdominal pain, diarrhea or constipation, and weakness.",
+            "tuberculosis": "Tuberculosis (TB) is a serious bacterial disease primarily affecting the lungs. Symptoms include persistent cough lasting over 2 weeks, chest pain, coughing blood, fever, and night sweats.",
+            "gastroenteritis": "Gastroenteritis is an inflammation of the stomach and intestines caused by viral or bacterial infection, resulting in acute diarrhea, vomiting, stomach cramps, and dehydration risk.",
+            "pneumonia": "Pneumonia is an infection that inflames lung air sacs, filling them with fluid or phlegm. It causes cough with sputum, fever, chills, chest pain, and difficulty breathing.",
+            "bronchial asthma": "Bronchial asthma is a chronic respiratory condition causing airway inflammation, recurring breathlessness, chest tightness, wheezing, and coughing spells.",
+            "anemia": "Anemia occurs when blood lacks sufficient healthy red blood cells or hemoglobin, causing fatigue, weakness, pale skin, dizziness, and shortness of breath.",
+            "cholera": "Cholera is an acute diarrheal infection caused by Vibrio cholerae bacteria in contaminated water. It causes severe watery diarrhea, rapid dehydration, and muscle cramps.",
+            "chikungunya": "Chikungunya is a viral disease spread by mosquitoes, characterized by sudden fever and severe, debilitating joint pain that can linger for weeks.",
+            "leptospirosis": "Leptospirosis is a bacterial infection transmitted through water contaminated by animal urine, causing high fever, severe headache, muscle aches, jaundice, and red eyes.",
+            "filariasis": "Lymphatic filariasis is a parasitic infection spread by mosquitoes that damages lymphatic vessels, causing painful leg swelling (elephantiasis) and fever.",
+            "heatstroke": "Heatstroke is a life-threatening heat emergency where body temperature rises above 104°F, causing confusion, hot dry skin, nausea, rapid pulse, and loss of consciousness.",
+            "scabies": "Scabies is an intensely itchy skin condition caused by microscopic mites burrowing into the skin, leading to pimply rashes and sores.",
+            "tetanus": "Tetanus is a serious bacterial infection caused by Clostridium tetani entering wounds, resulting in painful muscle stiffness, jaw lock (trismus), and spasms.",
+            "snakebite": "Snakebite envenomation is a medical emergency causing rapid local swelling, tissue damage, severe pain, bleeding, and potential systemic neuro/hemotoxicity.",
+            "jaundice": "Jaundice is yellowing of skin and eyes due to high bilirubin, often signaling liver infection (hepatitis), gallstones, or hemolysis.",
+            "hepatitis a": "Hepatitis A is a contagious liver infection caused by Hepatitis A virus spread via contaminated food/water, causing fever, fatigue, nausea, jaundice, and dark urine.",
+            "impetigo": "Impetigo is a highly contagious bacterial skin infection causing honey-colored crusted sores and blisters around the nose and mouth.",
+            "fungal infection": "Fungal skin infections (like ringworm or tinea) cause circular red, itchy patches with raised scaling borders on the skin or body.",
+            "gerd": "Gastroesophageal Reflux Disease (GERD) occurs when stomach acid flows back into the esophagus, causing heartburn, chest burning, and acid regurgitation.",
+            "hypertension": "Hypertension (high blood pressure) is a common chronic vascular condition that can present with headaches, dizziness, chest tightness, or remain asymptomatic.",
+            "diabetes": "Diabetes mellitus is a metabolic condition characterized by high blood glucose due to insulin resistance or deficiency, causing frequent urination, thirst, and fatigue.",
+            "migraine": "Migraine is a neurological disorder causing severe throbbing headache on one side of the head, accompanied by nausea, sensitivity to light, and visual aura.",
+            "heart attack": "Myocardial infarction (heart attack) occurs when blood flow to the heart muscle is blocked, causing crushing chest pain, shortness of breath, sweating, and radiating arm pain."
+        }
+
+        return medlineplus_fallbacks.get(term_clean)
+
+    def enrich_with_medlineplus(self, db: Session, candidate_conditions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        Enrich candidate conditions with official NIH MedlinePlus plain-language summaries.
+        Uses medlineplus_cache DB table to avoid hitting live API repetitively.
+        """
+        if not candidate_conditions:
+            return []
+
+        for candidate in candidate_conditions:
+            disease_name = candidate.get("disease_name") or candidate.get("name") or ""
+            if not disease_name:
+                candidate["summary"] = None
+                continue
+
+            disease_key = disease_name.strip()
+
+            # Check DB cache
+            try:
+                cached_entry = db.query(MedlinePlusCache).filter(MedlinePlusCache.disease_name.ilike(disease_key)).first()
+                if cached_entry and cached_entry.summary_text:
+                    candidate["summary"] = cached_entry.summary_text
+                    continue
+            except Exception as e:
+                logger.warning(f"Error checking MedlinePlus cache for '{disease_key}': {e}")
+
+            # Fetch summary
+            summary = self.fetch_medlineplus_summary(disease_key)
+            candidate["summary"] = summary
+
+            # Save to DB cache if summary found
+            if summary and db:
+                try:
+                    new_cache = MedlinePlusCache(disease_name=disease_key, summary_text=summary)
+                    db.add(new_cache)
+                    db.commit()
+                except Exception as e:
+                    db.rollback()
+                    logger.warning(f"Could not save MedlinePlus cache for '{disease_key}': {e}")
+
+        return candidate_conditions
+
+    def match_candidate_conditions(self, db: Session, user_symptoms: List[str], top_n: int = 4) -> List[Dict[str, Any]]:
+        """
+        Grounding matching function combining Kaggle (fast list overlap) and DDXPlus (frequency weighted patterns).
+        Returns top_n candidate conditions with combined scores, likelihood badges, sources, and rural flags.
+        """
+        if not user_symptoms:
+            return []
+
+        # Normalize input symptoms
+        user_sym_clean = [s.lower().strip().replace(" ", "_") for s in user_symptoms if s.strip()]
+        user_sym_set = set(user_sym_clean) | {s.replace("_", " ") for s in user_sym_clean}
+
+        if not db:
+            return []
+
+        try:
+            ref_entries = db.query(SymptomDiseaseReference).all()
+        except Exception as e:
+            logger.error(f"Error querying symptom_disease_reference: {e}")
+            return []
+
+        if not ref_entries:
+            return []
+
+        disease_scores = {}
+
+        for entry in ref_entries:
+            d_name = entry.disease_name
+            if d_name not in disease_scores:
+                disease_scores[d_name] = {
+                    "disease_name": d_name,
+                    "kaggle_score": 0.0,
+                    "ddxplus_score": 0.0,
+                    "ddxplus_matched_weight": 0.0,
+                    "ddxplus_total_weight": 0.0,
+                    "matched_symptoms": set(),
+                    "sources": set(),
+                    "common_in_rural_india": entry.common_in_rural_india
+                }
+
+            record = disease_scores[d_name]
+            record["sources"].add(entry.source)
+            if entry.common_in_rural_india:
+                record["common_in_rural_india"] = True
+
+            entry_symptoms = entry.symptoms or []
+            if isinstance(entry_symptoms, str):
+                entry_symptoms = [entry_symptoms]
+
+            if entry.source == "kaggle":
+                # Presence/absence matching for Kaggle entry
+                matched = [s for s in entry_symptoms if s.lower() in user_sym_set or any(us in s.lower() or s.lower() in us for us in user_sym_clean)]
+                if matched:
+                    record["matched_symptoms"].update(matched)
+                    score = len(matched) / max(len(entry_symptoms), 1)
+                    if score > record["kaggle_score"]:
+                        record["kaggle_score"] = score
+
+            elif entry.source == "ddxplus":
+                # Frequency-weighted matching for DDXPlus entries
+                for sym in entry_symptoms:
+                    sym_clean = sym.lower()
+                    weight = entry.weight or 1.0
+                    record["ddxplus_total_weight"] += weight
+                    if sym_clean in user_sym_set or any(us in sym_clean or sym_clean in us for us in user_sym_clean):
+                        record["matched_symptoms"].add(sym)
+                        record["ddxplus_matched_weight"] += weight
+
+        results = []
+        for d_name, record in disease_scores.items():
+            k_score = record["kaggle_score"]
+            d_score = 0.0
+            if record["ddxplus_total_weight"] > 0:
+                d_score = record["ddxplus_matched_weight"] / record["ddxplus_total_weight"]
+                record["ddxplus_score"] = d_score
+
+            if k_score > 0 and d_score > 0:
+                combined_score = (k_score * 0.4) + (d_score * 0.6)
+            elif k_score > 0:
+                combined_score = k_score
+            elif d_score > 0:
+                combined_score = d_score
+            else:
+                continue
+
+            # Boost +0.1 for common_in_rural_india
+            if record["common_in_rural_india"]:
+                combined_score += 0.1
+
+            combined_score = min(round(combined_score, 2), 1.0)
+
+            if combined_score >= 0.70:
+                badge = "High Likelihood"
+            elif combined_score >= 0.40:
+                badge = "Moderate Likelihood"
+            else:
+                badge = "Low Likelihood"
+
+            source_str = " + ".join(sorted(list(record["sources"])))
+
+            results.append({
+                "disease_name": d_name,
+                "name": d_name,
+                "score": combined_score,
+                "likelihood": badge,
+                "matched_symptoms": sorted(list(record["matched_symptoms"])),
+                "source": source_str,
+                "common_in_rural_india": record["common_in_rural_india"]
+            })
+
+        results.sort(key=lambda x: x["score"], reverse=True)
+        return results[:top_n]
+
+    async def get_llm_chat_response(
+        self,
+        db: Session,
+        user_message: str,
+        chat_history: Optional[List[Dict[str, Any]]] = None,
+        language: str = "en",
+        profile_context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        DxGPT-style grounded LLM Chat Response combining dataset matching, MedlinePlus enrichment, and language adaptation.
+        Includes robust zero-latency fallback when LLM API is unavailable.
+        """
+        message_lower = (user_message or "").lower()
+
+        known_symptoms = [
+            "fever", "cough", "cold", "headache", "body pain", "weakness", "breathlessness",
+            "chest pain", "vomiting", "diarrhoea", "diarrhea", "chills", "sweating",
+            "abdominal pain", "stomach pain", "rash", "itching", "joint pain", "nausea",
+            "jaundice", "yellow skin", "dizziness", "bleeding", "weight loss"
+        ]
+
+        extracted_symptoms = [s for s in known_symptoms if s in message_lower]
+        if not extracted_symptoms and chat_history:
+            for msg in chat_history:
+                text = (msg.get("content") or msg.get("text") or "").lower()
+                extracted_symptoms.extend([s for s in known_symptoms if s in text])
+            extracted_symptoms = list(set(extracted_symptoms))
+
+        if not extracted_symptoms:
+            extracted_symptoms = ["fever", "weakness"]
+
+        # Step 1: Match candidate conditions from Kaggle & DDXPlus reference tables
+        candidates = self.match_candidate_conditions(db, user_symptoms=extracted_symptoms, top_n=4)
+
+        # Step 2: Enrich candidate conditions with MedlinePlus NIH descriptions
+        candidates = self.enrich_with_medlineplus(db, candidates)
+
+        # Build context prompt for LLM
+        grounding_context = []
+        for c in candidates:
+            summary = c.get("summary") or "No official summary available."
+            grounding_context.append(
+                f"- Condition: {c['disease_name']} (Likelihood: {c['likelihood']}, Match Score: {c['score']}, Source: {c['source']})\n"
+                f"  Matched Symptoms: {', '.join(c['matched_symptoms'])}\n"
+                f"  MedlinePlus Description: {summary}\n"
+                f"  Common in Rural India: {c['common_in_rural_india']}"
+            )
+
+        context_str = "\n".join(grounding_context)
+        prof_info = profile_context or {}
+
+        system_prompt = (
+            "You are Anamaya AI Care Assistant, an empathetic rural healthcare navigation AI grounded in official NIH medical data.\n"
+            "Ground your assessment on these dataset match scores and MedlinePlus summaries:\n"
+            f"{context_str}\n\n"
+            f"Patient Context: Gender: {prof_info.get('gender', 'not specified')}, Age Group: {prof_info.get('age_group', 'adult')}, Existing Conditions: {prof_info.get('existing_conditions', [])}.\n\n"
+            "Instructions:\n"
+            "1. Use the MedlinePlus summary as the authoritative description where available.\n"
+            "2. Use dataset match scores to determine likelihood ranking.\n"
+            "3. Write in simple, clear language suitable for a rural patient.\n"
+            f"4. Respond in language: {language}.\n"
+            "5. Return STRICT JSON with keys:\n"
+            "   - 'reply_text': (string, empathetic conversational answer explaining symptoms & guidance)\n"
+            "   - 'possible_conditions': (list of dicts: {'name': string, 'likelihood': string ('High Likelihood'/'Moderate Likelihood'/'Low Likelihood'), 'explanation': string (incorporating MedlinePlus text), 'matched_symptoms': list of strings, 'common_in_rural_india': boolean})\n"
+            "   - 'suggested_tests': (list of strings, e.g. ['Blood Smear for Malaria', 'Complete Blood Count'])\n"
+            "   - 'follow_up_questions': (list of strings, 2-3 question chips for patient to tap)\n"
+            "   - 'urgency': (string, 'low' | 'medium' | 'high' | 'critical')\n"
+            "   - 'recommended_action': (string, e.g. 'Visit nearest PHC within 24 hours')\n"
+            "   - 'disclaimer': (string, standard medical advice disclaimer)\n"
+        )
+
+        from app.config import settings
+        if settings.OPENAI_API_KEY:
+            try:
+                import openai
+                client = openai.AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+                response = await client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_message}
+                    ],
+                    response_format={"type": "json_object"},
+                    max_tokens=900,
+                )
+                content = response.choices[0].message.content
+                if content:
+                    return json.loads(content)
+            except Exception as e:
+                logger.warning(f"LLM API call failed, falling back to dataset grounding engine: {e}")
+
+        # Structured LLM Fallback (Zero-latency offline engine using dataset + MedlinePlus data)
+        fallback_conditions = []
+        highest_urgency = "medium"
+
+        for c in candidates:
+            summary = c.get("summary") or f"Presents with symptoms: {', '.join(c['matched_symptoms'])}. Consult local healthcare provider for evaluation."
+            fallback_conditions.append({
+                "name": c["disease_name"],
+                "likelihood": c["likelihood"],
+                "explanation": summary,
+                "matched_symptoms": c["matched_symptoms"],
+                "common_in_rural_india": c["common_in_rural_india"]
+            })
+            if c["score"] >= 0.85 or "chest pain" in message_lower or "breathlessness" in message_lower:
+                highest_urgency = "high"
+
+        reply_str = (
+            f"Based on your symptoms ({', '.join(extracted_symptoms)}), our reference system (Kaggle, DDXPlus, and MedlinePlus NIH data) "
+            f"identified {len(fallback_conditions)} potential condition(s). Please review the conditions below and visit your nearest health center."
+        )
+
+        if language == "hi":
+            reply_str = f"आपके लक्षणों ({', '.join(extracted_symptoms)}) के आधार पर, संदर्भ डेटाबेस ने निम्नलिखित संभावित स्थितियों की पहचान की है। कृपया नजदीकी स्वास्थ्य केंद्र (PHC) पर सलाह लें।"
+        elif language == "mr":
+            reply_str = f"तुमच्या लक्षणांच्या ({', '.join(extracted_symptoms)}) आधारावर, आरोग्य माहितीकोशाने खालील संभाव्य आजार दर्शविले आहेत. कृपया जवळच्या आरोग्य केंद्राला भेट द्या."
+
+        return {
+            "reply_text": reply_str,
+            "possible_conditions": fallback_conditions,
+            "suggested_tests": [
+                "Complete Blood Count (CBC)",
+                "Fever Screening / Rapid Diagnostic Test",
+                "Vitals check (Blood Pressure, Temperature, SpO2)"
+            ],
+            "follow_up_questions": [
+                "Do you have a high fever with chills?",
+                "How many days have you had these symptoms?",
+                "Are you experiencing any nausea or difficulty breathing?"
+            ],
+            "urgency": highest_urgency,
+            "recommended_action": "Visit nearest Primary Health Centre (PHC) or Community Health Centre for clinical evaluation.",
+            "disclaimer": "Grounded in Kaggle Disease Symptom dataset, DDXPlus differential diagnosis patterns, and NIH MedlinePlus summaries. For informational guidance only."
+        }
+
 

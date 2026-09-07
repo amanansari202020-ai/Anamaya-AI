@@ -79,8 +79,9 @@ button { font: inherit; cursor: pointer; }
   background: var(--color-navy);
   color: #FFFFFF;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  position: relative;
-  z-index: 10;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 .brand-wrap { display: flex; align-items: center; gap: 12px; }
 .brand-mark {
@@ -90,8 +91,12 @@ button { font: inherit; cursor: pointer; }
 .brand-name { font-size: 1.25rem; font-weight: 800; color: #FFFFFF; }
 .brand-subtitle { font-size: 0.75rem; color: #CBD5E1; }
 .nav { display: flex; gap: 28px; color: #E2E8F0; font-weight: 600; font-size: 0.95rem; }
-.nav a { transition: color 0.2s ease; }
-.nav a:hover { color: #FFFFFF; text-decoration: underline; }
+.nav a { transition: color 0.2s ease, border-bottom 0.2s ease; padding-bottom: 4px; border-bottom: 2px solid transparent; }
+.nav a:hover, .nav a.active { color: #FFFFFF; border-bottom-color: var(--color-orange); }
+
+#features, #how-it-works, #journey, #impact {
+  scroll-margin-top: 85px;
+}
 .header-actions { display: flex; align-items: center; gap: 12px; }
 .lang-picker {
   position: relative;

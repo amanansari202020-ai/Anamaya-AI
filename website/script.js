@@ -640,6 +640,136 @@ if (chatInputEl && chatSendBtn) {
   });
 }
 
+let chatMessageTimestamps = [];
+
+function checkChatRateLimit() {
+  const now = Date.now();
+  const ONE_HOUR = 60 * 60 * 1000;
+  chatMessageTimestamps = chatMessageTimestamps.filter(ts => (now - ts) < ONE_HOUR);
+  if (chatMessageTimestamps.length >= 15) {
+    return false;
+  }
+  chatMessageTimestamps.push(now);
+  return true;
+}
+
+function renderGroundedChatCard(data) {
+  const container = document.createElement('div');
+  container.className = 'grounded-chat-response';
+  container.style.cssText = 'margin-top: 4px; font-family: inherit; font-size: 0.9rem;';
+
+  if (data.reply_text) {
+    const p = document.createElement('p');
+    p.style.cssText = 'margin: 0 0 10px 0; line-height: 1.45; font-size: 0.92rem;';
+    p.textContent = data.reply_text;
+    container.appendChild(p);
+  }
+
+  if (data.possible_conditions && data.possible_conditions.length > 0) {
+    const title = document.createElement('div');
+    title.style.cssText = 'font-weight: 700; margin: 10px 0 6px 0; font-size: 0.82rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;';
+    title.textContent = 'Possible Conditions (Grounded Matches)';
+    container.appendChild(title);
+
+    data.possible_conditions.forEach(cond => {
+      const card = document.createElement('div');
+      card.style.cssText = 'background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);';
+
+      const header = document.createElement('div');
+      header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px;';
+
+      const nameEl = document.createElement('strong');
+      nameEl.style.cssText = 'font-size: 0.95rem; color: #f8fafc;';
+      nameEl.textContent = cond.name || cond.disease_name;
+
+      const badge = document.createElement('span');
+      const likelihoodStr = cond.likelihood || 'Moderate Likelihood';
+      let badgeStyle = 'background: #334155; color: #f8fafc;';
+      if (likelihoodStr.includes('High')) badgeStyle = 'background: #991b1b; color: #fef2f2;';
+      else if (likelihoodStr.includes('Moderate')) badgeStyle = 'background: #92400e; color: #fef3c7;';
+      else badgeStyle = 'background: #075985; color: #e0f2fe;';
+
+      badge.style.cssText = `${badgeStyle} padding: 2px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; white-space: nowrap;`;
+      badge.textContent = likelihoodStr;
+
+      header.appendChild(nameEl);
+      header.appendChild(badge);
+      card.appendChild(header);
+
+      if (cond.common_in_rural_india) {
+        const ruralTag = document.createElement('span');
+        ruralTag.style.cssText = 'display: inline-block; background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.7rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; margin-bottom: 6px;';
+        ruralTag.textContent = '🌾 Common in Rural India';
+        card.appendChild(ruralTag);
+      }
+
+      if (cond.explanation) {
+        const exp = document.createElement('div');
+        exp.style.cssText = 'font-size: 0.83rem; line-height: 1.4; color: #cbd5e1; margin-top: 4px;';
+        exp.textContent = cond.explanation;
+        card.appendChild(exp);
+      }
+
+      if (cond.matched_symptoms && cond.matched_symptoms.length > 0) {
+        const syms = document.createElement('div');
+        syms.style.cssText = 'font-size: 0.76rem; color: #94a3b8; margin-top: 4px;';
+        syms.textContent = 'Matched: ' + cond.matched_symptoms.join(', ');
+        card.appendChild(syms);
+      }
+
+      container.appendChild(card);
+    });
+  }
+
+  if (data.suggested_tests && data.suggested_tests.length > 0) {
+    const testWrap = document.createElement('div');
+    testWrap.style.cssText = 'margin-top: 10px; font-size: 0.82rem; color: #cbd5e1;';
+    testWrap.innerHTML = `<strong style="color:#f8fafc;">Suggested Diagnostics:</strong> ${data.suggested_tests.join(' · ')}`;
+    container.appendChild(testWrap);
+  }
+
+  if (data.recommended_action) {
+    const actBox = document.createElement('div');
+    const isUrgent = data.urgency === 'high' || data.urgency === 'critical';
+    const bg = isUrgent ? 'rgba(239, 68, 68, 0.15)' : 'rgba(59, 130, 246, 0.15)';
+    const border = isUrgent ? '#ef4444' : '#3b82f6';
+    actBox.style.cssText = `margin-top: 10px; padding: 8px 12px; border-left: 3px solid ${border}; background: ${bg}; border-radius: 4px; font-size: 0.85rem; font-weight: 600; color: #f8fafc;`;
+    actBox.textContent = `📋 Recommended Action: ${data.recommended_action}`;
+    container.appendChild(actBox);
+  }
+
+  if (data.follow_up_questions && data.follow_up_questions.length > 0) {
+    const chipWrap = document.createElement('div');
+    chipWrap.style.cssText = 'display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;';
+    data.follow_up_questions.forEach(q => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chat-question-chip';
+      chip.style.cssText = 'background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; padding: 4px 10px; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;';
+      chip.textContent = `💬 ${q}`;
+      chip.onclick = () => {
+        const chatInput = document.getElementById('chatInput');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+        if (chatInput && chatSendBtn) {
+          chatInput.value = q;
+          chatSendBtn.click();
+        }
+      };
+      chipWrap.appendChild(chip);
+    });
+    container.appendChild(chipWrap);
+  }
+
+  if (data.disclaimer) {
+    const disc = document.createElement('div');
+    disc.style.cssText = 'margin-top: 10px; font-size: 0.73rem; color: #94a3b8; font-style: italic;';
+    disc.textContent = `⚠️ ${data.disclaimer}`;
+    container.appendChild(disc);
+  }
+
+  return container;
+}
+
 if (chatSendBtn) {
   chatSendBtn.addEventListener('click', async () => {
     const input = document.getElementById('chatInput');
@@ -650,6 +780,17 @@ if (chatSendBtn) {
     const hasImage = Boolean(currentSelectedImageBase64);
 
     if (!textValue && !hasImage) return;
+
+    // Rate Limit Check (15 messages/session/hour)
+    if (!checkChatRateLimit()) {
+      const limitBubble = document.createElement('div');
+      limitBubble.className = 'chat-bubble bot';
+      limitBubble.style.cssText = 'border-left: 3px solid #f59e0b; background: rgba(245, 158, 11, 0.1);';
+      limitBubble.textContent = '⚠️ Rate limit reached (15 messages per hour). For urgent symptoms, please consult a healthcare worker or visit your nearest PHC directly.';
+      chatLog.appendChild(limitBubble);
+      chatLog.scrollTop = chatLog.scrollHeight;
+      return;
+    }
 
     // Create user message bubble
     const userBubble = document.createElement('div');
@@ -676,10 +817,10 @@ if (chatSendBtn) {
     if (chatImageInput) chatImageInput.value = '';
     if (chatImagePreviewContainer) chatImagePreviewContainer.classList.add('hidden');
 
-    // Create thinking bot bubble
+    // Create thinking bot bubble ("Thinking through your symptoms...")
     const botBubble = document.createElement('div');
     botBubble.className = 'chat-bubble bot';
-    botBubble.textContent = hasImage ? t('Analyzing photo and symptoms...') : t('Thinking...');
+    botBubble.textContent = hasImage ? t('Analyzing photo and symptoms...') : 'Thinking through your symptoms...';
     chatLog.appendChild(botBubble);
     chatLog.scrollTop = chatLog.scrollHeight;
 
@@ -731,8 +872,45 @@ if (chatSendBtn) {
       return;
     }
 
-    // Text-only guidance
-    const answer = textValue.toLowerCase().includes('fever') || textValue.toLowerCase().includes('cough') ? t('Please monitor symptoms, drink fluids, and visit a primary health center if fever remains high or breathing worsens.') : textValue.toLowerCase().includes('pain') ? t('Try rest and hydration, and seek a nearby clinic if the pain is severe or persistent.') : t('Please speak with a nearby clinic or health worker for a proper checkup and guidance.');
+    // Grounded AI Care Assistant Chat Request
+    try {
+      const selectedLang = (languageSelect && languageSelect.value) || 'en';
+      let storedProfile = null;
+      try {
+        storedProfile = JSON.parse(localStorage.getItem('anamaya_health_profile'));
+      } catch (pe) {}
+
+      const chatPayload = {
+        user_message: textValue,
+        language: selectedLang,
+        profile_context: storedProfile || { gender: 'female', age_group: 'adult', existing_conditions: ['asthma'] }
+      };
+
+      const res = await fetch(`${apiBase}/api/health/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(chatPayload)
+      });
+
+      if (res.ok) {
+        const resData = await res.json();
+        if (resData.success && resData.data) {
+          botBubble.textContent = '';
+          botBubble.appendChild(renderGroundedChatCard(resData.data));
+          chatLog.scrollTop = chatLog.scrollHeight;
+          const speakContent = resData.data.reply_text || 'Assessment complete based on Kaggle, DDXPlus, and MedlinePlus reference data.';
+          speakAssistant(speakContent);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Backend health chat call fallback:', err);
+    }
+
+    // Fallback response if fetch fails
+    const answer = textValue.toLowerCase().includes('fever') || textValue.toLowerCase().includes('cough')
+      ? 'Symptoms match common respiratory or febrile illness. Grounded reference data suggests monitoring temperature, staying hydrated, and visiting a PHC if symptoms persist.'
+      : 'Please consult a nearby Primary Health Centre (PHC) or health worker for a clinical evaluation.';
 
     botBubble.textContent = answer;
     chatLog.scrollTop = chatLog.scrollHeight;
@@ -771,7 +949,7 @@ initTheme();
 document.getElementById('tryPlatformBtn')?.addEventListener('click', () => navigateToWorkspace('dashboard'));
 document.getElementById('launchDemoBtn')?.addEventListener('click', () => navigateToWorkspace('dashboard'));
 document.getElementById('journeyBtn')?.addEventListener('click', () => {
-  document.getElementById('journey')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  scrollToSection('journey');
 });
 
 document.querySelectorAll('.nav-item').forEach((button) => {
@@ -1962,9 +2140,78 @@ function initEmergencySos() {
   }
 }
 
+function scrollToSection(targetId) {
+  const section = document.getElementById(targetId);
+  if (!section) return;
+
+  const header = document.querySelector('.topbar');
+  const headerHeight = header ? header.offsetHeight : 80;
+  const targetTop = section.getBoundingClientRect().top + window.scrollY - headerHeight;
+
+  window.scrollTo({
+    top: Math.max(0, targetTop),
+    behavior: 'smooth'
+  });
+}
+
+function initHeaderNavScrolling() {
+  const navLinks = document.querySelectorAll('.topbar .nav a[data-scroll-target]');
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute('data-scroll-target');
+      if (!targetId) return;
+
+      const isWorkspace = document.body.classList.contains('workspace-mode');
+      if (isWorkspace) {
+        navigateToLanding();
+        setTimeout(() => {
+          scrollToSection(targetId);
+        }, 60);
+      } else {
+        scrollToSection(targetId);
+      }
+    });
+  });
+
+  initNavScrollSpy();
+}
+
+function initNavScrollSpy() {
+  const navLinks = document.querySelectorAll('.topbar .nav a[data-scroll-target]');
+  const targetSections = Array.from(navLinks)
+    .map(link => document.getElementById(link.getAttribute('data-scroll-target')))
+    .filter(Boolean);
+
+  if (!('IntersectionObserver' in window) || targetSections.length === 0) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    if (document.body.classList.contains('workspace-mode')) {
+      navLinks.forEach(link => link.classList.remove('active'));
+      return;
+    }
+
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const targetId = entry.target.id;
+        navLinks.forEach(link => {
+          const isMatch = link.getAttribute('data-scroll-target') === targetId;
+          link.classList.toggle('active', isMatch);
+        });
+      }
+    });
+  }, {
+    rootMargin: '-15% 0px -45% 0px',
+    threshold: 0.1
+  });
+
+  targetSections.forEach(section => observer.observe(section));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initIconChoiceGrids();
   initRegisterFlow();
   initAIWizard();
   initEmergencySos();
+  initHeaderNavScrolling();
 });

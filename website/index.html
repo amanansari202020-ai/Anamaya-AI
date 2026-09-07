@@ -19,10 +19,10 @@
         </div>
       </div>
       <nav class="nav">
-        <a href="#features" data-i18n="i18n_features_3">Features</a>
-        <a href="#how-it-works" data-i18n="i18n_howitworks_eyebrow">How it works</a>
-        <a href="#journey" data-i18n="i18n_journey_4">Journey</a>
-        <a href="#impact" data-i18n="i18n_impact_5">Impact</a>
+        <a href="#features" data-i18n="i18n_features_3" data-scroll-target="features">Features</a>
+        <a href="#how-it-works" data-i18n="i18n_howitworks_eyebrow" data-scroll-target="how-it-works">How it works</a>
+        <a href="#journey" data-i18n="i18n_journey_4" data-scroll-target="journey">Journey</a>
+        <a href="#impact" data-i18n="i18n_impact_5" data-scroll-target="impact">Impact</a>
       </nav>
       <div class="header-actions">
         <label class="lang-picker" aria-label="Select language">
@@ -601,12 +601,16 @@
               <!-- AI Assessment Chatbot Box -->
               <div class="chatbot-box" style="margin-top: 1.75rem;">
                 <div class="chatbot-header">
-                  <h4 data-i18n="i18n_aicareassistant_139">AI care assistant</h4>
+                  <div>
+                    <h4 data-i18n="i18n_aicareassistant_139" style="margin:0;">AI care assistant</h4>
+                    <span style="font-size:0.75rem; color:var(--muted); display:block; margin-top:2px;">🔬 Grounded in Kaggle, DDXPlus & MedlinePlus (NIH)</span>
+                  </div>
                   <span class="vision-badge" data-i18n="i18n_photoanalysisen_140">📷 Photo Analysis Enabled</span>
                 </div>
                 <div id="chatLog" class="chat-log">
-                  <div class="chat-bubble bot" data-i18n="i18n_hellotellmeyour_141">
-                    Hello! Tell me your health questions or symptoms, or upload a photo of a skin rash or reaction for instant AI visual analysis and guidance.
+                  <div class="chat-bubble bot">
+                    Hello! Tell me your health questions or symptoms (e.g. fever, cough, stomach pain), or upload a photo for visual screening.<br>
+                    <small style="display:block; margin-top:6px; opacity:0.85; font-size:0.78rem;">ℹ️ Symptom reference data combines the Kaggle Disease Symptom Prediction dataset, the DDXPlus differential diagnosis dataset, and condition descriptions from MedlinePlus (U.S. National Library of Medicine).</small>
                   </div>
                 </div>
                 <div id="chatImagePreviewContainer" class="image-preview-container hidden">
@@ -621,6 +625,9 @@
                   <button id="uploadPhotoBtn" type="button" class="icon-button" title="Attach photo of skin rash or reaction">📷</button>
                   <input id="chatInput" type="text" placeholder="Ask AI about your health or describe symptoms..." data-i18n-placeholder="i18n_ph_describesymptom_143">
                   <button id="chatSendBtn" class="primary" type="button" data-i18n="i18n_send_144">Send</button>
+                </div>
+                <div class="chat-attribution-footer" style="padding: 6px 12px; background: rgba(0,0,0,0.03); border-top: 1px solid var(--border); font-size: 0.73rem; color: var(--muted); text-align: center;">
+                  🛡️ Grounded Data: Kaggle Disease Symptoms + DDXPlus Differential Weights + NIH MedlinePlus
                 </div>
               </div>
             </div>

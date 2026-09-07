@@ -1,0 +1,133 @@
+disease_name,symptom,frequency_weight
+Malaria,fever,0.95
+Malaria,chills,0.90
+Malaria,sweating,0.85
+Malaria,headache,0.80
+Malaria,nausea,0.65
+Malaria,vomiting,0.60
+Malaria,muscle_pain,0.70
+Malaria,fatigue,0.75
+Dengue,high_fever,0.95
+Dengue,joint_pain,0.90
+Dengue,severe_headache,0.88
+Dengue,pain_behind_eyes,0.85
+Dengue,skin_rash,0.70
+Dengue,nausea,0.65
+Dengue,vomiting,0.60
+Dengue,bleeding_gums,0.30
+Typhoid,sustained_fever,0.95
+Typhoid,abdominal_pain,0.85
+Typhoid,headache,0.80
+Typhoid,diarrhoea,0.70
+Typhoid,constipation,0.50
+Typhoid,loss_of_appetite,0.85
+Typhoid,fatigue,0.90
+Tuberculosis,chronic_cough,0.95
+Tuberculosis,fever,0.80
+Tuberculosis,night_sweats,0.85
+Tuberculosis,weight_loss,0.90
+Tuberculosis,chest_pain,0.70
+Tuberculosis,coughing_blood,0.50
+Tuberculosis,fatigue,0.85
+Pneumonia,cough,0.92
+Pneumonia,fever,0.90
+Pneumonia,breathlessness,0.85
+Pneumonia,chest_pain,0.80
+Pneumonia,chills,0.75
+Pneumonia,fatigue,0.70
+Pneumonia,phlegm,0.85
+Gastroenteritis,diarrhoea,0.95
+Gastroenteritis,vomiting,0.85
+Gastroenteritis,abdominal_pain,0.90
+Gastroenteritis,fever,0.60
+Gastroenteritis,nausea,0.80
+Gastroenteritis,dehydration,0.75
+Bronchial Asthma,breathlessness,0.95
+Bronchial Asthma,wheezing,0.90
+Bronchial Asthma,cough,0.85
+Bronchial Asthma,chest_tightness,0.80
+Bronchial Asthma,fatigue,0.60
+Common Cold,runny_nose,0.95
+Common Cold,sneezing,0.90
+Common Cold,sore_throat,0.85
+Common Cold,cough,0.80
+Common Cold,mild_fever,0.60
+Common Cold,headache,0.65
+Common Cold,congestion,0.88
+Influenza,high_fever,0.95
+Influenza,body_pain,0.90
+Influenza,fatigue,0.90
+Influenza,dry_cough,0.85
+Influenza,chills,0.80
+Influenza,headache,0.80
+Anemia,fatigue,0.95
+Anemia,weakness,0.90
+Anemia,pale_skin,0.85
+Anemia,dizziness,0.75
+Anemia,breathlessness,0.65
+Anemia,headache,0.60
+Cholera,watery_diarrhoea,0.98
+Cholera,vomiting,0.88
+Cholera,severe_dehydration,0.92
+Cholera,leg_cramps,0.75
+Cholera,sunken_eyes,0.80
+Chikungunya,high_fever,0.95
+Chikungunya,severe_joint_pain,0.98
+Chikungunya,joint_swelling,0.85
+Chikungunya,rash,0.70
+Chikungunya,headache,0.75
+Chikungunya,fatigue,0.80
+GERD,heartburn,0.95
+GERD,chest_pain,0.75
+GERD,acidity,0.90
+GERD,regurgitation,0.85
+GERD,difficulty_swallowing,0.60
+Hypertension,headache,0.70
+Hypertension,dizziness,0.65
+Hypertension,chest_pain,0.50
+Hypertension,blurred_vision,0.45
+Diabetes,increased_thirst,0.90
+Diabetes,frequent_urination,0.95
+Diabetes,weight_loss,0.80
+Diabetes,fatigue,0.85
+Diabetes,blurred_vision,0.70
+Migraine,throbbing_headache,0.95
+Migraine,nausea,0.80
+Migraine,sensitivity_to_light,0.90
+Migraine,sensitivity_to_sound,0.85
+Migraine,visual_aura,0.60
+Urinary tract infection,burning_urination,0.95
+Urinary tract infection,frequent_urination,0.90
+Urinary tract infection,lower_abdominal_pain,0.80
+Urinary tract infection,cloudy_urine,0.70
+Urinary tract infection,fever,0.50
+Heart attack,crushing_chest_pain,0.95
+Heart attack,breathlessness,0.85
+Heart attack,sweating,0.90
+Heart attack,arm_pain,0.80
+Heart attack,nausea,0.60
+Jaundice,yellow_skin,0.98
+Jaundice,yellow_eyes,0.98
+Jaundice,dark_urine,0.90
+Jaundice,fatigue,0.80
+Jaundice,nausea,0.75
+Jaundice,abdominal_pain,0.70
+Appendicitis,right_lower_abdominal_pain,0.95
+Appendicitis,nausea,0.85
+Appendicitis,vomiting,0.80
+Appendicitis,fever,0.70
+Appendicitis,loss_of_appetite,0.85
+Snakebite,puncture_marks,0.98
+Snakebite,severe_local_pain,0.95
+Snakebite,swelling,0.90
+Snakebite,nausea,0.70
+Snakebite,difficulty_breathing,0.65
+Heatstroke,high_fever,0.95
+Heatstroke,confusion,0.90
+Heatstroke,hot_dry_skin,0.85
+Heatstroke,headache,0.80
+Heatstroke,nausea,0.75
+Tetanus,jaw_stiffness,0.98
+Tetanus,muscle_spasms,0.95
+Tetanus,difficulty_swallowing,0.85
+Tetanus,fever,0.70

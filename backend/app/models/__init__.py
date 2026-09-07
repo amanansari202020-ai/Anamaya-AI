@@ -241,3 +241,27 @@ class DataSync(Base):
     synced_at = Column(DateTime, default=datetime.utcnow)
     last_synced_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# Symptom Disease Reference (Unified dataset grounding Kaggle & DDXPlus)
+class SymptomDiseaseReference(Base):
+    __tablename__ = "symptom_disease_reference"
+
+    id = Column(Integer, primary_key=True, index=True)
+    disease_name = Column(String(255), index=True)
+    symptoms = Column(JSON)  # JSON array of normalized lowercase symptom strings
+    source = Column(String(50), default="kaggle")  # "kaggle" | "ddxplus"
+    weight = Column(Float, default=1.0)
+    common_in_rural_india = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# MedlinePlus Cache (NIH plain language disease summary cache)
+class MedlinePlusCache(Base):
+    __tablename__ = "medlineplus_cache"
+
+    id = Column(Integer, primary_key=True, index=True)
+    disease_name = Column(String(255), unique=True, index=True)
+    summary_text = Column(Text)
+    fetched_at = Column(DateTime, default=datetime.utcnow)
+

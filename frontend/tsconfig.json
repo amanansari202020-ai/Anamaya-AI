@@ -49,10 +49,5 @@
     "**/*.ts",
     "**/*.tsx"
   ],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ],
   "extends": "expo/tsconfig.base"
 }
