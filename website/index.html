@@ -34,11 +34,12 @@
         <div id="offlineIndicator" class="offline-indicator hidden" aria-live="polite">Offline mode active</div>
         <label class="lang-picker" aria-label="Select language">
           <span aria-hidden="true">🌐</span>
-          <select id="languageSelect">
-            <option value="en" data-i18n="i18n_english_6">English</option>
-            <option value="hi">हिन्दी</option>
-            <option value="mr">मराठी</option>
-          </select>
+            <select id="languageSelect">
+              <option value="en" data-i18n="i18n_english_6">English</option>
+              <option value="hi">हिन्दी</option>
+              <option value="mr">मराठी</option>
+              <option value="kat">कातकरी (Katkari) 🎙️ Voice-First</option>
+            </select>
         </label>
         <button class="voice-toggle" id="voiceAssistantBtn" aria-label="Voice assistant" data-i18n="i18n_assistant_7">🔊 Assistant</button>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" data-i18n="i18n_dark_8">🌙 Dark</button>
@@ -525,6 +526,9 @@
                 <button type="button" class="voice-input-btn" id="aiVoiceBtn">
                   <span>🎤</span> <span data-i18n="i18n_tap_speak">Tap and speak</span>
                 </button>
+                <div id="katkariVoiceNote" class="katkari-voice-note hidden" style="margin: 8px 0; padding: 8px 12px; background: rgba(234, 88, 12, 0.1); border-left: 3px solid #ea580c; border-radius: 8px; font-size: 0.82rem; color: var(--text);">
+                  🎙️ <strong data-i18n="i18n_katkari_note_title">Voice-first Katkari mode active:</strong> <span data-i18n="i18n_katkari_voice_note">Speak in Katkari or Marathi — we'll do our best to understand.</span>
+                </div>
                 <div class="icon-grid" id="aiSymptomGrid" data-multi="true">
                   <div class="icon-card" data-value="fever"><span class="card-icon">🤒</span> <span data-i18n="i18n_fever_12">Fever</span></div>
                   <div class="icon-card" data-value="cough"><span class="card-icon">😷</span> <span data-i18n="i18n_cough_14">Cough</span></div>

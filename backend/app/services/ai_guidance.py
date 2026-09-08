@@ -794,6 +794,10 @@ class AIGuidanceService:
         context_str = "\n".join(grounding_context)
         prof_info = profile_context or {}
 
+        is_katkari = language in ["kat", "katkari", "kk"]
+        effective_language = "mr" if is_katkari else language
+        lang_instruction = "Marathi (mr) with a respectful Katkari greeting 'राम राम! (Ram Ram!)' at the start of reply_text, as Katkari speakers in Raigad district are bilingual with Marathi." if is_katkari else language
+
         system_prompt = (
             "You are Anamaya AI Care Assistant, an empathetic rural healthcare navigation AI grounded in official NIH medical data.\n"
             "Ground your assessment on these dataset match scores and MedlinePlus summaries:\n"
@@ -803,7 +807,7 @@ class AIGuidanceService:
             "1. Use the MedlinePlus summary as the authoritative description where available.\n"
             "2. Use dataset match scores to determine likelihood ranking.\n"
             "3. Write in simple, clear language suitable for a rural patient.\n"
-            f"4. Respond in language: {language}.\n"
+            f"4. Respond in language: {lang_instruction}\n"
             "5. Return STRICT JSON with keys:\n"
             "   - 'reply_text': (string, empathetic conversational answer explaining symptoms & guidance)\n"
             "   - 'possible_conditions': (list of dicts: {'name': string, 'likelihood': string ('High Likelihood'/'Moderate Likelihood'/'Low Likelihood'), 'explanation': string (incorporating MedlinePlus text), 'matched_symptoms': list of strings, 'common_in_rural_india': boolean})\n"
@@ -859,6 +863,8 @@ class AIGuidanceService:
             reply_str = f"आपके लक्षणों ({', '.join(extracted_symptoms)}) के आधार पर, संदर्भ डेटाबेस ने निम्नलिखित संभावित स्थितियों की पहचान की है। कृपया नजदीकी स्वास्थ्य केंद्र (PHC) पर सलाह लें।"
         elif language == "mr":
             reply_str = f"तुमच्या लक्षणांच्या ({', '.join(extracted_symptoms)}) आधारावर, आरोग्य माहितीकोशाने खालील संभाव्य आजार दर्शविले आहेत. कृपया जवळच्या आरोग्य केंद्राला भेट द्या."
+        elif is_katkari:
+            reply_str = f"राम राम! तुमच्या लक्षणांच्या ({', '.join(extracted_symptoms)}) आधारावर, आरोग्य माहितीकोशाने खालील संभाव्य आजार दर्शविले आहेत. कृपया जवळच्या आरोग्य केंद्राला (PHC) भेट द्या."
 
         return {
             "reply_text": reply_str,

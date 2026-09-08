@@ -794,9 +794,17 @@ showAuthState();
 
 function setLanguage(lang) {
   const enBase = (window.siteTranslations && window.siteTranslations.en) || translations.en || {};
-  const siteDict = (window.siteTranslations && window.siteTranslations[lang]) || {};
-  const localDict = translations[lang] || {};
-  const mergedDict = Object.assign({}, enBase, siteDict, localDict);
+  let siteDict = (window.siteTranslations && window.siteTranslations[lang]) || {};
+  let localDict = translations[lang] || {};
+  let mergedDict;
+
+  if (lang === 'kat' || lang === 'kk') {
+    const mrBase = (window.siteTranslations && window.siteTranslations.mr) || translations.mr || {};
+    mergedDict = Object.assign({}, enBase, mrBase, siteDict, localDict);
+  } else {
+    mergedDict = Object.assign({}, enBase, siteDict, localDict);
+  }
+
   document.documentElement.lang = lang;
   setPreferredLanguage(lang);
 
@@ -819,6 +827,15 @@ function setLanguage(lang) {
     languageSelect.value = lang;
   }
 
+  const katNote = document.getElementById('katkariVoiceNote');
+  if (katNote) {
+    if (lang === 'kat' || lang === 'kk') {
+      katNote.classList.remove('hidden');
+    } else {
+      katNote.classList.add('hidden');
+    }
+  }
+
   const offlineIndicator = document.getElementById('offlineIndicator');
   if (offlineIndicator) {
     offlineIndicator.textContent = mergedDict.offlineIndicator || translations.en.offlineIndicator;
@@ -836,7 +853,8 @@ function speakAssistant(text) {
 
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = document.getElementById('languageSelect')?.value === 'hi' ? 'hi-IN' : document.getElementById('languageSelect')?.value === 'mr' ? 'mr-IN' : 'en-US';
+  const currentLang = document.getElementById('languageSelect')?.value || 'en';
+  utterance.lang = currentLang === 'hi' ? 'hi-IN' : (currentLang === 'mr' || currentLang === 'kat') ? 'mr-IN' : 'en-US';
   utterance.rate = 0.92;
   utterance.pitch = 1.1;
   window.speechSynthesis.speak(utterance);
@@ -846,7 +864,8 @@ const voiceButton = document.getElementById('voiceAssistantBtn');
 if (voiceButton) {
   voiceButton.addEventListener('click', () => {
     const selectedLang = document.getElementById('languageSelect')?.value || 'en';
-    const prompt = translations[selectedLang]?.voicePrompt || translations.en.voicePrompt;
+    const siteDict = window.siteTranslations && window.siteTranslations[selectedLang];
+    const prompt = (siteDict && siteDict.voicePrompt) || translations[selectedLang]?.voicePrompt || translations.en.voicePrompt;
     speakAssistant(prompt);
   });
 }
@@ -1252,7 +1271,9 @@ if (languageSelect) {
   languageSelect.addEventListener('change', (event) => {
     const value = event.target.value;
     setLanguage(value);
-    speakAssistant(translations[value]?.voiceIntro || translations.en.voiceIntro);
+    const siteDict = window.siteTranslations && window.siteTranslations[value];
+    const intro = (siteDict && siteDict.voiceIntro) || translations[value]?.voiceIntro || translations.en.voiceIntro;
+    speakAssistant(intro);
   });
 }
 

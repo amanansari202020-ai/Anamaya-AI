@@ -471,7 +471,9 @@ window.siteTranslations = {
     "i18n_accepted": "accepted",
     "i18n_find_accepting_facilities": "🏥 Find facilities that accept this",
     "i18n_hide_accepting_facilities": "🔼 Hide accepting facilities",
-    "i18n_empanelment_disclaimer": "Private hospitals shown here are empanelled under PM-JAY/MJPJAY and other schemes — not all private hospitals accept government schemes; check with the facility to confirm current empanelment status."
+    "i18n_empanelment_disclaimer": "Private hospitals shown here are empanelled under PM-JAY/MJPJAY and other schemes — not all private hospitals accept government schemes; check with the facility to confirm current empanelment status.",
+    "i18n_katkari_note_title": "Voice-first Katkari mode active:",
+    "i18n_katkari_voice_note": "Speak in Katkari or Marathi — we'll do our best to understand."
   },
   "hi": {
     "i18n_anamayaai_1": "अनामया ऐ",
@@ -947,7 +949,9 @@ window.siteTranslations = {
     "i18n_accepted": "स्वीकृत",
     "i18n_find_accepting_facilities": "🏥 इस योजना को स्वीकार करने वाले अस्पताल खोजें",
     "i18n_hide_accepting_facilities": "🔼 स्वीकार करने वाले अस्पताल छिपाएं",
-    "i18n_empanelment_disclaimer": "यहाँ दिखाए गए निजी अस्पताल PM-JAY/MJPJAY और अन्य योजनाओं के तहत पैनल में शामिल हैं — सभी निजी अस्पताल सरकारी योजनाओं को स्वीकार नहीं करते हैं; वर्तमान स्थिति की पुष्टि के लिए अस्पताल से संपर्क करें।"
+    "i18n_empanelment_disclaimer": "यहाँ दिखाए गए निजी अस्पताल PM-JAY/MJPJAY और अन्य योजनाओं के तहत पैनल में शामिल हैं — सभी निजी अस्पताल सरकारी योजनाओं को स्वीकार नहीं करते हैं; वर्तमान स्थिति की पुष्टि के लिए अस्पताल से संपर्क करें।",
+    "i18n_katkari_note_title": "कातकरी व्हॉइस-फर्स्ट मोड सक्रिय:",
+    "i18n_katkari_voice_note": "कातकरी या मराठी में बोलें — हम समझने का पूरा प्रयास करेंगे"
   },
   "mr": {
     "i18n_anamayaai_1": "अनामया ए.आय",
@@ -1417,6 +1421,21 @@ window.siteTranslations = {
     "i18n_accepted": "मान्य",
     "i18n_find_accepting_facilities": "🏥 या योजनेसाठी पात्र रुग्णालये शोधा",
     "i18n_hide_accepting_facilities": "🔼 पात्र रुग्णालये लपवा",
-    "i18n_empanelment_disclaimer": "येथे दाखवलेली खाजगी रुग्णालये PM-JAY/MJPJAY आणि इतर योजनांतर्गत पॅनेलवर आहेत — सर्व खाजगी रुग्णालये सरकारी योजना स्वीकारत नाहीत; सध्याच्या स्थितीची खात्री करण्यासाठी रुग्णालयाशी संपर्क साधा।"
+    "i18n_empanelment_disclaimer": "येथे दाखवलेली खाजगी रुग्णालये PM-JAY/MJPJAY आणि इतर योजनांतर्गत पॅनेलवर आहेत — सर्व खाजगी रुग्णालये सरकारी योजना स्वीकारत नाहीत; सध्याच्या स्थितीची खात्री करण्यासाठी रुग्णालयाशी संपर्क साधा।",
+    "i18n_katkari_note_title": "कातकरी व्हॉइस-फर्स्ट मोड सक्रिय:",
+    "i18n_katkari_voice_note": "कातकरी किंवा मराठीत बोला — आम्ही समजून घेण्याचा प्रयत्न करू"
+  },
+  "kat": {
+    "i18n_english_6": "Katkari (कातकरी)",
+    "i18n_assistant_7": "🔊 कातकरी व्हॉइस मदत",
+    "voicePrompt": "राम राम! अनमय एआय कातकरी नि मराठी आवाजात मदत करत आसा.",
+    "voiceIntro": "राम राम! अनमय एआय आवाजाचा मार्गदर्शक सक्रिय आसा. कातकरी किंवा मराठीत बोला.",
+    "privacyNotice": "गोपनीयता सूचना: आम्ही नाव, फोन, पत्ता, आरोग्य माहिती गोळा करतो. डेटा सुरक्षितपणे संग्रहित केला जातो आणि भारताच्या DPDP कायद्यांतर्गत सुरक्षित आहे.",
+    "emergencyDisclaimer": "ही एआय तपासणी वैद्यकीय निदान नाही. त्रास जास्त असल्यास लगेच सरकारी दवाखान्यात जा.",
+    "i18n_katkari_note_title": "कातकरी व्हॉइस-फर्स्ट मोड सक्रिय:",
+    "i18n_katkari_voice_note": "कातकरी किंवा मराठीत बोला — आम्ही समजून घेण्याचा प्रयत्न करू (Speak in Katkari or Marathi)",
+    "i18n_welcome": "राम राम! कातकरी आरोग्य मार्गदर्शक",
+    "i18n_check_my_health": "आरोग्य तपासा (Check Health)",
+    "i18n_send_location": "माझी जागा पाठवा (Send Location)"
   }
 };

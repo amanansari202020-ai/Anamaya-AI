@@ -4,7 +4,7 @@ import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View } from 'rea
 interface VoiceInputButtonProps {
   onTranscript: (text: string) => void;
   label?: string;
-  language?: 'en' | 'hi';
+  language?: 'en' | 'hi' | 'mr' | 'kat';
 }
 
 export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
@@ -16,29 +16,52 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
 
   const handlePress = () => {
     setIsRecording(true);
-    // Simulate voice recording for demo with fallback
+    // Simulate voice recording for demo with fallback (using mr-IN engine for Katkari/Marathi)
     setTimeout(() => {
       setIsRecording(false);
-      onTranscript(language === 'hi' ? 'बुखार और खांसी' : 'Fever and Cough');
+      if (language === 'hi') {
+        onTranscript('बुखार और खांसी');
+      } else if (language === 'mr' || language === 'kat') {
+        onTranscript('ताप आणि खोकला');
+      } else {
+        onTranscript('Fever and Cough');
+      }
     }, 1500);
   };
 
   return (
-    <TouchableOpacity
-      style={[styles.button, isRecording && styles.recordingButton]}
-      onPress={handlePress}
-      activeOpacity={0.8}
-    >
-      <Text style={styles.icon}>{isRecording ? '🎙️' : '🎤'}</Text>
-      <Text style={[styles.label, isRecording && styles.recordingLabel]}>
-        {isRecording ? (language === 'hi' ? 'सुन रहे हैं...' : 'Listening...') : label}
-      </Text>
-      {isRecording && <ActivityIndicator size="small" color="#dc2626" style={{ marginLeft: 6 }} />}
-    </TouchableOpacity>
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={[styles.button, isRecording && styles.recordingButton]}
+        onPress={handlePress}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.icon}>{isRecording ? '🎙️' : '🎤'}</Text>
+        <Text style={[styles.label, isRecording && styles.recordingLabel]}>
+          {isRecording
+            ? (language === 'hi'
+                ? 'सुन रहे हैं...'
+                : language === 'mr' || language === 'kat'
+                ? 'ऐकत आहे...'
+                : 'Listening...')
+            : label}
+        </Text>
+        {isRecording && <ActivityIndicator size="small" color="#dc2626" style={{ marginLeft: 6 }} />}
+      </TouchableOpacity>
+      {language === 'kat' && (
+        <Text style={styles.katkariNote}>
+          🎙️ Speak in Katkari or Marathi — we'll do our best to understand
+        </Text>
+      )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+    alignItems: 'center',
+  },
   button: {
     minHeight: 52,
     borderRadius: 12,
@@ -67,5 +90,12 @@ const styles = StyleSheet.create({
   },
   recordingLabel: {
     color: '#dc2626',
+  },
+  katkariNote: {
+    fontSize: 12,
+    color: '#0284c7',
+    marginTop: 2,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 });

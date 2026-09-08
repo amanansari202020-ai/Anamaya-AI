@@ -162,9 +162,10 @@ python -m http.server 8001
   - Photo attachment 📷 for visual skin rash/lesion analysis (`/api/health/analyze-image`).
   - Multilingual voice output 🔊 using `speakAssistant()`.
 
-### 7. Multilingual Internationalization (i18n)
-- 412+ synchronized translation keys across **English (`en`)**, **Hindi (`hi`)**, and **Marathi (`mr`)**.
-- Fallback hierarchy in `setLanguage(lang)` ensures 100% of UI elements (including wizard chips, sidebar Emergency SOS, and chat prompts) switch languages seamlessly.
+### 7. Multilingual Internationalization (i18n) & Katkari Tribal Language Support
+- 412+ synchronized translation keys across **English (`en`)**, **Hindi (`hi`)**, **Marathi (`mr`)**, and **Katkari (`kat`)**.
+- **Voice-First Katkari Support (कातकरी)**: Katkari is a Particularly Vulnerable Tribal Group (PVTG) language spoken by rural communities in Raigad, Thane, and Palghar districts — the same region this platform serves. Given limited existing digital-language tooling for Katkari, we support it as a voice-first option with Marathi as a bilingual fallback for text and AI responses, reflecting real-world bilingualism in these communities rather than claiming full native-language translation we cannot verify.
+- Fallback hierarchy in `setLanguage(lang)` ensures 100% of UI elements switch languages seamlessly (`kat` -> `mr` -> `en`).
 
 ---
 
