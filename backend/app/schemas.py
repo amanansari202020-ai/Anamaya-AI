@@ -113,6 +113,7 @@ class HealthcareFacilityBase(BaseModel):
     emergency_services: bool = False
     is_24x7: bool = False
     beds_available: Optional[int] = None
+    accepted_schemes: List[str] = []
 
 
 class HealthcareFacilityCreate(HealthcareFacilityBase):
@@ -359,4 +360,78 @@ class BudgetEstimate(BaseModel):
 class ImageAnalysisRequest(BaseModel):
     image: str
     description: Optional[str] = ""
+
+
+# Patient Satisfaction & Feedback Schemas
+class AppointmentFeedbackCreate(BaseModel):
+    rating: int = Field(..., ge=1, le=5)
+    tags: List[str] = []
+    comment: Optional[str] = None
+    patient_id: Optional[int] = None
+
+
+class AppointmentFeedbackResponse(BaseModel):
+    id: int
+    appointment_id: int
+    patient_id: Optional[int] = None
+    rating: int
+    tags: List[str] = []
+    comment: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class DoctorRatingSummary(BaseModel):
+    doctor_id: int
+    doctor_name: Optional[str] = None
+    average_rating: Optional[float] = None
+    total_reviews: int = 0
+    most_common_tags: List[str] = []
+
+
+class ReferralOutcomeCreate(BaseModel):
+    outcome: str = Field(..., description="resolved | partially_resolved | not_resolved | no_response")
+    comment: Optional[str] = None
+    patient_id: Optional[int] = None
+
+
+class ReferralOutcomeResponse(BaseModel):
+    id: int
+    referral_id: int
+    patient_id: Optional[int] = None
+    outcome: str
+    comment: Optional[str] = None
+    asked_at: datetime
+    responded_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class FacilityRatingSummary(BaseModel):
+    facility_id: int
+    facility_name: str
+    average_rating: float
+    feedback_count: int
+
+
+class ReferralOutcomeBreakdown(BaseModel):
+    resolved_count: int = 0
+    resolved_percentage: float = 0.0
+    partially_resolved_count: int = 0
+    partially_resolved_percentage: float = 0.0
+    not_resolved_count: int = 0
+    not_resolved_percentage: float = 0.0
+    no_response_count: int = 0
+    no_response_percentage: float = 0.0
+
+
+class SatisfactionOverviewResponse(BaseModel):
+    overall_average_rating: float
+    total_feedback_count: int
+    facility_ratings: List[FacilityRatingSummary] = []
+    referral_outcomes: ReferralOutcomeBreakdown
+
 

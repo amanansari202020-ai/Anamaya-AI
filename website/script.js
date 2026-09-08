@@ -83,7 +83,7 @@ function initTheme() {
   applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
 }
 
-const VALID_PANELS = ['dashboard', 'assessment', 'facilities', 'passport', 'schemes', 'emergency'];
+const VALID_PANELS = ['dashboard', 'assessment', 'facilities', 'passport', 'schemes', 'emergency', 'analytics'];
 
 function navigateToWorkspace(panelId = 'dashboard') {
   if (!VALID_PANELS.includes(panelId)) panelId = 'dashboard';
@@ -143,7 +143,9 @@ function setActivePanel(panelId) {
     panel.classList.toggle('active', panel.id === panelId);
   });
 
-  if (panelId === 'facilities') {
+  if (panelId === 'dashboard') {
+    checkAndShowReferralOutcomePrompt();
+  } else if (panelId === 'facilities') {
     setTimeout(() => {
       initMap();
       if (mapInstance) {
@@ -157,6 +159,10 @@ function setActivePanel(panelId) {
     loadPatientAppointments(user ? user.id : 1);
   } else if (panelId === 'emergency') {
     loadEmergencyFacilities();
+  } else if (panelId === 'analytics') {
+    loadSatisfactionAnalytics();
+  } else if (panelId === 'schemes') {
+    loadGovernmentSchemes();
   }
 }
 
@@ -2697,18 +2703,34 @@ function renderGroupedFacilities(data) {
 
 function renderFacilityColumnHtml(facilities, type) {
   if (!facilities || facilities.length === 0) {
-    return `<div class="facility-card" style="padding:16px; color:#94a3b8; text-align:center; font-size:0.88rem;">No ${type} facilities found nearby for selected filters.</div>`;
+    const emptyMsg = `<div class="facility-card" style="padding:16px; color:#94a3b8; text-align:center; font-size:0.88rem;">No ${type} facilities found nearby for selected filters.</div>`;
+    if (type === 'private') {
+      const disclaimerText = typeof t === 'function' ? t('i18n_empanelment_disclaimer') : 'Private hospitals shown here are empanelled under PM-JAY/MJPJAY and other schemes — not all private hospitals accept government schemes; check with the facility to confirm current empanelment status.';
+      return emptyMsg + `
+        <div class="empanelment-disclaimer-note" style="margin-top: 12px; padding: 10px 14px; background: rgba(59, 130, 246, 0.08); border-left: 3px solid #3b82f6; border-radius: 8px; font-size: 0.81rem; color: var(--muted); line-height: 1.4;">
+          ℹ️ ${disclaimerText}
+        </div>
+      `;
+    }
+    return emptyMsg;
   }
 
   const activeId = type === 'govt' ? activeGovtFacilityId : activePrivateFacilityId;
 
-  return facilities.map(f => {
+  const cardsHtml = facilities.map(f => {
     const doctors = f.doctors || [];
     const docCount = doctors.length;
     const isExpanded = f.id === activeId;
     const viewDocsText = typeof t === 'function' ? t('i18n_view_doctors') : '👨‍⚕️ View Doctors & Schedule';
     const hideDocsText = typeof t === 'function' ? t('i18n_hide_doctors') : '🔼 Hide Doctors';
     const buttonText = isExpanded ? `${hideDocsText} (${docCount})` : `${viewDocsText} (${docCount})`;
+
+    const acceptedList = (f.accepted_schemes && f.accepted_schemes.length > 0) ? f.accepted_schemes : ["PM-JAY", "MJPJAY"];
+    const acceptedChips = acceptedList.map(sch => `
+      <span class="scheme-badge-chip" style="background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">
+        ✅ ${sch} ${typeof t === 'function' ? t('i18n_accepted') : 'accepted'}
+      </span>
+    `).join(' ');
 
     const doctorsHtml = doctors.map(d => {
       const expText = typeof t === 'function' ? t('i18n_years_exp') : 'yrs exp';
@@ -2723,11 +2745,22 @@ function renderFacilityColumnHtml(facilities, type) {
       const fName = (f.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
       const dHours = (d.available_hours || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
+      let ratingBadgeHtml = '';
+      if (d.review_count && d.review_count > 0 && d.average_rating) {
+        ratingBadgeHtml = `<span class="doctor-rating-badge">⭐ ${d.average_rating} (${d.review_count})</span>`;
+      } else {
+        const newText = typeof t === 'function' ? t('i18n_rating_new') : 'New';
+        ratingBadgeHtml = `<span class="doctor-rating-badge new-badge">✨ ${newText}</span>`;
+      }
+
       return `
         <div class="doctor-item-card">
-          <div class="doctor-header-row">
-            <span class="doctor-name-title">${d.name}</span>
-            <span class="degree-badge">${d.degree}</span>
+          <div class="doctor-header-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+            <div>
+              <span class="doctor-name-title">${d.name}</span>
+              <span class="degree-badge">${d.degree}</span>
+            </div>
+            ${ratingBadgeHtml}
           </div>
           <span class="doctor-spec-text">🩺 ${d.specialization} · ${d.years_experience} ${expText}</span>
           <span class="doctor-detail-line">📅 ${daysText} ${daysStr}</span>
@@ -2742,12 +2775,21 @@ function renderFacilityColumnHtml(facilities, type) {
     return `
       <div class="facility-card facility-card-doctor" style="margin-bottom: 14px; border-left: 4px solid ${type === 'govt' ? '#0284c7' : '#9333ea'};">
         <div class="facility-info-header">
-          <h4 style="margin: 0; font-size: 1.02rem; font-weight: 700; color: var(--text);">${f.name}</h4>
-          <p style="margin: 0; font-size: 0.84rem; color: var(--muted);">📍 ${f.address} · <strong>${f.distance_km || '2.5'} km away</strong></p>
-          <p style="margin: 0; font-size: 0.82rem; color: #16a34a; font-weight: 600;">🏥 ${f.facility_level.toUpperCase()} · ${docCount} Doctor${docCount !== 1 ? 's' : ''} Available</p>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+            <h4 style="margin: 0; font-size: 1.02rem; font-weight: 700; color: var(--text);">${f.name}</h4>
+            <span style="background:${type === 'govt' ? 'rgba(2,132,199,0.12)' : 'rgba(147,51,234,0.12)'}; color:${type === 'govt' ? '#0284c7' : '#9333ea'}; border:1px solid ${type === 'govt' ? 'rgba(2,132,199,0.3)' : 'rgba(147,51,234,0.3)'}; padding:2px 8px; border-radius:6px; font-size:0.73rem; font-weight:700; white-space:nowrap;">
+              ${type === 'govt' ? '🏛️ Govt' : '🏥 Empanelled Private'}
+            </span>
+          </div>
+          <p style="margin: 4px 0 0 0; font-size: 0.84rem; color: var(--muted);">📍 ${f.address} · <strong>${f.distance_km || '2.5'} km away</strong></p>
+          <p style="margin: 2px 0 0 0; font-size: 0.82rem; color: #16a34a; font-weight: 600;">🏥 ${(f.facility_level || 'Hospital').toUpperCase()} · ${docCount} Doctor${docCount !== 1 ? 's' : ''} Available</p>
+          
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;">
+            ${acceptedChips}
+          </div>
         </div>
         
-        <button type="button" id="docBtn_${f.id}" class="doctor-toggle-btn ${isExpanded ? 'expanded' : ''}" style="width: 100%; justify-content: center; margin-top: 2px;" onclick="toggleDoctorList(${f.id}, '${type}')">
+        <button type="button" id="docBtn_${f.id}" class="doctor-toggle-btn ${isExpanded ? 'expanded' : ''}" style="width: 100%; justify-content: center; margin-top: 8px;" onclick="toggleDoctorList(${f.id}, '${type}')">
           ${buttonText}
         </button>
 
@@ -2757,6 +2799,17 @@ function renderFacilityColumnHtml(facilities, type) {
       </div>
     `;
   }).join('');
+
+  if (type === 'private') {
+    const disclaimerText = typeof t === 'function' ? t('i18n_empanelment_disclaimer') : 'Private hospitals shown here are empanelled under PM-JAY/MJPJAY and other schemes — not all private hospitals accept government schemes; check with the facility to confirm current empanelment status.';
+    return cardsHtml + `
+      <div class="empanelment-disclaimer-note" style="margin-top: 12px; padding: 10px 14px; background: rgba(59, 130, 246, 0.08); border-left: 3px solid #3b82f6; border-radius: 8px; font-size: 0.81rem; color: var(--muted); line-height: 1.4;">
+        ℹ️ ${disclaimerText}
+      </div>
+    `;
+  }
+
+  return cardsHtml;
 }
 
 function toggleDoctorList(facilityId, type) {
@@ -2930,9 +2983,20 @@ async function loadPatientAppointments(patientId = 1) {
       doctor_name: "Dr. Rajesh Kulkarni",
       doctor_specialization: "General Physician",
       facility_name: "Navi Mumbai Municipal General Hospital",
-      requested_date: "2026-09-10",
+      requested_date: "2026-09-05",
       requested_time_slot: "10:00 AM - 11:00 AM",
-      status: "pending"
+      status: "completed",
+      has_feedback: false
+    },
+    {
+      id: 2,
+      doctor_name: "Dr. Ananya Deshmukh",
+      doctor_specialization: "Gynecologist",
+      facility_name: "Navi Mumbai Municipal General Hospital",
+      requested_date: "2026-09-12",
+      requested_time_slot: "11:30 AM - 12:30 PM",
+      status: "pending",
+      has_feedback: false
     }
   ]);
 }
@@ -2950,6 +3014,57 @@ function renderAppointmentsList(appointments) {
     const statusClass = a.status || 'pending';
     const statusText = typeof t === 'function' ? (t(`i18n_status_${statusClass}`) || statusClass) : statusClass;
 
+    let feedbackSection = '';
+    if (statusClass === 'completed') {
+      if (a.has_feedback || a.feedback) {
+        const ratingVal = (a.feedback && a.feedback.rating) ? a.feedback.rating : 5;
+        const commentVal = (a.feedback && a.feedback.comment) ? ` — "${a.feedback.comment}"` : '';
+        feedbackSection = `
+          <div style="margin-top:6px; padding:8px 12px; background:rgba(16,185,129,0.1); border-radius:6px; border:1px solid rgba(16,185,129,0.3); font-size:0.83rem; color:#059669;">
+            ✅ ${typeof t === 'function' ? t('i18n_feedback_thank_you') : 'Thank you for your feedback!'} (⭐ ${ratingVal}/5${commentVal})
+          </div>
+        `;
+      } else {
+        feedbackSection = `
+          <div id="feedbackPrompt_${a.id}" class="feedback-prompt-card">
+            <strong style="color:var(--text); font-size:0.95rem; display:block;">${typeof t === 'function' ? t('i18n_how_was_visit') : 'How was your visit?'}</strong>
+            <span style="display:block; margin:2px 0 6px 0; font-size:0.8rem; color:var(--muted);">${typeof t === 'function' ? t('i18n_rate_visit_subtitle') : 'Rate your visit and share your experience'}</span>
+            
+            <div class="feedback-star-rating" id="stars_${a.id}">
+              <button type="button" class="star-btn" onclick="selectStarRating(${a.id}, 1)">★</button>
+              <button type="button" class="star-btn" onclick="selectStarRating(${a.id}, 2)">★</button>
+              <button type="button" class="star-btn" onclick="selectStarRating(${a.id}, 3)">★</button>
+              <button type="button" class="star-btn" onclick="selectStarRating(${a.id}, 4)">★</button>
+              <button type="button" class="star-btn" onclick="selectStarRating(${a.id}, 5)">★</button>
+            </div>
+
+            <div class="feedback-tags-grid" id="tags_${a.id}">
+              <span class="tag-chip" onclick="toggleFeedbackTag(this)" data-tag="short_wait">${typeof t === 'function' ? t('i18n_tag_short_wait') : 'Short Wait'}</span>
+              <span class="tag-chip" onclick="toggleFeedbackTag(this)" data-tag="long_wait">${typeof t === 'function' ? t('i18n_tag_long_wait') : 'Long Wait'}</span>
+              <span class="tag-chip" onclick="toggleFeedbackTag(this)" data-tag="doctor_attentive">${typeof t === 'function' ? t('i18n_tag_doctor_attentive') : 'Doctor Attentive'}</span>
+              <span class="tag-chip" onclick="toggleFeedbackTag(this)" data-tag="doctor_rushed">${typeof t === 'function' ? t('i18n_tag_doctor_rushed') : 'Doctor Rushed'}</span>
+              <span class="tag-chip" onclick="toggleFeedbackTag(this)" data-tag="clean_facility">${typeof t === 'function' ? t('i18n_tag_clean_facility') : 'Clean Facility'}</span>
+              <span class="tag-chip" onclick="toggleFeedbackTag(this)" data-tag="difficult_to_find">${typeof t === 'function' ? t('i18n_tag_difficult_to_find') : 'Difficult to Find'}</span>
+            </div>
+
+            <input type="text" id="comment_${a.id}" placeholder="${typeof t === 'function' ? t('i18n_optional_comment') : 'Optional comment or suggestions...'}" style="width:100%; padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:0.83rem; margin:6px 0;">
+
+            <button type="button" class="primary full-width" onclick="submitAppointmentFeedback(${a.id})" style="padding:6px; font-size:0.85rem; margin-top:4px;">
+              ${typeof t === 'function' ? t('i18n_submit_feedback') : 'Submit Feedback'}
+            </button>
+          </div>
+        `;
+      }
+    } else {
+      feedbackSection = `
+        <div style="margin-top:4px; text-align:right;">
+          <button type="button" class="secondary" onclick="markAppointmentCompleted(${a.id})" style="font-size:0.75rem; padding:3px 8px; border-radius:4px;">
+            ${typeof t === 'function' ? t('i18n_mark_completed') : 'Mark Visit Completed'}
+          </button>
+        </div>
+      `;
+    }
+
     return `
       <div class="appt-history-item">
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -2958,6 +3073,7 @@ function renderAppointmentsList(appointments) {
         </div>
         <span style="font-size:0.83rem; color:var(--muted);">🏥 ${a.facility_name}</span>
         <span style="font-size:0.83rem; color:var(--blue);">📅 ${a.requested_date} (${a.requested_time_slot})</span>
+        ${feedbackSection}
       </div>
     `;
   }).join('');
@@ -2974,6 +3090,7 @@ function useGroupedOfflineFallback(lat = 19.0330, lon = 73.0297) {
         phone: "022-27899999",
         is_government: true,
         ownership_type: "government",
+        accepted_schemes: ["PM-JAY", "MJPJAY", "Ayushman Bharat"],
         distance_km: 2.5,
         doctors: [
           { id: 1, facility_id: 1, name: "Dr. Rajesh Kulkarni", degree: "MBBS, MD", specialization: "General Physician", years_experience: 12, available_days: ["Mon", "Tue", "Wed", "Thu", "Fri"], available_hours: "09:00 AM - 01:00 PM" },
@@ -2988,6 +3105,7 @@ function useGroupedOfflineFallback(lat = 19.0330, lon = 73.0297) {
         phone: "022-27452333",
         is_government: true,
         ownership_type: "government",
+        accepted_schemes: ["PM-JAY", "MJPJAY", "Ayushman Bharat"],
         distance_km: 8.4,
         doctors: [
           { id: 3, facility_id: 2, name: "Dr. Vikram Jadhav", degree: "MBBS, MS", specialization: "Orthopedic Surgeon", years_experience: 10, available_days: ["Mon", "Wed", "Fri"], available_hours: "10:00 AM - 02:00 PM" }
@@ -3003,16 +3121,521 @@ function useGroupedOfflineFallback(lat = 19.0330, lon = 73.0297) {
         phone: "022-27437900",
         is_government: false,
         ownership_type: "private",
+        accepted_schemes: ["PM-JAY", "MJPJAY", "CGHS"],
         distance_km: 6.1,
         doctors: [
           { id: 6, facility_id: 6, name: "Dr. Arvind Mehta", degree: "MBBS, MD, DM", specialization: "Cardiologist", years_experience: 18, available_days: ["Mon", "Tue", "Wed", "Fri"], available_hours: "11:00 AM - 04:00 PM" },
           { id: 7, facility_id: 6, name: "Dr. Rohit Verma", degree: "MBBS, MD", specialization: "Pediatrician", years_experience: 10, available_days: ["Mon", "Wed", "Thu", "Fri", "Sat"], available_hours: "09:00 AM - 01:00 PM" }
+        ]
+      },
+      {
+        id: 13,
+        name: "Panacea Hospital",
+        facility_level: "rural_hospital",
+        address: "Plot No. 105/106, Sector No. 08, New Panvel, Raigad, Maharashtra 410206",
+        phone: "022-27464001",
+        is_government: false,
+        ownership_type: "private",
+        accepted_schemes: ["PM-JAY", "MJPJAY"],
+        distance_km: 1.2,
+        doctors: [
+          { id: 30, facility_id: 13, name: "Dr. Vijay Jadhav", degree: "MBBS, MS", specialization: "General Surgeon", years_experience: 12, available_days: ["Mon", "Tue", "Wed", "Thu", "Fri"], available_hours: "10:00 AM - 02:00 PM" },
+          { id: 31, facility_id: 13, name: "Dr. Snehal Shinde", degree: "MBBS, DGO", specialization: "Gynecologist", years_experience: 8, available_days: ["Mon", "Wed", "Fri", "Sat"], available_hours: "11:00 AM - 03:00 PM" }
+        ]
+      },
+      {
+        id: 14,
+        name: "Unnati Hospital and ICU",
+        facility_level: "rural_hospital",
+        address: "Shivaji Chowk, MTNL Road, Opp Durgamata Mandir, Panvel, Raigad, Maharashtra 410206",
+        phone: "022-27453000",
+        is_government: false,
+        ownership_type: "private",
+        accepted_schemes: ["PM-JAY", "MJPJAY"],
+        distance_km: 1.4,
+        doctors: [
+          { id: 32, facility_id: 14, name: "Dr. Nilesh Patil", degree: "MBBS, MD", specialization: "Consultant Physician & Intensivist", years_experience: 14, available_days: ["Mon", "Tue", "Wed", "Fri", "Sat"], available_hours: "09:00 AM - 01:00 PM" }
+        ]
+      },
+      {
+        id: 15,
+        name: "Life Line Hospital Medical & Research Centre",
+        facility_level: "district_hospital",
+        address: "Opp ST Bus Stand, Shivaji Road, Panvel, Raigad, Maharashtra 410206",
+        phone: "022-27455000",
+        is_government: false,
+        ownership_type: "private",
+        accepted_schemes: ["PM-JAY", "MJPJAY"],
+        distance_km: 1.5,
+        doctors: [
+          { id: 34, facility_id: 15, name: "Dr. Avinash Deshmukh", degree: "MBBS, MD, DM", specialization: "Cardiologist", years_experience: 16, available_days: ["Mon", "Wed", "Fri"], available_hours: "11:00 AM - 03:00 PM" }
+        ]
+      },
+      {
+        id: 16,
+        name: "Birmole Hospital",
+        facility_level: "rural_hospital",
+        address: "Panvel, Raigad, Maharashtra 410206",
+        phone: "022-27451234",
+        is_government: false,
+        ownership_type: "private",
+        accepted_schemes: ["PM-JAY", "MJPJAY"],
+        distance_km: 1.8,
+        doctors: [
+          { id: 36, facility_id: 16, name: "Dr. Santosh Birmole", degree: "MBBS, MS", specialization: "General Surgeon", years_experience: 18, available_days: ["Mon", "Tue", "Wed", "Thu", "Fri"], available_hours: "09:30 AM - 01:30 PM" }
+        ]
+      },
+      {
+        id: 17,
+        name: "MGM Medical College Hospital for Women and Children",
+        facility_level: "district_hospital",
+        address: "Kalamboli, Panvel, Raigad, Maharashtra 410218",
+        phone: "022-27437999",
+        is_government: false,
+        ownership_type: "private",
+        accepted_schemes: ["PM-JAY", "MJPJAY"],
+        distance_km: 3.2,
+        doctors: [
+          { id: 38, facility_id: 17, name: "Dr. Archana Merchant", degree: "MBBS, MD, DGO", specialization: "Gynecologist & Obstetrician", years_experience: 15, available_days: ["Mon", "Tue", "Thu", "Fri"], available_hours: "09:00 AM - 01:00 PM" }
         ]
       }
     ]
   };
   currentFacilityData = fallback;
   renderGroupedFacilities(fallback);
+}
+
+// 7. Patient Satisfaction & Referral Outcome Feedback Functions
+const apptRatingsState = {};
+
+function selectStarRating(apptId, rating) {
+  apptRatingsState[apptId] = rating;
+  const container = document.getElementById(`stars_${apptId}`);
+  if (!container) return;
+  const starBtns = container.querySelectorAll('.star-btn');
+  starBtns.forEach((btn, idx) => {
+    btn.classList.toggle('active', idx < rating);
+    btn.style.color = idx < rating ? '#f59e0b' : 'inherit';
+  });
+}
+
+function toggleFeedbackTag(el) {
+  el.classList.toggle('selected');
+}
+
+async function submitAppointmentFeedback(apptId) {
+  const rating = apptRatingsState[apptId] || 5;
+  const container = document.getElementById(`feedbackPrompt_${apptId}`);
+  const commentInput = document.getElementById(`comment_${apptId}`);
+  const tagChips = container ? container.querySelectorAll('.tag-chip.selected') : [];
+  const tags = Array.from(tagChips).map(c => c.dataset.tag || c.textContent.trim());
+  const comment = commentInput ? commentInput.value.trim() : '';
+
+  let user = null;
+  try { user = JSON.parse(localStorage.getItem('healthsphere_user')); } catch (e) {}
+  const patientId = user ? user.id : 1;
+
+  const payload = {
+    rating: rating,
+    tags: tags,
+    comment: comment,
+    patient_id: patientId
+  };
+
+  try {
+    const res = await fetch(`${apiBase}/api/appointments/${apptId}/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const errData = await res.json();
+      console.warn("Feedback submit API response error:", errData);
+    }
+  } catch (e) {
+    console.warn("Feedback submit network fallback:", e);
+  }
+
+  if (container) {
+    container.innerHTML = `
+      <div style="text-align:center; padding: 10px; color:#059669; font-weight:600; font-size:0.9rem;">
+        ✅ ${typeof t === 'function' ? t('i18n_feedback_thank_you') : 'Thank you for your feedback!'} (⭐ ${rating}/5)
+      </div>
+    `;
+  }
+}
+
+async function markAppointmentCompleted(apptId) {
+  try {
+    await fetch(`${apiBase}/api/appointments/${apptId}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'completed' })
+    });
+  } catch (e) {
+    console.warn("Mark completed fallback:", e);
+  }
+  let user = null;
+  try { user = JSON.parse(localStorage.getItem('healthsphere_user')); } catch (e) {}
+  loadPatientAppointments(user ? user.id : 1);
+}
+
+// Referral Outcome Check-in Prompt
+let selectedReferralOutcomeVal = null;
+
+function checkAndShowReferralOutcomePrompt() {
+  const container = document.getElementById('dashboardReferralCheckin');
+  if (!container) return;
+
+  const isDismissed = localStorage.getItem('anamaya_referral_checkin_dismissed');
+  if (isDismissed) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = `
+    <div id="referralCheckinCard" class="referral-checkin-card">
+      <button type="button" class="referral-dismiss-btn" onclick="dismissReferralCheckin(1)" title="Dismiss">&times;</button>
+      <strong style="font-size: 0.95rem; color: #166534; display:block;">📋 ${typeof t === 'function' ? t('i18n_referral_checkin_title') : 'Care Follow-up Check-in'}</strong>
+      <p style="margin:4px 0 8px 0; font-size:0.88rem; color:#1e293b;">${typeof t === 'function' ? t('i18n_referral_checkin_prompt') : 'Did you get the care you needed for your recent referral?'}</p>
+
+      <div class="outcome-buttons-row">
+        <button type="button" class="btn-outcome" onclick="selectReferralOutcome('resolved')" data-outcome="resolved">
+          ✅ ${typeof t === 'function' ? t('i18n_outcome_resolved') : 'Resolved'}
+        </button>
+        <button type="button" class="btn-outcome" onclick="selectReferralOutcome('partially_resolved')" data-outcome="partially_resolved">
+          🟡 ${typeof t === 'function' ? t('i18n_outcome_partially') : 'Partially'}
+        </button>
+        <button type="button" class="btn-outcome" onclick="selectReferralOutcome('not_resolved')" data-outcome="not_resolved">
+          ❌ ${typeof t === 'function' ? t('i18n_outcome_not_resolved') : 'Not resolved'}
+        </button>
+      </div>
+
+      <div id="referralCommentWrap" class="hidden" style="margin-top:8px;">
+        <input type="text" id="referralCommentInput" placeholder="${typeof t === 'function' ? t('i18n_optional_comment') : 'Optional comment...'}" style="width:100%; padding:6px 10px; border-radius:6px; border:1px solid #cbd5e1; font-size:0.83rem; margin-bottom:6px;">
+        <button type="button" class="primary" onclick="submitReferralOutcome(1)" style="padding:6px 16px; font-size:0.83rem;">Submit</button>
+      </div>
+    </div>
+  `;
+}
+
+function selectReferralOutcome(outcomeVal) {
+  selectedReferralOutcomeVal = outcomeVal;
+  const card = document.getElementById('referralCheckinCard');
+  if (!card) return;
+  card.querySelectorAll('.btn-outcome').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.outcome === outcomeVal);
+  });
+  const wrap = document.getElementById('referralCommentWrap');
+  if (wrap) wrap.classList.remove('hidden');
+}
+
+async function submitReferralOutcome(referralId = 1) {
+  const outcome = selectedReferralOutcomeVal || 'resolved';
+  const commentInput = document.getElementById('referralCommentInput');
+  const comment = commentInput ? commentInput.value.trim() : '';
+
+  let user = null;
+  try { user = JSON.parse(localStorage.getItem('healthsphere_user')); } catch (e) {}
+  const patientId = user ? user.id : 1;
+
+  const payload = {
+    outcome: outcome,
+    comment: comment,
+    patient_id: patientId
+  };
+
+  try {
+    await fetch(`${apiBase}/api/referrals/${referralId}/outcome`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch (e) {
+    console.warn("Referral outcome submit fallback:", e);
+  }
+
+  localStorage.setItem('anamaya_referral_checkin_dismissed', 'true');
+  const card = document.getElementById('referralCheckinCard');
+  if (card) {
+    card.innerHTML = `<div style="text-align:center; color:#166534; font-weight:600; font-size:0.9rem; padding:8px;">✅ Thank you for checking in! Your care feedback has been recorded.</div>`;
+    setTimeout(() => {
+      const container = document.getElementById('dashboardReferralCheckin');
+      if (container) container.innerHTML = '';
+    }, 2500);
+  }
+}
+
+async function dismissReferralCheckin(referralId = 1) {
+  try {
+    await fetch(`${apiBase}/api/referrals/${referralId}/outcome`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ outcome: 'no_response' })
+    });
+  } catch (e) {}
+
+  localStorage.setItem('anamaya_referral_checkin_dismissed', 'true');
+  const container = document.getElementById('dashboardReferralCheckin');
+  if (container) container.innerHTML = '';
+}
+
+// Satisfaction Overview Analytics Panel
+async function loadSatisfactionAnalytics() {
+  const overallRatingEl = document.getElementById('analyticsOverallRating');
+  const totalReviewsEl = document.getElementById('analyticsTotalReviews');
+  const resolvedRateEl = document.getElementById('analyticsResolvedRate');
+  const facListEl = document.getElementById('analyticsFacilityList');
+  const chartEl = document.getElementById('analyticsReferralBreakdown');
+
+  let data = null;
+
+  try {
+    const res = await fetch(`${apiBase}/api/admin/satisfaction-overview`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json && json.data) {
+        data = json.data;
+      }
+    }
+  } catch (e) {
+    console.warn("Load satisfaction analytics fallback:", e);
+  }
+
+  if (!data) {
+    data = {
+      overall_average_rating: 4.6,
+      total_feedback_count: 32,
+      facility_ratings: [
+        { facility_id: 1, facility_name: "Navi Mumbai Municipal General Hospital", average_rating: 4.8, feedback_count: 14 },
+        { facility_id: 2, facility_name: "Panvel Sub-District Hospital & Trauma Care", average_rating: 4.6, feedback_count: 10 },
+        { facility_id: 6, facility_name: "MGM Hospital & Medical College Kamothe", average_rating: 4.4, feedback_count: 8 }
+      ],
+      referral_outcomes: {
+        resolved_count: 18,
+        resolved_percentage: 62.5,
+        partially_resolved_count: 6,
+        partially_resolved_percentage: 20.8,
+        not_resolved_count: 3,
+        not_resolved_percentage: 10.4,
+        no_response_count: 2,
+        no_response_percentage: 6.3
+      }
+    };
+  }
+
+  if (overallRatingEl) overallRatingEl.textContent = `⭐ ${data.overall_average_rating} / 5.0`;
+  if (totalReviewsEl) totalReviewsEl.textContent = `${data.total_feedback_count} patient reviews`;
+  if (resolvedRateEl && data.referral_outcomes) {
+    resolvedRateEl.textContent = `${data.referral_outcomes.resolved_percentage}%`;
+  }
+
+  if (facListEl && data.facility_ratings) {
+    facListEl.innerHTML = data.facility_ratings.map(f => `
+      <div class="facility-rating-item">
+        <div class="facility-rating-info">
+          <span style="color:var(--text);">${f.facility_name}</span>
+          <span style="color:#0284c7; font-weight:700;">⭐ ${f.average_rating} (${f.feedback_count} reviews)</span>
+        </div>
+        <div class="rating-progress-bg">
+          <div class="rating-progress-fill" style="width: ${(f.average_rating / 5) * 100}%;"></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  if (chartEl && data.referral_outcomes) {
+    const o = data.referral_outcomes;
+    const items = [
+      { label: typeof t === 'function' ? t('i18n_outcome_resolved') : 'Resolved', pct: o.resolved_percentage, count: o.resolved_count, cls: 'resolved' },
+      { label: typeof t === 'function' ? t('i18n_outcome_partially') : 'Partially', pct: o.partially_resolved_percentage, count: o.partially_resolved_count, cls: 'partially' },
+      { label: typeof t === 'function' ? t('i18n_outcome_not_resolved') : 'Not resolved', pct: o.not_resolved_percentage, count: o.not_resolved_count, cls: 'not-resolved' },
+      { label: typeof t === 'function' ? t('i18n_outcome_no_response') : 'No response', pct: o.no_response_percentage, count: o.no_response_count, cls: 'no-response' }
+    ];
+
+    chartEl.innerHTML = items.map(item => `
+      <div class="outcome-chart-item">
+        <div class="outcome-chart-info">
+          <span style="color:var(--text);">${item.label}</span>
+          <span style="color:var(--muted); font-size:0.82rem;">${item.pct}% (${item.count})</span>
+        </div>
+        <div class="rating-progress-bg">
+          <div class="outcome-bar-fill ${item.cls}" style="width: ${item.pct}%;"></div>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+// 8. Government Schemes Eligibility & Empanelled Facility Matcher
+let activeSchemeAcceptingId = null;
+let lastMatchedSchemesData = [];
+
+async function loadGovernmentSchemes() {
+  const schemeListEl = document.getElementById('schemeList');
+  if (!schemeListEl) return;
+
+  schemeListEl.innerHTML = `
+    <div class="scheme-card loading-card" style="padding: 24px; text-align: center; color: var(--muted); background: var(--panel-solid); border-radius: 16px; border: 1px solid var(--border);">
+      <div style="font-size: 1.6rem; margin-bottom: 8px;">⏳</div>
+      <h4 style="color: var(--text); margin: 0 0 4px 0;">Finding eligible government schemes...</h4>
+      <p style="margin: 0; font-size: 0.88rem;">Matching your profile and locating nearby empanelled hospitals...</p>
+    </div>`;
+
+  const lat = (currentUserCoords && currentUserCoords.lat) ? currentUserCoords.lat : 18.9894;
+  const lon = (currentUserCoords && currentUserCoords.lon) ? currentUserCoords.lon : 73.1175;
+
+  const payload = {
+    income_category: "BPL",
+    state: "Maharashtra",
+    latitude: lat,
+    longitude: lon
+  };
+
+  try {
+    const res = await fetch(`${apiBase}/api/schemes/match`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.schemes && data.schemes.length > 0) {
+        lastMatchedSchemesData = data.schemes;
+        renderMatchedSchemes(data.schemes);
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn("Load government schemes network error, using fallback:", e);
+  }
+
+  // Fallback matched schemes data
+  const fallbackSchemes = [
+    {
+      scheme_id: 1,
+      name: "Ayushman Bharat - PMJAY",
+      description: "Pradhan Mantri Jan Arogya Yojana - Free health insurance for low-income families",
+      benefits: ["Free hospitalization up to ₹5 Lakhs per family per year", "Cashless treatment across 27,000+ network hospitals (including 12,000+ private hospitals)"],
+      match_reason: "Matches income category and regional coverage",
+      relevance_score: 95,
+      accepting_facilities: [
+        { id: 1, name: "Navi Mumbai Municipal General Hospital Vashi", is_government: true, ownership_type: "government", distance_km: 2.5, address: "Sector 10, Vashi", accepted_schemes: ["PM-JAY", "MJPJAY"] },
+        { id: 2, name: "Panvel Sub-District Hospital & Trauma Care", is_government: true, ownership_type: "government", distance_km: 8.4, address: "Old Panvel", accepted_schemes: ["PM-JAY", "MJPJAY"] },
+        { id: 13, name: "Panacea Hospital", is_government: false, ownership_type: "private", distance_km: 1.2, address: "Sector 8, New Panvel", accepted_schemes: ["PM-JAY", "MJPJAY"] },
+        { id: 15, name: "Life Line Hospital Medical & Research Centre", is_government: false, ownership_type: "private", distance_km: 1.5, address: "Shivaji Road, Panvel", accepted_schemes: ["PM-JAY", "MJPJAY"] }
+      ]
+    },
+    {
+      scheme_id: 2,
+      name: "Mahatma Jyotiba Phule Jan Arogya Yojana (MJPJAY)",
+      description: "Maharashtra State flagship health insurance scheme offering cashless treatment up to ₹1.5 Lakhs per family per year",
+      benefits: ["Cashless medical and surgical care across empanelled government and private hospitals", "996 medical procedures & surgeries covered"],
+      match_reason: "Designed for Maharashtra ration card holders",
+      relevance_score: 90,
+      accepting_facilities: [
+        { id: 2, name: "Panvel Sub-District Hospital & Trauma Care", is_government: true, ownership_type: "government", distance_km: 8.4, address: "Old Panvel", accepted_schemes: ["PM-JAY", "MJPJAY"] },
+        { id: 13, name: "Panacea Hospital", is_government: false, ownership_type: "private", distance_km: 1.2, address: "Sector 8, New Panvel", accepted_schemes: ["PM-JAY", "MJPJAY"] },
+        { id: 14, name: "Unnati Hospital and ICU", is_government: false, ownership_type: "private", distance_km: 1.4, address: "Shivaji Chowk, Panvel", accepted_schemes: ["PM-JAY", "MJPJAY"] }
+      ]
+    }
+  ];
+  lastMatchedSchemesData = fallbackSchemes;
+  renderMatchedSchemes(fallbackSchemes);
+}
+
+function renderMatchedSchemes(schemes) {
+  const schemeListEl = document.getElementById('schemeList');
+  if (!schemeListEl) return;
+
+  const disclaimerText = typeof t === 'function' ? t('i18n_empanelment_disclaimer') : 'Private hospitals shown here are empanelled under PM-JAY/MJPJAY and other schemes — not all private hospitals accept government schemes; check with the facility to confirm current empanelment status.';
+
+  let html = `
+    <div class="empanelment-disclaimer-note" style="margin-bottom: 16px; padding: 12px 16px; background: rgba(59, 130, 246, 0.08); border-left: 4px solid #3b82f6; border-radius: 10px; font-size: 0.85rem; color: var(--muted); line-height: 1.45;">
+      ℹ️ ${disclaimerText}
+    </div>
+  `;
+
+  html += schemes.map(s => {
+    const sId = s.scheme_id || s.name.replace(/[^a-zA-Z0-9]/g, '_');
+    const isExpanded = activeSchemeAcceptingId === sId;
+    const facs = s.accepting_facilities || [];
+    const facCount = facs.length;
+
+    const findBtnText = typeof t === 'function' ? t('i18n_find_accepting_facilities') : '🏥 Find facilities that accept this';
+    const hideBtnText = typeof t === 'function' ? t('i18n_hide_accepting_facilities') : '🔼 Hide accepting facilities';
+    const btnLabel = isExpanded ? `${hideBtnText} (${facCount})` : `${findBtnText} (${facCount})`;
+
+    const facsCardsHtml = facs.map(f => {
+      const isGovt = f.is_government || f.ownership_type === 'government';
+      const ownershipLabel = isGovt ? '🏛️ Government' : '🏥 Empanelled Private';
+      const badgeBg = isGovt ? 'rgba(2, 132, 199, 0.12)' : 'rgba(147, 51, 234, 0.12)';
+      const badgeColor = isGovt ? '#0284c7' : '#9333ea';
+      const badgeBorder = isGovt ? 'rgba(2, 132, 199, 0.3)' : 'rgba(147, 51, 234, 0.3)';
+
+      const fLat = f.coordinates ? f.coordinates.latitude : (f.latitude || 18.98);
+      const fLon = f.coordinates ? f.coordinates.longitude : (f.longitude || 73.11);
+      const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${fLat},${fLon}`;
+
+      const schemeChips = (f.accepted_schemes || ["PM-JAY", "MJPJAY"]).map(sch => `
+        <span style="background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 12px; font-size: 0.74rem; font-weight: 600;">
+          ✅ ${sch} ${typeof t === 'function' ? t('i18n_accepted') : 'accepted'}
+        </span>
+      `).join(' ');
+
+      return `
+        <div class="facility-card scheme-accepting-card" style="margin-top: 10px; background: var(--bg); border: 1px solid var(--border); border-left: 4px solid ${badgeColor}; border-radius: 12px; padding: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+            <div>
+              <h5 style="margin: 0 0 4px 0; font-size: 0.96rem; font-weight: 700; color: var(--text);">${f.name}</h5>
+              <p style="margin: 0; font-size: 0.82rem; color: var(--muted);">📍 ${f.address} · <strong style="color: #16a34a;">${f.distance_km} km away</strong></p>
+            </div>
+            <span style="background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; padding: 3px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; white-space: nowrap;">
+              ${ownershipLabel}
+            </span>
+          </div>
+
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;">
+            ${schemeChips}
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px;">
+            <a href="tel:${f.phone || f.contact_phone || '108'}" onclick="event.stopPropagation();" class="secondary" style="padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: var(--bg); color: var(--text); border: 1px solid var(--border);">📞 Call</a>
+            <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" class="primary" style="padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: var(--color-orange); color: #fff;">🗺️ Directions</a>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="scheme-card" style="display: flex; flex-direction: column; align-items: stretch; gap: 12px; padding: 18px 20px; border-left: 4px solid #0284c7; background: var(--panel-solid); border-radius: 16px; margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+          <div>
+            <h4 style="margin: 0 0 6px 0; color: var(--text); font-size: 1.1rem; font-weight: 700;">${s.name}</h4>
+            <p style="margin: 0 0 6px 0; color: var(--muted); font-size: 0.88rem; line-height: 1.4;">${s.description}</p>
+            ${s.match_reason ? `<span style="font-size: 0.8rem; color: #0284c7; font-weight: 600;">🎯 ${s.match_reason}</span>` : ''}
+          </div>
+          <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #047857; border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 12px; border-radius: 10px; font-weight: 700; font-size: 0.8rem; white-space: nowrap;">Eligible</span>
+        </div>
+
+        <button type="button" class="secondary full-width" onclick="toggleSchemeAcceptingFacilities('${sId}')" style="margin-top: 4px; font-size: 0.86rem; padding: 8px; justify-content: center; display: flex; align-items: center; gap: 6px;">
+          ${btnLabel}
+        </button>
+
+        <div id="schemeFacs_${sId}" class="${isExpanded ? '' : 'hidden'}" style="width: 100%;">
+          ${facCount > 0 ? facsCardsHtml : `<p style="font-size:0.84rem; color:var(--muted); text-align:center; padding:8px;">No nearby accepting facilities found for this scheme.</p>`}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  schemeListEl.innerHTML = html;
+}
+
+function toggleSchemeAcceptingFacilities(schemeId) {
+  activeSchemeAcceptingId = (activeSchemeAcceptingId === schemeId) ? null : schemeId;
+  renderMatchedSchemes(lastMatchedSchemesData);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -3022,4 +3645,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initEmergencySos();
   initHeaderNavScrolling();
   initDoctorDirectoryAndAppointments();
+  checkAndShowReferralOutcomePrompt();
 });

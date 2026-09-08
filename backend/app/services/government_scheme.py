@@ -40,6 +40,30 @@ class GovernmentSchemeService:
             "state": None
         },
         {
+            "name": "Mahatma Jyotiba Phule Jan Arogya Yojana (MJPJAY)",
+            "description": "Maharashtra State flagship health insurance scheme offering cashless treatment up to ₹1.5 Lakhs per family per year",
+            "eligibility": {
+                "income_limit": "Orange / Yellow / Antyodaya / Annapurna Ration card holders",
+                "states": ["Maharashtra"],
+                "categories": ["BPL", "APL"]
+            },
+            "benefits": [
+                "Cashless medical and surgical care across empanelled government and private hospitals",
+                "996 medical procedures & surgeries covered",
+                "Post-hospitalization consultations and diagnostics included",
+                "Empanelled private & government hospital access across Maharashtra"
+            ],
+            "required_documents": [
+                "Aadhaar Card",
+                "Valid Ration Card (Yellow/Orange)",
+                "Voter ID or Driving License",
+                "Income Certificate"
+            ],
+            "application_process": "Visit Arogyamitra at any empanelled network hospital",
+            "official_website": "https://www.jeevandayee.gov.in",
+            "state": "Maharashtra"
+        },
+        {
             "name": "National Health Mission",
             "description": "Government health program providing affordable healthcare",
             "eligibility": {
@@ -136,23 +160,23 @@ class GovernmentSchemeService:
         """Initialize default schemes in database"""
         try:
             # Check if schemes already exist
-            existing_count = db.query(GovernmentScheme).count()
-            if existing_count > 0:
-                return
+            existing_schemes = db.query(GovernmentScheme).all()
+            existing_names = [s.name for s in existing_schemes]
             
-            # Add default schemes
+            # Add missing default schemes
             for scheme_data in self.DEFAULT_SCHEMES:
-                scheme = GovernmentScheme(
-                    name=scheme_data["name"],
-                    description=scheme_data["description"],
-                    eligibility_criteria=scheme_data["eligibility"],
-                    benefits=scheme_data["benefits"],
-                    required_documents=scheme_data["required_documents"],
-                    application_process=scheme_data["application_process"],
-                    official_website=scheme_data.get("official_website"),
-                    state=scheme_data.get("state")
-                )
-                db.add(scheme)
+                if scheme_data["name"] not in existing_names:
+                    scheme = GovernmentScheme(
+                        name=scheme_data["name"],
+                        description=scheme_data["description"],
+                        eligibility_criteria=scheme_data["eligibility"],
+                        benefits=scheme_data["benefits"],
+                        required_documents=scheme_data["required_documents"],
+                        application_process=scheme_data["application_process"],
+                        official_website=scheme_data.get("official_website"),
+                        state=scheme_data.get("state")
+                    )
+                    db.add(scheme)
             
             db.commit()
             logger.info("Government schemes initialized")
@@ -166,7 +190,7 @@ class GovernmentSchemeService:
         matcher_data: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
         """
-        Match relevant government schemes based on user eligibility
+        Match relevant government schemes based on user eligibility and include accepting facilities
         """
         # Initialize schemes if needed
         await self.initialize_schemes(db)
@@ -177,6 +201,9 @@ class GovernmentSchemeService:
         employment_category = matcher_data.get("employment_category", "").lower()
         is_student = matcher_data.get("is_student", False)
         is_senior_citizen = matcher_data.get("is_senior_citizen", False)
+        
+        user_latitude = matcher_data.get("latitude")
+        user_longitude = matcher_data.get("longitude")
         
         # Get all schemes
         all_schemes = db.query(GovernmentScheme).all()
@@ -195,6 +222,13 @@ class GovernmentSchemeService:
             )
             
             if match_score > 0:
+                accepting_facs = self._get_accepting_facilities_for_scheme(
+                    db,
+                    scheme.name,
+                    user_latitude,
+                    user_longitude
+                )
+                
                 matched_schemes.append({
                     "scheme_id": scheme.id,
                     "name": scheme.name,
@@ -205,6 +239,8 @@ class GovernmentSchemeService:
                     "application_process": scheme.application_process,
                     "official_website": scheme.official_website,
                     "state": scheme.state,
+                    "accepting_facilities": accepting_facs,
+                    "accepting_facilities_count": len(accepting_facs),
                     "match_reason": self._get_match_reason(
                         scheme,
                         age_group,
@@ -212,13 +248,84 @@ class GovernmentSchemeService:
                         is_senior_citizen
                     ),
                     "relevance_score": match_score,
-                    "disclaimer": "Final eligibility is determined by the official authority."
+                    "disclaimer": "Final eligibility is determined by the official authority. Check empanelment status with facility."
                 })
         
         # Sort by relevance
         matched_schemes.sort(key=lambda x: x["relevance_score"], reverse=True)
         
         return matched_schemes
+
+    @staticmethod
+    def _get_accepting_facilities_for_scheme(
+        db: Session,
+        scheme_name: str,
+        user_latitude: Optional[float] = None,
+        user_longitude: Optional[float] = None
+    ) -> List[Dict[str, Any]]:
+        """Find nearby facilities (government AND private) accepting this scheme"""
+        from app.models import HealthcareFacility
+        from app.services.facility_finder import FacilityFinderService
+        
+        finder = FacilityFinderService()
+        lat = user_latitude if user_latitude is not None else 18.9894
+        lon = user_longitude if user_longitude is not None else 73.1175
+        
+        facilities = db.query(HealthcareFacility).all()
+        results = []
+        
+        s_clean = scheme_name.strip().upper()
+        keywords = []
+        if "PM-JAY" in s_clean or "PMJAY" in s_clean or "AYUSHMAN" in s_clean:
+            keywords.extend(["PM-JAY", "PMJAY", "AYUSHMAN BHARAT"])
+        if "MJPJAY" in s_clean or "MAHATMA JYOTIBA" in s_clean:
+            keywords.extend(["MJPJAY"])
+        if "CGHS" in s_clean:
+            keywords.extend(["CGHS"])
+        if "ESIC" in s_clean:
+            keywords.extend(["ESIC"])
+        if not keywords:
+            keywords = [s_clean]
+        
+        for fac in facilities:
+            schemes = fac.accepted_schemes or []
+            matches = False
+            for sch in schemes:
+                sch_u = str(sch).upper()
+                for kw in keywords:
+                    if kw in sch_u or sch_u in kw or kw.replace("-", "") == sch_u.replace("-", ""):
+                        matches = True
+                        break
+                if matches:
+                    break
+            
+            if matches:
+                dist = finder.calculate_distance(lat, lon, fac.latitude, fac.longitude)
+                ownership = getattr(fac, 'ownership_type', None)
+                if not ownership:
+                    ownership = "government" if fac.is_government else "private"
+                
+                results.append({
+                    "id": fac.id,
+                    "name": fac.name,
+                    "facility_level": fac.facility_level.value if hasattr(fac.facility_level, 'value') else str(fac.facility_level),
+                    "address": fac.address,
+                    "phone": fac.phone or fac.contact_phone,
+                    "contact_phone": fac.contact_phone or fac.phone,
+                    "is_government": fac.is_government,
+                    "ownership_type": ownership,
+                    "accepted_schemes": fac.accepted_schemes or [],
+                    "emergency_available": fac.emergency_available,
+                    "beds_available": fac.beds_available,
+                    "distance_km": round(dist, 2),
+                    "coordinates": {
+                        "latitude": fac.latitude,
+                        "longitude": fac.longitude
+                    }
+                })
+        
+        results.sort(key=lambda x: x["distance_km"])
+        return results
     
     async def get_scheme(
         self,

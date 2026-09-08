@@ -145,6 +145,7 @@ class HealthcareFacility(Base):
     emergency_services = Column(Boolean, default=False)
     is_24x7 = Column(Boolean, default=False)
     beds_available = Column(Integer, nullable=True)
+    accepted_schemes = Column(JSON, nullable=True)  # List of accepted government schemes e.g. ["PM-JAY", "MJPJAY"]
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -193,6 +194,49 @@ class AppointmentRequest(Base):
     patient = relationship("User", foreign_keys=[patient_id])
     doctor = relationship("Doctor", back_populates="appointment_requests")
     facility = relationship("HealthcareFacility", foreign_keys=[facility_id])
+    feedback = relationship("AppointmentFeedback", uselist=False, back_populates="appointment", cascade="all, delete-orphan")
+
+
+# Appointment Feedback
+class AppointmentFeedback(Base):
+    __tablename__ = "appointment_feedback"
+
+    id = Column(Integer, primary_key=True, index=True)
+    appointment_id = Column(Integer, ForeignKey("appointment_requests.id"), unique=True, index=True, nullable=False)
+    patient_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    rating = Column(Integer, nullable=False)  # integer 1-5
+    tags = Column(JSON, nullable=True)  # e.g. ["short_wait", "doctor_attentive"]
+    comment = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    appointment = relationship("AppointmentRequest", back_populates="feedback")
+    patient = relationship("User", foreign_keys=[patient_id])
+
+
+# Referral Outcome Enum & Feedback Model
+class ReferralOutcomeEnum(str, enum.Enum):
+    RESOLVED = "resolved"
+    PARTIALLY_RESOLVED = "partially_resolved"
+    NOT_RESOLVED = "not_resolved"
+    NO_RESPONSE = "no_response"
+
+
+class ReferralOutcomeFeedback(Base):
+    __tablename__ = "referral_outcome_feedback"
+
+    id = Column(Integer, primary_key=True, index=True)
+    referral_id = Column(Integer, ForeignKey("referrals.id"), index=True, nullable=True)
+    patient_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    outcome = Column(SQLEnum(ReferralOutcomeEnum), default=ReferralOutcomeEnum.NO_RESPONSE)
+    comment = Column(Text, nullable=True)
+    asked_at = Column(DateTime, default=datetime.utcnow)
+    responded_at = Column(DateTime, nullable=True)
+
+    # Relationships
+    referral = relationship("Referral")
+    patient = relationship("User", foreign_keys=[patient_id])
+
 
 
 # Emergency Notifications

@@ -465,11 +465,15 @@
               <button class="nav-item" data-panel="passport" data-i18n="i18n_healthpassport_96">Health Passport</button>
               <button class="nav-item" data-panel="schemes" data-i18n="i18n_schemes_97">Schemes</button>
               <button class="nav-item emergency-item" data-panel="emergency" data-i18n="i18n_emergency_sos">🆘 Emergency</button>
+              <button class="nav-item" data-panel="analytics" data-i18n="i18n_satisfaction_overview">📊 Satisfaction Overview</button>
             </nav>
           </aside>
 
           <div class="content-panel">
             <div id="dashboard" class="panel active">
+              <!-- Referral Outcome Check-in Prompt Card Slot -->
+              <div id="dashboardReferralCheckin"></div>
+
               <div class="kpis">
                 <div class="kpi-card">
                   <span data-i18n="i18n_risklevel_98">Risk level</span>
@@ -824,8 +828,47 @@
                 </div>
               </div>
             </div>
-          
-        
+
+            <!-- Satisfaction & Analytics Overview Panel -->
+            <div id="analytics" class="panel">
+              <div class="panel-head">
+                <h3 data-i18n="i18n_satisfaction_overview" style="margin: 0;">Satisfaction Overview</h3>
+                <span style="font-size: 0.85rem; color: var(--muted);">Resource planning & care quality governance analytics</span>
+              </div>
+
+              <!-- Top KPI Summary Cards -->
+              <div class="kpis" style="margin: 1rem 0;">
+                <div class="kpi-card" style="border-left: 4px solid #0284c7;">
+                  <span data-i18n="i18n_overall_satisfaction">Overall Patient Satisfaction</span>
+                  <strong id="analyticsOverallRating">⭐ 4.6 / 5.0</strong>
+                  <small id="analyticsTotalReviews" style="color: var(--muted); font-size: 0.78rem;">28 patient reviews</small>
+                </div>
+                <div class="kpi-card" style="border-left: 4px solid #10b981;">
+                  <span data-i18n="i18n_outcome_resolved">Care Resolved Rate</span>
+                  <strong id="analyticsResolvedRate">62.5%</strong>
+                  <small style="color: var(--muted); font-size: 0.78rem;">Follow-up check-ins</small>
+                </div>
+              </div>
+
+              <div class="card-grid two-col" style="margin-top: 1.25rem;">
+                <!-- Per-Facility Ratings Section -->
+                <div class="info-card">
+                  <h4 data-i18n="i18n_facility_ratings" style="margin: 0 0 1rem 0; color: var(--text);">Per-Facility Average Rating</h4>
+                  <div id="analyticsFacilityList" class="facility-rating-bar-list">
+                    <p style="color: var(--muted); font-size: 0.88rem;">Loading facility ratings...</p>
+                  </div>
+                </div>
+
+                <!-- Referral Outcomes Breakdown Section -->
+                <div class="info-card">
+                  <h4 data-i18n="i18n_referral_outcomes_chart" style="margin: 0 0 1rem 0; color: var(--text);">Referral Care Outcomes</h4>
+                  <div id="analyticsReferralBreakdown" class="referral-outcome-chart">
+                    <p style="color: var(--muted); font-size: 0.88rem;">Loading referral outcome metrics...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
       </section>
     </main>
 

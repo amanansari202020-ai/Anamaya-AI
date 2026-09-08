@@ -1452,3 +1452,207 @@ body[data-theme="dark"] .modal-header h3 {
   background: #fee2e2;
   color: #b91c1c;
 }
+.status-badge.completed {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+/* Doctor Rating Badge */
+.doctor-rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(251, 191, 36, 0.15);
+  color: #d97706;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+body[data-theme="dark"] .doctor-rating-badge {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+.doctor-rating-badge.new-badge {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* Post-Appointment Feedback Prompt Card */
+.feedback-prompt-card {
+  background: linear-gradient(135deg, rgba(240, 249, 255, 0.95), rgba(224, 242, 254, 0.8));
+  border: 1.5px solid #7dd3fc;
+  border-radius: 0.85rem;
+  padding: 1rem;
+  margin-top: 0.75rem;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.08);
+  transition: all 0.3s ease;
+}
+body[data-theme="dark"] .feedback-prompt-card {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
+  border-color: #0284c7;
+}
+
+.feedback-star-rating {
+  display: flex;
+  gap: 6px;
+  margin: 0.5rem 0;
+  font-size: 1.6rem;
+}
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  opacity: 0.35;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.star-btn.active, .star-btn:hover {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.feedback-tags-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0.5rem 0;
+}
+.tag-chip {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tag-chip.selected {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+/* Referral Outcome Check-in Card */
+.referral-checkin-card {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 1.5px solid #4ade80;
+  border-radius: 0.85rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(22, 101, 52, 0.08);
+}
+body[data-theme="dark"] .referral-checkin-card {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.9), rgba(15, 23, 42, 0.9));
+  border-color: #10b981;
+}
+
+.referral-dismiss-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.outcome-buttons-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0.75rem 0;
+}
+.btn-outcome {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--panel-solid);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-outcome.selected[data-outcome="resolved"] {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #059669;
+}
+.btn-outcome.selected[data-outcome="partially_resolved"] {
+  background: #f59e0b;
+  color: #ffffff;
+  border-color: #d97706;
+}
+.btn-outcome.selected[data-outcome="not_resolved"] {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #dc2626;
+}
+
+/* Satisfaction Overview Analytics Panel */
+.facility-rating-bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.facility-rating-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.facility-rating-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.rating-progress-bg {
+  height: 8px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+body[data-theme="dark"] .rating-progress-bg {
+  background: rgba(255, 255, 255, 0.1);
+}
+.rating-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0284c7, #38bdf8);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+/* Referral Outcome Chart */
+.referral-outcome-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.outcome-chart-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.outcome-chart-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.outcome-bar-fill {
+  height: 10px;
+  border-radius: 5px;
+  transition: width 0.6s ease;
+}
+.outcome-bar-fill.resolved { background: #10b981; }
+.outcome-bar-fill.partially { background: #f59e0b; }
+.outcome-bar-fill.not-resolved { background: #ef4444; }
+.outcome-bar-fill.no-response { background: #94a3b8; }
+

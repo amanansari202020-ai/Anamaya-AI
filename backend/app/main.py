@@ -25,6 +25,7 @@ from app.services.referral import ReferralService
 from app.services.health_record import HealthRecordService
 from app.services.government_scheme import GovernmentSchemeService
 from app.services.emergency import EmergencyService
+from app.services.feedback import FeedbackService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -61,6 +62,7 @@ referral_service = ReferralService()
 health_record_service = HealthRecordService()
 scheme_service = GovernmentSchemeService()
 emergency_service = EmergencyService()
+feedback_service = FeedbackService()
 
 
 # ============================================================================
@@ -333,6 +335,77 @@ async def get_patient_appointments(
     }
 
 
+@app.put("/api/appointments/{appointment_id}/status", tags=["Appointments & Doctors"])
+async def update_appointment_status(
+    appointment_id: int,
+    payload: dict,
+    db: Session = Depends(get_db)
+):
+    """Update an appointment request's status (e.g. pending -> completed)"""
+    from app.models import AppointmentRequest
+    appt = db.query(AppointmentRequest).filter(AppointmentRequest.id == appointment_id).first()
+    if not appt:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+    
+    new_status = payload.get("status", "completed")
+    appt.status = new_status
+    db.commit()
+    db.refresh(appt)
+    return {"success": True, "appointment_id": appt.id, "status": appt.status}
+
+
+@app.post("/api/appointments/{appointment_id}/feedback", tags=["Patient Satisfaction & Outcomes"])
+async def submit_appointment_feedback(
+    appointment_id: int,
+    payload: dict,
+    db: Session = Depends(get_db)
+):
+    """Submit rating and feedback for a completed appointment"""
+    try:
+        res = await feedback_service.submit_appointment_feedback(db, appointment_id, payload)
+        return {"success": True, "feedback": res}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error submitting appointment feedback: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.get("/api/doctors/{doctor_id}/rating-summary", tags=["Patient Satisfaction & Outcomes"])
+async def get_doctor_rating_summary(
+    doctor_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get average rating, total review count, and top tags for a doctor"""
+    summary = await feedback_service.get_doctor_rating_summary(db, doctor_id)
+    return {"success": True, "data": summary}
+
+
+@app.post("/api/referrals/{referral_id}/outcome", tags=["Patient Satisfaction & Outcomes"])
+async def submit_referral_outcome(
+    referral_id: str,
+    payload: dict,
+    db: Session = Depends(get_db)
+):
+    """Record patient referral care follow-up outcome"""
+    try:
+        res = await feedback_service.submit_referral_outcome(db, referral_id, payload)
+        return {"success": True, "data": res}
+    except Exception as e:
+        logger.error(f"Error recording referral outcome: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.get("/api/admin/satisfaction-overview", tags=["Patient Satisfaction & Outcomes"])
+async def get_satisfaction_overview(
+    db: Session = Depends(get_db)
+):
+    """Analytics overview of overall patient satisfaction, per-facility ratings, and referral outcomes"""
+    overview = await feedback_service.get_satisfaction_overview(db)
+    return {"success": True, "data": overview}
+
+
+
 @app.get("/api/facilities/{facility_id}", tags=["Healthcare Facilities"])
 async def get_facility_details(
     facility_id: int,
@@ -476,7 +549,6 @@ async def export_health_passport_qr(
 @app.post("/api/schemes/match", tags=["Government Schemes"])
 async def match_schemes(
     matcher_data: dict,
-    current_user: User = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db)
 ):
     """Find relevant government schemes"""
@@ -488,10 +560,29 @@ async def match_schemes(
     }
 
 
+@app.get("/api/schemes/{scheme_name}/accepting-facilities", tags=["Government Schemes"])
+async def get_accepting_facilities(
+    scheme_name: str,
+    latitude: float = 18.9894,
+    longitude: float = 73.1175,
+    radius_km: float = 50.0,
+    db: Session = Depends(get_db)
+):
+    """Get nearby facilities (government AND private) accepting a specific scheme, sorted by distance"""
+    facilities = await facility_service.find_accepting_facilities(
+        db, scheme_name, latitude, longitude, radius_km
+    )
+    return {
+        "success": True,
+        "scheme_name": scheme_name,
+        "count": len(facilities),
+        "facilities": facilities
+    }
+
+
 @app.get("/api/schemes/{scheme_id}", tags=["Government Schemes"])
 async def get_scheme(
     scheme_id: int,
-    current_user: User = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get scheme details"""

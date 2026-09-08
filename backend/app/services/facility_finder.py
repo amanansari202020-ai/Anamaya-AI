@@ -5,7 +5,7 @@ import logging
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
-from app.models import HealthcareFacility, Doctor, AppointmentRequest
+from app.models import HealthcareFacility, Doctor, AppointmentRequest, AppointmentFeedback
 
 logger = logging.getLogger(__name__)
 
@@ -66,14 +66,16 @@ class FacilityFinderService:
                 nearby_facilities.append({
                     "id": facility.id,
                     "name": facility.name,
-                    "facility_level": facility.facility_level.value,
+                    "facility_level": facility.facility_level.value if hasattr(facility.facility_level, 'value') else str(facility.facility_level),
                     "address": facility.address,
                     "phone": facility.phone,
                     "email": facility.email,
                     "opening_hours": facility.opening_hours,
                     "is_government": facility.is_government,
-                    "available_services": facility.available_services,
-                    "available_specialists": facility.available_specialists,
+                    "ownership_type": getattr(facility, 'ownership_type', 'government' if facility.is_government else 'private'),
+                    "available_services": facility.available_services or [],
+                    "available_specialists": facility.available_specialists or [],
+                    "accepted_schemes": facility.accepted_schemes or [],
                     "emergency_available": facility.emergency_available,
                     "beds_available": facility.beds_available,
                     "distance_km": round(distance, 2),
@@ -114,8 +116,16 @@ class FacilityFinderService:
             if distance <= radius_km:
                 # Query doctors for this facility
                 doctors = db.query(Doctor).filter(Doctor.facility_id == facility.id).all()
-                doctors_data = [
-                    {
+                doctors_data = []
+                for d in doctors:
+                    fb_list = db.query(AppointmentFeedback).join(
+                        AppointmentRequest, AppointmentFeedback.appointment_id == AppointmentRequest.id
+                    ).filter(AppointmentRequest.doctor_id == d.id).all()
+                    
+                    review_count = len(fb_list)
+                    avg_rating = round(sum(f.rating for f in fb_list) / review_count, 1) if review_count > 0 else None
+                    
+                    doctors_data.append({
                         "id": d.id,
                         "facility_id": d.facility_id,
                         "name": d.name,
@@ -123,10 +133,10 @@ class FacilityFinderService:
                         "specialization": d.specialization,
                         "years_experience": d.years_experience,
                         "available_days": d.available_days or [],
-                        "available_hours": d.available_hours
-                    }
-                    for d in doctors
-                ]
+                        "available_hours": d.available_hours,
+                        "average_rating": avg_rating,
+                        "review_count": review_count
+                    })
                 
                 ownership = getattr(facility, 'ownership_type', None)
                 if not ownership:
@@ -145,6 +155,7 @@ class FacilityFinderService:
                     "ownership_type": ownership,
                     "available_services": facility.available_services or [],
                     "available_specialists": facility.available_specialists or [],
+                    "accepted_schemes": facility.accepted_schemes or [],
                     "emergency_available": facility.emergency_available,
                     "emergency_services": facility.emergency_services,
                     "is_24x7": facility.is_24x7,
@@ -171,6 +182,79 @@ class FacilityFinderService:
             "private": private_list,
             "total_count": len(government_list) + len(private_list)
         }
+
+    async def find_accepting_facilities(
+        self,
+        db: Session,
+        scheme_name: str,
+        user_latitude: float,
+        user_longitude: float,
+        radius_km: float = 50.0
+    ) -> List[Dict[str, Any]]:
+        """
+        Find nearby healthcare facilities (government AND private) accepting a specific scheme.
+        """
+        facilities = db.query(HealthcareFacility).all()
+        accepting = []
+        scheme_clean = scheme_name.strip().upper()
+
+        keywords = []
+        if "PM-JAY" in scheme_clean or "PMJAY" in scheme_clean or "AYUSHMAN" in scheme_clean:
+            keywords.extend(["PM-JAY", "PMJAY", "AYUSHMAN BHARAT"])
+        if "MJPJAY" in scheme_clean or "MAHATMA JYOTIBA" in scheme_clean:
+            keywords.extend(["MJPJAY"])
+        if "CGHS" in scheme_clean:
+            keywords.extend(["CGHS"])
+        if "ESIC" in scheme_clean:
+            keywords.extend(["ESIC"])
+        if not keywords:
+            keywords = [scheme_clean]
+        
+        for facility in facilities:
+            schemes = facility.accepted_schemes or []
+            matches = False
+            for s in schemes:
+                s_u = str(s).upper()
+                for kw in keywords:
+                    if kw in s_u or s_u in kw or kw.replace("-", "") == s_u.replace("-", ""):
+                        matches = True
+                        break
+                if matches:
+                    break
+
+            if matches:
+                dist = self.calculate_distance(user_latitude, user_longitude, facility.latitude, facility.longitude)
+                if dist <= radius_km:
+                    ownership = getattr(facility, 'ownership_type', None)
+                    if not ownership:
+                        ownership = "government" if facility.is_government else "private"
+                    accepting.append({
+                        "id": facility.id,
+                        "name": facility.name,
+                        "facility_level": facility.facility_level.value if hasattr(facility.facility_level, 'value') else str(facility.facility_level),
+                        "address": facility.address,
+                        "phone": facility.phone or facility.contact_phone,
+                        "contact_phone": facility.contact_phone or facility.phone,
+                        "email": facility.email,
+                        "opening_hours": facility.opening_hours,
+                        "is_government": facility.is_government,
+                        "ownership_type": ownership,
+                        "available_services": facility.available_services or [],
+                        "available_specialists": facility.available_specialists or [],
+                        "accepted_schemes": facility.accepted_schemes or [],
+                        "emergency_available": facility.emergency_available,
+                        "emergency_services": facility.emergency_services,
+                        "is_24x7": facility.is_24x7,
+                        "beds_available": facility.beds_available,
+                        "distance_km": round(dist, 2),
+                        "coordinates": {
+                            "latitude": facility.latitude,
+                            "longitude": facility.longitude
+                        }
+                    })
+        
+        accepting.sort(key=lambda x: x["distance_km"])
+        return accepting
 
     async def create_appointment_request(
         self,
@@ -247,6 +331,16 @@ class FacilityFinderService:
             doctor = db.query(Doctor).filter(Doctor.id == req.doctor_id).first()
             facility = db.query(HealthcareFacility).filter(HealthcareFacility.id == req.facility_id).first()
             
+            fb = db.query(AppointmentFeedback).filter(AppointmentFeedback.appointment_id == req.id).first()
+            fb_data = None
+            if fb:
+                fb_data = {
+                    "rating": fb.rating,
+                    "tags": fb.tags or [],
+                    "comment": fb.comment,
+                    "created_at": fb.created_at.isoformat() if fb.created_at else None
+                }
+
             results.append({
                 "id": req.id,
                 "patient_id": req.patient_id,
@@ -258,6 +352,8 @@ class FacilityFinderService:
                 "requested_date": req.requested_date,
                 "requested_time_slot": req.requested_time_slot,
                 "status": req.status,
+                "has_feedback": fb is not None,
+                "feedback": fb_data,
                 "created_at": req.created_at.isoformat() if req.created_at else None
             })
 
